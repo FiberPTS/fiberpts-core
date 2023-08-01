@@ -24,6 +24,9 @@ struct gpiod_line *red_line, *yellow_line, *green_line;
 void print_log(const char *format, ...) {
     va_list argptr;
     va_start(argptr, format);
+    // Set timezone to EST
+    setenv("TZ", "EST5EDT", 1);
+    tzset();
 
     time_t rawtime;
     struct tm * timeinfo;
@@ -50,6 +53,9 @@ void print_log(const char *format, ...) {
 void perror_log(const char *format, ...) {
     va_list argptr;
     va_start(argptr, format);
+    // Set timezone to EST
+    setenv("TZ", "EST5EDT", 1);
+    tzset();
 
     time_t rawtime;
     struct tm * timeinfo;
@@ -415,7 +421,7 @@ void send_nfc_to_airtable(NdefMessage message, char* uid, int uid_length) {
     }
     /*
     // Set the TZ environment variable to the desired time zone
-    setenv("TZ", "America/New_York", 1);
+    setenv("TZ", "EST", 1);
     tzset();
 
     // Get the current time and format it as an ISO 8601 string
@@ -475,37 +481,6 @@ void send_nfc_to_airtable(NdefMessage message, char* uid, int uid_length) {
 }
 
 
-void send_button_to_airtable() {
-    // If there are no records, return immediately
-    print_log("Sending Button Message -> Airtable\n");
-    // Get machine ID
-    char* machine_id = get_machine_id();
-    if (machine_id == NULL) {
-        // handle error
-	print_log("Failed Sending: Could not find Machine ID\n");
-        return;
-    }
-    char url[] = "https://hooks.airtable.com/workflows/v1/genericWebhook/appZUSMwDABUaufib/wflBeyntdIrWMVuQG/wtrYOlc9Mgwie9Ui9";
-    // Create JSON object
-    json_object * jobj = json_object_new_object();
-    json_object *jstring = json_object_new_string(machine_id);
-    json_object_object_add(jobj,"Machine ID", jstring);
-    const char* json_payload = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PRETTY);
-    send_post_request(url, json_payload);
-    print_log("\nSent POST request.\n");
-
-    // Free allocated memory
-    //free(combined_payload);
-    free(machine_id);
-    json_object_put(jobj); // free json object
-
-}
-
-void simulateButtonPress() {
-	print_log("Button Pressed\n");
-	send_button_to_airtable();
-}
-
 int main(int argc, const char *argv[]) {
   // Register the function to call on SIGINT
   struct sigaction sa;
@@ -559,19 +534,7 @@ int main(int argc, const char *argv[]) {
   uint8_t last_uid[10];
   bool same_card = false;
   bool can_read = false;
-  int button_count = 0;
-  int button_max_count = 20;
   while(!interrupted){
-	//struct timespec start, end;
-        //clock_gettime(CLOCK_MONOTONIC, &start);
-	// I WANT BUTTON PRESS INTEGRATION CODE HERE
-	button_count++;
-	if(button_count > button_max_count) {
-		button_count = 0;
-		simulateButtonPress();
-		set_led('G', 1);
-		sleep_interruptible(10);
-	}
 	if (nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt) > 0) {
 		print_log("The following (NFC) ISO14443A tag was found:\n");
 		print_log("ATQA (SENS_RES): \n");
