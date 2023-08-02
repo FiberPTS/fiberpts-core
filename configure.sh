@@ -67,14 +67,12 @@ sudo apt upgrade -y
 
 if [ "$driver" = "wn725n" ]
 then
-  sudo apt-get -y install dkms build-essential git gcc=8.3.0
-  # Go install the driver 
-  mkdir ~/DriverBuild
-  cd ~/DriverBuild
   git clone https://github.com/lwfinger/rtl8188eu.git
   cd rtl8188eu
-  make
+  sudo apt-get -y install bc build-essential linux-headers-$(uname -r)
+  make all
   sudo make install
+  echo "blacklist r8188eu" > /etc/modprobe.d/realtek.conf
 elif [ "$driver" = "ac600" ]
 then
   # Install the ac600 driver
