@@ -46,10 +46,8 @@ systemctl enable monitor.service
 # Clone the repository
 git clone https://github.com/NxFerrara/NFC_Tracking.git /home/potato/NFC_Tracking
 
-# Install dependencies
-while read p; do
-  apt-get install -y $p;
-done </home/potato/NFC_Tracking/requirements.txt
+packages=$(cat /home/potato/NFC_Tracking/requirements.txt)
+apt-get install -y $packages
 
 sh compile_all.sh
 sh update_permissions.sh
