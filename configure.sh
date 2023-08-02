@@ -51,6 +51,47 @@ while read p; do
   apt-get install -y $p;
 done </home/potato/NFC_Tracking/requirements.txt
 
+sh compile_all.sh
+sh update_permissions.sh
+
+# Check if command-line argument is provided
+if [ -z "$1" ]
+then
+  echo "Please provide the driver name as a command-line argument."
+  exit 1
+fi
+
+driver=$1  # Get driver name from command-line argument
+
+# Update and upgrade the system
+sudo apt update
+sudo apt upgrade -y
+
+if [ "$driver" = "wn725n" ]
+then
+  # Install the wn725n driver
+  sudo apt install -y git
+  git clone https://github.com/lwfinger/rtl8188eu.git
+  cd rtl8188eu
+  make
+  sudo make install
+  sudo -i
+  echo “blacklist r8188eu”  >>  /etc/modprobe.d/blacklist.conf
+  modprobe -r r8188eu
+  exit
+
+elif [ "$driver" = "ac600" ]
+then
+  # Install the ac600 driver
+  sudo apt install -y dkms git build-essential libelf-dev
+  git clone https://github.com/aircrack-ng/rtl8812au.git
+  cd rtl8812au/
+  sudo make dkms_install
+else
+  echo "Invalid driver name. Please provide either 'wn725n' or 'ac600' as the command-line argument."
+  exit 1
+fi
+
 # Parse command-line arguments
 #while (( "$#" )); do
 #  case "$1" in
