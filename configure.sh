@@ -78,8 +78,6 @@ then
   sudo -i
   echo “blacklist r8188eu”  >>  /etc/modprobe.d/blacklist.conf
   modprobe -r r8188eu
-  exit
-
 elif [ "$driver" = "ac600" ]
 then
   # Install the ac600 driver
@@ -91,6 +89,8 @@ else
   echo "Invalid driver name. Please provide either 'wn725n' or 'ac600' as the command-line argument."
   exit 1
 fi
+
+sudo reboot
 
 # Parse command-line arguments
 #while (( "$#" )); do
