@@ -1,0 +1,4 @@
+libnfc-dev
+libcurl4-openssl-dev
+libjson-c-dev
+libgpiod-dev
