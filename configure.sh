@@ -67,12 +67,13 @@ sudo apt upgrade -y
 
 if [ "$driver" = "wn725n" ]
 then
-  git clone https://github.com/lwfinger/rtl8188eu.git
+  git clone https://github.com/ilnanny/TL-WN725N-TP-Link-Debian.git
   cd rtl8188eu
-  sudo apt-get -y install bc build-essential linux-headers-$(uname -r)
+  sudo apt-get -y install build-essential linux-headers-$(uname -r)
+  cd TL-WN725N-TP-Link-Debian
   make all
-  sudo make install
-  echo "blacklist r8188eu" > /etc/modprobe.d/realtek.conf
+  make install
+  insmod 8188eu.ko
 elif [ "$driver" = "ac600" ]
 then
   # Install the ac600 driver
