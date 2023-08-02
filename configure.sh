@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd /home/potato/NFC_Tracking
 # Create logrotate configuration
 cat << EOF > /etc/logrotate.d/read_ultralight
 /var/log/read_ultralight.log {
