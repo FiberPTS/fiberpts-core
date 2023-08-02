@@ -67,15 +67,15 @@ sudo apt upgrade -y
 
 if [ "$driver" = "wn725n" ]
 then
-  # Install the wn725n driver
-  sudo apt install -y git
+  sudo apt-get -y install dkms build-essential git
+
+  # Go install the driver 
+  mkdir ~/DriverBuild
+  cd ~/DriverBuild
   git clone https://github.com/lwfinger/rtl8188eu.git
   cd rtl8188eu
   make
   sudo make install
-  sudo -i
-  echo “blacklist r8188eu”  >>  /etc/modprobe.d/blacklist.conf
-  modprobe -r r8188eu
 elif [ "$driver" = "ac600" ]
 then
   # Install the ac600 driver
