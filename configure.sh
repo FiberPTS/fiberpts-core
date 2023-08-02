@@ -67,8 +67,7 @@ sudo apt upgrade -y
 
 if [ "$driver" = "wn725n" ]
 then
-  sudo apt-get -y install dkms build-essential git
-
+  sudo apt-get -y install dkms build-essential git gcc=8.3.0
   # Go install the driver 
   mkdir ~/DriverBuild
   cd ~/DriverBuild
