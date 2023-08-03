@@ -6,7 +6,8 @@
 #include <curl/curl.h>
 #include <json-c/json.h>
 
-#define BUTTON_LINE_NUMBER 88
+//#define BUTTON_LINE_NUMBER 88
+#define BUTTON_LINE_NUMBER 75
 #define DEBOUNCE_TIME 1000 // debounce time in milliseconds
 
 // Time of the last button press
