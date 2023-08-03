@@ -6,8 +6,10 @@ BASE_DIR="/home/potato/NFC_Tracking"
 # Specify the name and path of your C programs
 PROGRAM_NAME_1="read_ultralight"
 PROGRAM_NAME_2="button_listener"
+PROGRAM_NAME_3="get_ip"
 PROGRAM_PATH_1="$BASE_DIR/$PROGRAM_NAME_1"
 PROGRAM_PATH_2="$BASE_DIR/$PROGRAM_NAME_2"
+PROGRAM_PATH_3="$BASE_DIR/$PROGRAM_NAME_3"
 
 # Specify the webhook URL
 WEBHOOK_URL="https://hooks.airtable.com/workflows/v1/genericWebhook/appZUSMwDABUaufib/wflNUJAmKHitljnxa/wtrg0Rj5KswYoaOcF"
@@ -19,6 +21,7 @@ MACHINE_ID=$(cat /etc/machine-id)
 on_sigterm() {
     kill $(cat /var/run/read_ultralight.pid)
     kill $(cat /var/run/button_listener.pid)
+    kill $(cat /var/run/get_ip.pid)
     # Prepare the data
     JSON_DATA=$(jq -n \
                     --arg mid "$MACHINE_ID" \
@@ -33,9 +36,6 @@ on_sigterm() {
 
 # Register the function to be called on SIGTERM
 trap on_sigterm SIGTERM
-
-# Run the get_ip program
-$BASE_DIR/get_ip &
 
 while true; do
     # Check if the programs are running
@@ -64,8 +64,22 @@ while true; do
         # Write the PID of the new program instance to the pidfile
         echo $! > /var/run/button_listener.pid
     fi
+    
+    if pgrep -f $PROGRAM_NAME_3 > /dev/null
+    then
+        STATUS_3="Online"
+    else
+        STATUS_3="Offline"
+
+        # Try to restart the program
+        $PROGRAM_PATH_3 >> /var/log/programs.log 2>&1 &
+
+        # Write the PID of the new program instance to the pidfile
+        echo $! > /var/run/get_ip.pid
+    fi
+
     # Set overall status
-    if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ]
+    if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ] || [ "$STATUS_3" = "Offline" ]
     then
         STATUS="Offline"
     else
