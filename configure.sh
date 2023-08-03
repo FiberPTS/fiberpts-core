@@ -11,44 +11,44 @@ fi
 # Create logrotate configuration
 if [ ! -f "/etc/logrotate.d/read_ultralight" ]; then
     # The file does not exist, create it
-    cat << EOF > /etc/logrotate.d/read_ultralight
-    /var/log/read_ultralight.log {
-        rotate 7
-        daily
-        compress
-        missingok
-        notifempty
-        minsize 100M
-        create 0664 potato root
-        postrotate
-            /bin/kill -HUP \`cat /var/run/read_ultralight.pid 2>/dev/null\` 2>/dev/null || true
-        endscript
-    }
-    EOF
+    cat << EOF | sudo tee /etc/logrotate.d/read_ultralight
+/var/log/read_ultralight.log {
+    rotate 7
+    daily
+    compress
+    missingok
+    notifempty
+    minsize 100M
+    create 0664 potato root
+    postrotate
+        /bin/kill -HUP \`cat /var/run/read_ultralight.pid 2>/dev/null\` 2>/dev/null || true
+    endscript
+}
+EOF
 fi
 
 # Create systemd service file
 if [ ! -f "/etc/systemd/system/monitor.service" ]; then
     # The file does not exist, create it
-    cat << EOF > /etc/systemd/system/monitor.service
-    [Unit]
-    Description=Monitor and restart C program
+    cat << EOF | sudo tee /etc/systemd/system/monitor.service
+[Unit]
+Description=Monitor and restart C program
 
-    [Service]
-    Type=simple
-    ExecStart=/home/potato/NFC_Tracking/monitor.sh
-    User=root
-    Group=root
-    Environment=PATH=/usr/bin:/usr/local/bin
-    WorkingDirectory=/home/potato/NFC_Tracking
-    PIDFile=/var/run/read_ultralight.pid
-    ExecStop=/bin/kill -15 \$MAINPID
-    TimeoutSec=90
-    Restart=always
-    
-    [Install]
-    WantedBy=multi-user.target
-    EOF
+[Service]
+Type=simple
+ExecStart=/home/potato/NFC_Tracking/monitor.sh
+User=root
+Group=root
+Environment=PATH=/usr/bin:/usr/local/bin
+WorkingDirectory=/home/potato/NFC_Tracking
+PIDFile=/var/run/read_ultralight.pid
+ExecStop=/bin/kill -15 \$MAINPID
+TimeoutSec=90
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
 fi
 
 # Reload systemd manager configuration
