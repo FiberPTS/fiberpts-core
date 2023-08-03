@@ -3,3 +3,5 @@ libcurl4-openssl-dev
 libjson-c-dev
 libgpiod-dev
 jq
+libretech-dtoverlay
+autoconf libtool

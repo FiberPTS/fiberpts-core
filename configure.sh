@@ -54,14 +54,9 @@ fi
 # Reload systemd manager configuration
 sudo systemctl daemon-reload
 
-# Enable the service
+# Enable services
 sudo systemctl enable monitor.service
 sudo systemctl enable NetworkManager
-
-# Clone the repository if /home/potato/NFC_Tracking does not exist
-if [ ! -d "/home/potato/NFC_Tracking" ]; then
-    git clone https://github.com/NxFerrara/NFC_Tracking.git /home/potato/NFC_Tracking
-fi
 
 # Install packages from requirements.txt if it exists
 if [ -f "/home/potato/NFC_Tracking/requirements.txt" ]; then
@@ -85,6 +80,7 @@ driver=$1  # Get driver name from command-line argument
 sudo apt update
 sudo apt upgrade -y
 
+# USB Wifi Adapter Driver
 if [ "$driver" = "wn725n" ]
 then
   # Check if the TL-WN725N-TP-Link-Debian directory exists
@@ -100,7 +96,7 @@ elif [ "$driver" = "ac600" ]
 then
   # Check if the rtl8812au directory exists
   if [ ! -d "rtl8812au" ]; then
-    git clone https://github.com/aircrack-ng/rtl8812au.git++++++++-+
+    git clone https://github.com/aircrack-ng/rtl8812au.git
     sudo apt install -y dkms git build-essential libelf-dev
     cd rtl8812au/
     sudo make dkms_install
@@ -109,4 +105,31 @@ else
   echo "Invalid driver name. Please provide either 'wn725n' or 'ac600' as the command-line argument."
   exit 1
 fi
+
+# Install libnfc
+cd /home/potato
+git clone https://github.com/nfc-tools/libnfc.git
+cd libnfc
+autoreconf --vis
+./configure --with-drivers=pn532_uart --enable-serial-autoprobe --prefix=/usr --sysconfdir=/etc
+make
+make install all
+
+# Copy the permissions file
+sudo cp contrib/udev/93-pn53x.rules /lib/udev/rules.d/
+
+# Copy libnfc device config and change device name
+sudo mkdir -p /etc/nfc
+sudo cp libnfc.conf.sample /etc/nfc/libnfc.conf
+FILE="/etc/nfc/libnfc.conf"
+CONN_STRING="pn532_uart:/dev/ttyAML6"
+DEVICE_NAME="PN532_UART"
+# Use sed to uncomment the line with device.connstring and change its value
+sudo sed -i "/^#.*device.connstring/c\\device.connstring = \"$CONN_STRING\"" $FILE
+
+# Use sed to uncomment the line with device.name and change its value
+sudo sed -i "/^#.*device.name/c\\device.name = \"$DEVICE_NAME\"" $FILE
+
+# Set Wiring Overlay
+sudo ldto merge uart-a
 
