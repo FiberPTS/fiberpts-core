@@ -76,10 +76,10 @@ fi
 
 driver=$1  # Get driver name from command-line argument
 
-# Update and upgrade the system
+# Update system
 sudo apt update
-sudo apt upgrade -y
 
+cd /home/potato/
 # USB Wifi Adapter Driver
 if [ "$driver" = "wn725n" ]
 then
