@@ -172,12 +172,6 @@ void handle_sigint(int sig) {
 	exit(0);
 }
 
-// Signal handler for SIGUSR1
-void handle_sigusr1(int sig) {
-    // Set the LED here
-    set_led('G', 1);
-}
-
 void sleep_interruptible(int ms) {
     for (int i = 0; i < ms; i++) {
         usleep(1000); // Sleep for 1ms
@@ -185,6 +179,13 @@ void sleep_interruptible(int ms) {
 	    break;
         }
     }
+}
+
+// Signal handler for SIGUSR1
+void handle_sigusr1(int sig) {
+    // Set the LED here
+    set_led('G', 1);
+    sleep_interruptible(50);
 }
 
 char* get_machine_id() {
