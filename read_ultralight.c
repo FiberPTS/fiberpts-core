@@ -175,7 +175,7 @@ void handle_sigint(int sig) {
 // Signal handler for SIGUSR1
 void handle_sigusr1(int sig) {
     // Set the LED here
-    set_led("G",1);
+    set_led('G', 1);
 }
 
 void sleep_interruptible(int ms) {
