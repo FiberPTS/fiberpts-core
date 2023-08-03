@@ -172,6 +172,12 @@ void handle_sigint(int sig) {
 	exit(0);
 }
 
+// Signal handler for SIGUSR1
+void handle_sigusr1(int sig) {
+    // Set the LED here
+    set_led("G",1);
+}
+
 void sleep_interruptible(int ms) {
     for (int i = 0; i < ms; i++) {
         usleep(1000); // Sleep for 1ms
@@ -492,6 +498,11 @@ int main(int argc, const char *argv[]) {
   if (sigaction(SIGINT, &sa, NULL) == -1) {
     perror_log("sigaction");
     exit(1);
+  }
+  // Install the signal handler
+  if (signal(SIGUSR1, handle_sigusr1) == SIG_ERR) {
+      perror_log("Failed to install signal handler");
+      exit(1);
   }
   // Register the function to call on SIGTERM
   // We can use the same struct sa because the settings are the same

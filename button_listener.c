@@ -81,6 +81,29 @@ void perror_log(const char *format, ...) {
     va_end(argptr);
 }
 
+// Function to send a signal to the read_mifare program
+void send_signal_to_read_mifare(void) {
+    FILE *file = fopen("/var/run/read_ultralight.pid", "r");
+    if (!file) {
+        perror_log("Failed to open PID file");
+        return;
+    }
+
+    pid_t read_ultralight_pid;
+    if (fscanf(file, "%d", &read_ultralight_pid) != 1) {
+        perror_log("Failed to read PID from file");
+        fclose(file);
+        return;
+    }
+
+    fclose(file);
+
+    // Send SIGUSR1 to the read_ultralight program
+    if (kill(read_ultralight_pid, SIGUSR1) == -1) {
+        perror_log("Failed to send signal");
+    }
+}
+
 int initialize_gpio(void) {
     chip = gpiod_chip_open_by_name("gpiochip1");
     if (!chip) {
@@ -199,6 +222,7 @@ int main(void) {
                     // Enough time has passed, handle the button press
                     handle_button_press();
                     button_pressed = 1;
+                    send_signal_to_read_mifare();
                     print_log("Button Pressed\n");
                 } else {
                     button_pressed = 1;
