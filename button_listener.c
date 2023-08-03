@@ -213,7 +213,7 @@ int main(void) {
         int value = gpiod_line_get_value(button_line);
         if (value < 0) {
             perror_log("Read line value failed");
-        } else if (value == 0) {
+        } else if (value == 1) {
             // Button is currently pressed
             if (!button_pressed) {
                 // This is a new button press
