@@ -7,7 +7,7 @@
 #include <json-c/json.h>
 
 //#define BUTTON_LINE_NUMBER 88
-#define BUTTON_LINE_NUMBER 75
+#define BUTTON_LINE_NUMBER 96
 #define DEBOUNCE_TIME 1000 // debounce time in milliseconds
 
 // Time of the last button press
