@@ -185,7 +185,7 @@ void sleep_interruptible(int ms) {
 void handle_sigusr1(int sig) {
     // Set the LED here
     set_led('G', 1);
-    sleep_interruptible(50);
+    sleep_interruptible(250);
 }
 
 char* get_machine_id() {
