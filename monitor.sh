@@ -79,7 +79,7 @@ while true; do
     fi
 
     # Set overall status
-    if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ] || [ "$STATUS_3" = "Offline" ]
+    if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ]
     then
         STATUS="Offline"
     else
