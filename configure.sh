@@ -110,7 +110,7 @@ fi
 cd /home/potato
 git clone https://github.com/nfc-tools/libnfc.git
 cd libnfc
-autoreconf --vis
+autoreconf -vis
 ./configure --with-drivers=pn532_uart --enable-serial-autoprobe --prefix=/usr --sysconfdir=/etc
 make
 make install all

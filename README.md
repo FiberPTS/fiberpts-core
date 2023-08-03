@@ -15,4 +15,6 @@ sudo systemctl start ssh
 Windows:
 python setup_board.py --ip IP --usr USERNAME --pw PASSWORD --driver AC600
 Linux:
-python send_command.py --ip IP --command "nmcli device wifi connect WIFINAME password PASSWORD"
+python send_command.py --ip IP --usr USERNAME --pw PASSWORD --command "nmcli device wifi connect WIFINAME password PASSWORD"
+
+To Do: Running this in parallel
