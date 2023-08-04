@@ -6,7 +6,7 @@
 #include <curl/curl.h>
 #include <json-c/json.h>
 
-#define BUTTON_LINE_NUMBER 88
+#define BUTTON_LINE_NUMBER 88 // Black on GND and Red on GPIO
 //#define BUTTON_LINE_NUMBER 96
 #define DEBOUNCE_TIME 500 // debounce time in milliseconds
 
