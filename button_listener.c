@@ -8,7 +8,7 @@
 
 #define BUTTON_LINE_NUMBER 87
 //#define BUTTON_LINE_NUMBER 96
-#define DEBOUNCE_TIME 250 // debounce time in milliseconds
+#define DEBOUNCE_TIME 50 // debounce time in milliseconds
 
 // Time of the last button press
 static struct timespec last_release_time;
