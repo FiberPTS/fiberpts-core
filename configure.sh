@@ -9,10 +9,10 @@ else
 fi
 
 # Create logrotate configuration
-if [ ! -f "/etc/logrotate.d/read_ultralight" ]; then
+if [ ! -f "/etc/logrotate.d/programs" ]; then
     # The file does not exist, create it
-    cat << EOF | sudo tee /etc/logrotate.d/read_ultralight
-/var/log/read_ultralight.log {
+    cat << EOF | sudo tee /etc/logrotate.d/programs
+/var/log/programs.log {
     rotate 7
     daily
     compress
