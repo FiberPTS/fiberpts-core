@@ -6,8 +6,8 @@
 #include <curl/curl.h>
 #include <json-c/json.h>
 
-//#define BUTTON_LINE_NUMBER 88
-#define BUTTON_LINE_NUMBER 96
+#define BUTTON_LINE_NUMBER 88
+//#define BUTTON_LINE_NUMBER 96
 #define DEBOUNCE_TIME 1000 // debounce time in milliseconds
 
 // Time of the last button press
@@ -213,7 +213,7 @@ int main(void) {
         int value = gpiod_line_get_value(button_line);
         if (value < 0) {
             perror_log("Read line value failed");
-        } else if (value == 1) {
+        } else if (value == 0) {
             // Button is currently pressed
             if (!button_pressed) {
                 // This is a new button press
