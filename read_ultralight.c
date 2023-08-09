@@ -613,7 +613,7 @@ int main(int argc, const char *argv[]) {
 			send_nfc_to_airtable(message,(char *) last_uid, nt.nti.nai.szUidLen);
 			set_led('G', 1); // Green LED on
 			char uid_str[2*nt.nti.nai.szUidLen + 1];
-			for (int i = 0; i < N; i++) {
+			for (int i = 0; i < nt.nti.nai.szUidLen; i++) {
                             sprintf(uid_str + 2 * i, "%02X", last_uid[i]);
                         }
 			char data_to_send_buffer[24 + sizeof(uid_str)];
