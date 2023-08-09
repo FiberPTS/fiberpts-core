@@ -612,9 +612,11 @@ int main(int argc, const char *argv[]) {
 		if (can_read) {
 			send_nfc_to_airtable(message,(char *) last_uid, nt.nti.nai.szUidLen);
 			set_led('G', 1); // Green LED on
-			char data_to_send_buffer[24 + nt.nti.nai.szUidLen + 1];
-			strncpy(data_to_send_buffer, "read_ultralight.c-program-", sizeof(data_to_send_buffer));
-			strncat(data_to_send_buffer, last_uid, nt.nti.nai.szUidLen);
+			char uid_str[8];
+			sprintf(uid_str, "%06X", uid);
+			char data_to_send_buffer[24 + sizeof(uid_str)];
+			strcpy(data_to_send_buffer, "read_ultralight.c-program-");
+			strcat(data_to_send_buffer, uid_str);
 			send_pipe_to_screen((const char *) data_to_send_buffer);
 		}
 		free_ndef_message(&message);
