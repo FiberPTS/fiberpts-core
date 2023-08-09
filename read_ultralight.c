@@ -586,7 +586,7 @@ int main(int argc, const char *argv[]) {
 			        can_read = false;
 				// Continue to the while loop instead of exiting the program
 				set_led('R', 1); // Red LED on
-				const char * data_to_send = "read_ultralight.c-program-NFC read failed";
+				const char * data_to_send = "read_ultralight.c-program-Failed";
 				send_pipe_to_screen(data_to_send);
 				sleep_interruptible(50);
 				break;
@@ -612,8 +612,10 @@ int main(int argc, const char *argv[]) {
 		if (can_read) {
 			send_nfc_to_airtable(message,(char *) last_uid, nt.nti.nai.szUidLen);
 			set_led('G', 1); // Green LED on
-			const char * data_to_send = "read_ultralight.c-program-NFC read success";
-			send_pipe_to_screen(data_to_send);
+			char data_to_send_buffer[24 + nt.nti.nai.szUidLen + 1];
+			strncpy(data_to_send_buffer, "read_ultralight.c-program-", sizeof(data_to_send_buffer));
+			strncat(data_to_send_buffer, last_uid, nt.nti.nai.szUidLen);
+			send_pipe_to_screen((const char *) data_to_send_buffer);
 		}
 		free_ndef_message(&message);
 		// Wait for 100ms before the next loop iteration
