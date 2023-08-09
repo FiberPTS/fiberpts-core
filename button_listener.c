@@ -5,6 +5,10 @@
 #include <stdarg.h>
 #include <curl/curl.h>
 #include <json-c/json.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define BUTTON_LINE_NUMBER 80 // Black on GND and Red on GPIO
 //#define BUTTON_LINE_NUMBER 96
@@ -15,6 +19,8 @@
 static struct timespec last_release_time;
 // Whether the button is currently pressed
 static int button_pressed = 0;
+
+const char *fifo_path = "/tmp/screenPipe";
 
 struct gpiod_chip *chip;
 struct gpiod_line *button_line;
@@ -200,6 +206,13 @@ void handle_button_press() {
     json_object_put(jobj); // free json object
 }
 
+void send_pipe_to_screen(const char * data) {
+    int fd;
+    fd = open(fifo_path, O_WRONLY);
+    write(fd, data, strlen(data) + 1);
+    close(fd);
+}
+
 int main(void) {
     // Register the function to call on SIGINT
     signal(SIGINT, handle_sigint);
@@ -207,7 +220,7 @@ int main(void) {
     if (initialize_gpio() != 0) {
         return 1;
     }
-
+    mkfifo(fifo_path, 0666);
     while (!interrupted) {
         struct timespec current_time;
         clock_gettime(CLOCK_MONOTONIC, &current_time);
@@ -225,6 +238,8 @@ int main(void) {
                     handle_button_press();
                     button_pressed = 1;
                     send_signal_to_read_mifare();
+                    const char * data_to_send = "button_listener.c-program-Button Pressed";
+                    send_pipe_to_screen(data_to_send);
                     print_log("Button Pressed\n");
                 } else {
                     button_pressed = 1;

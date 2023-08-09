@@ -11,6 +11,9 @@
 #include <time.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define CHIP "gpiochip1"
 #define LED_R_LINE_NUMBER 93
@@ -19,6 +22,8 @@
 
 struct gpiod_chip *chip;
 struct gpiod_line *red_line, *yellow_line, *green_line;
+
+const char *fifo_path = "/tmp/screenPipe";
 
 // The function that logs messages with timestamp
 void print_log(const char *format, ...) {
@@ -487,6 +492,12 @@ void send_nfc_to_airtable(NdefMessage message, char* uid, int uid_length) {
 
 }
 
+void send_pipe_to_screen(const char * data) {
+    int fd;
+    fd = open(fifo_path, O_WRONLY);
+    write(fd, data, strlen(data) + 1);
+    close(fd);
+}
 
 int main(int argc, const char *argv[]) {
   // Register the function to call on SIGINT
@@ -515,6 +526,7 @@ int main(int argc, const char *argv[]) {
   if (initialize_gpio() != 0) {
     return 1;
   }
+  mkfifo(fifo_path, 0666);
   nfc_device *pnd;
   nfc_target nt;
   nfc_context *context;
@@ -574,6 +586,8 @@ int main(int argc, const char *argv[]) {
 			        can_read = false;
 				// Continue to the while loop instead of exiting the program
 				set_led('R', 1); // Red LED on
+				const char * data_to_send = "read_ultralight.c-program-NFC read failed";
+				send_pipe_to_screen(data_to_send);
 				sleep_interruptible(50);
 				break;
 			} else {
@@ -598,6 +612,8 @@ int main(int argc, const char *argv[]) {
 		if (can_read) {
 			send_nfc_to_airtable(message,(char *) last_uid, nt.nti.nai.szUidLen);
 			set_led('G', 1); // Green LED on
+			const char * data_to_send = "read_ultralight.c-program-NFC read success";
+			send_pipe_to_screen(data_to_send);
 		}
 		free_ndef_message(&message);
 		// Wait for 100ms before the next loop iteration

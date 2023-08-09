@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Check if command-line argument is provided
+if [ -z "$1" ]
+then
+  echo "Please provide the driver name as a command-line argument."
+  exit 1
+fi
+
 # Check if /home/potato/NFC_Tracking exists before changing directory
 if [ -d "/home/potato/NFC_Tracking" ]; then
     cd /home/potato/NFC_Tracking
@@ -66,13 +73,6 @@ fi
 
 sudo sh compile_all.sh
 sudo sh update_permissions.sh
-
-# Check if command-line argument is provided
-if [ -z "$1" ]
-then
-  echo "Please provide the driver name as a command-line argument."
-  exit 1
-fi
 
 driver=$1  # Get driver name from command-line argument
 
