@@ -24,7 +24,7 @@ on_sigterm() {
     kill $(cat /var/run/read_ultralight.pid)
     kill $(cat /var/run/button_listener.pid)
     kill $(cat /var/run/get_ip.pid)
-    kill $(cat /var/run/new_program.pid)
+    kill $(cat /var/run/screen.pid)
     # Prepare the data
     JSON_DATA=$(jq -n \
                     --arg mid "$MACHINE_ID" \
@@ -99,7 +99,7 @@ while true; do
         # Try to restart the program
         $PROGRAM_PATH_4 >> /var/log/programs.log 2>&1 &
         # Write the PID of the new program instance to the pidfile
-        echo $! > /var/run/new_program.pid
+        echo $! > /var/run/screen.pid
     fi
 
     # Set overall status

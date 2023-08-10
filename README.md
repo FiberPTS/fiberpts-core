@@ -37,5 +37,4 @@ To Do:
 	- cc -E -nostdinc -I/home/potato/libretech-wiring-tool/include/ -x assembler-with-cpp -undef -o spicc-st7789v-240x240.pre.dts spicc-st7789v-240x240.dts
 	- dtc -@ -q -I dts -O dtb -o spicc-st7789v-240x320.dtbo spicc-st7789v-240x240.pre.dts
 	- sudo ldto merge spicc-st7789v-240x320
-Need to reconnect green wire on RGB light
 

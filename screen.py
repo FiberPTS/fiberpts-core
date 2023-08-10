@@ -261,6 +261,6 @@ def main():
             raw_data = convert_to_rgb565(image)
             write_to_framebuffer(raw_data)
     except KeyboardInterrupt:
-	print_log("Program Interrupted")
+        print_log("Program Interrupted")
 if __name__ == "__main__":
     main()
