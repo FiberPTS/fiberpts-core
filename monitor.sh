@@ -37,7 +37,17 @@ on_sigterm() {
 # Register the function to be called on SIGTERM
 trap on_sigterm SIGTERM
 
+# Function to check WiFi connection and reconnect if disconnected
+check_wifi() {
+    # Check if connected to "FERRARAMFG"
+    if ! nmcli con show --active | grep -q "FERRARAMFG"; then
+        # If not connected, try to reconnect
+        nmcli con up FERRARAMFG
+    fi
+}
+
 while true; do
+    check_wifi
     # Check if the programs are running
     if pgrep -f $PROGRAM_NAME_1 > /dev/null
     then
