@@ -7,9 +7,11 @@ BASE_DIR="/home/potato/NFC_Tracking"
 PROGRAM_NAME_1="read_ultralight"
 PROGRAM_NAME_2="button_listener"
 PROGRAM_NAME_3="get_ip"
+PROGRAM_NAME_4="screen.py"  # New program
 PROGRAM_PATH_1="$BASE_DIR/$PROGRAM_NAME_1"
 PROGRAM_PATH_2="$BASE_DIR/$PROGRAM_NAME_2"
 PROGRAM_PATH_3="$BASE_DIR/$PROGRAM_NAME_3"
+PROGRAM_PATH_4="$BASE_DIR/$PROGRAM_NAME_4"
 
 # Specify the webhook URL
 WEBHOOK_URL="https://hooks.airtable.com/workflows/v1/genericWebhook/appZUSMwDABUaufib/wflNUJAmKHitljnxa/wtrg0Rj5KswYoaOcF"
@@ -22,6 +24,7 @@ on_sigterm() {
     kill $(cat /var/run/read_ultralight.pid)
     kill $(cat /var/run/button_listener.pid)
     kill $(cat /var/run/get_ip.pid)
+    kill $(cat /var/run/new_program.pid)
     # Prepare the data
     JSON_DATA=$(jq -n \
                     --arg mid "$MACHINE_ID" \
@@ -88,8 +91,19 @@ while true; do
         echo $! > /var/run/get_ip.pid
     fi
 
+    if pgrep -f $PROGRAM_NAME_4 > /dev/null
+    then
+        STATUS_4="Online"
+    else
+        STATUS_4="Offline"
+        # Try to restart the program
+        $PROGRAM_PATH_4 >> /var/log/programs.log 2>&1 &
+        # Write the PID of the new program instance to the pidfile
+        echo $! > /var/run/new_program.pid
+    fi
+
     # Set overall status
-    if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ]
+    if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ] || [ "$STATUS_4" = "Offline" ]
     then
         STATUS="Offline"
     else

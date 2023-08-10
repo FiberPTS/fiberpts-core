@@ -17,8 +17,8 @@
 
 #define CHIP "gpiochip1"
 #define LED_R_LINE_NUMBER 93
-#define LED_Y_LINE_NUMBER 94
-#define LED_G_LINE_NUMBER 79
+#define LED_B_LINE_NUMBER 94
+#define LED_G_LINE_NUMBER 95
 
 struct gpiod_chip *chip;
 struct gpiod_line *red_line, *yellow_line, *green_line;
@@ -87,7 +87,7 @@ int initialize_gpio(void) {
     }
 
     red_line = gpiod_chip_get_line(chip, LED_R_LINE_NUMBER);
-    yellow_line = gpiod_chip_get_line(chip, LED_Y_LINE_NUMBER);
+    yellow_line = gpiod_chip_get_line(chip, LED_B_LINE_NUMBER);
     green_line = gpiod_chip_get_line(chip, LED_G_LINE_NUMBER);
     if (!red_line || !yellow_line || !green_line) {
         perror_log("Get line failed\n");
@@ -115,7 +115,7 @@ void cleanup_gpio(void) {
 }
 
 // This function will set the state of an LED
-// color: 'R', 'G', or 'Y'
+// color: 'R', 'G', or 'B'
 // state: 0 for off, 1 for on
 void set_led(char color, int state) {
     struct gpiod_line *line_on, *line_off1, *line_off2;
@@ -126,7 +126,7 @@ void set_led(char color, int state) {
         line_off1 = yellow_line;
         line_off2 = green_line;
         break;
-    case 'Y':
+    case 'B':
         line_on = yellow_line;
         line_off1 = red_line;
         line_off2 = green_line;
@@ -637,7 +637,7 @@ int main(int argc, const char *argv[]) {
 		sleep_interruptible(10);
 		print_log("No tag detected\n");
 		can_read = false;
-        	set_led('Y', 1); // Yellow LED on
+        	set_led('B', 1); // Yellow LED on
         }
 	if (can_read) {
 		print_log("Tag read and sent to Airtable\n");
