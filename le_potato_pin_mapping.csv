@@ -18,3 +18,5 @@ Pin Number,Module,Function
 4,Touch Sensor,VCC
 25,Touch Sensor,GND
 26,Touch Sensor,I/O
+1,FAN,VCC
+9,FAN,GND

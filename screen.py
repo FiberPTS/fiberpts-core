@@ -146,6 +146,8 @@ def reset_screen_image(res, color="white"):
 
 def format_utc_to_est(date_str):
     """Converts a UTC datetime string to EST and formats it."""
+    if date_str == "None":
+	return ""
     date_str = date_str.replace('Z', '')
     # Adjust the format to match the given string
     date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
@@ -173,6 +175,22 @@ def main():
     fail = False
     try:
         while True:
+            # Create an image and draw rotated text onto it
+            image = create_image(res[0], res[1], bg_color)
+
+            image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, bg_color)
+            image = draw_rotated_text(image, last_employee_tap, font, (5, 30), text_color, bg_color)
+
+            image = draw_rotated_text(image, order_id, font, (5, 60), text_color, bg_color)
+            image = draw_rotated_text(image, last_order_tap, font, (5, 90), text_color, bg_color)
+
+            image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 120), text_color, bg_color)
+
+            image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 150), text_color, bg_color)
+    
+            # Convert the image to RGB565 format and write to framebuffer
+            raw_data = convert_to_rgb565(image)
+            write_to_framebuffer(raw_data)
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
@@ -233,33 +251,7 @@ def main():
                     raw_data = convert_to_rgb565(image)
                     write_to_framebuffer(raw_data)
 
-                    # Create an image and draw rotated text onto it
-                    #image = create_image(res[0], res[1], bg_color)
-                    #image = draw_rotated_text(image, f"{data}", font, (10, 0), text_color, bg_color)
-
-                    # Convert the image to RGB565 format and write to framebuffer
-                    #raw_data = convert_to_rgb565(image)
-                    #write_to_framebuffer(raw_data)
-
                     time.sleep(1)
-
-                    #reset_screen_image(res, color=bg_color)
-            # Create an image and draw rotated text onto it
-            image = create_image(res[0], res[1], bg_color)
-
-            image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, bg_color)
-            image = draw_rotated_text(image, last_employee_tap, font, (5, 30), text_color, bg_color)
-
-            image = draw_rotated_text(image, order_id, font, (5, 60), text_color, bg_color)
-            image = draw_rotated_text(image, last_order_tap, font, (5, 90), text_color, bg_color)
-
-            image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 120), text_color, bg_color)
-
-            image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 150), text_color, bg_color)
-    
-            # Convert the image to RGB565 format and write to framebuffer
-            raw_data = convert_to_rgb565(image)
-            write_to_framebuffer(raw_data)
     except KeyboardInterrupt:
         print_log("Program Interrupted")
 if __name__ == "__main__":
