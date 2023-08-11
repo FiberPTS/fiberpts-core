@@ -130,6 +130,12 @@ sudo sed -i "/^#.*device.connstring/c\\device.connstring = \"$CONN_STRING\"" $FI
 # Use sed to uncomment the line with device.name and change its value
 sudo sed -i "/^#.*device.name/c\\device.name = \"$DEVICE_NAME\"" $FILE
 
+# Install git libre wiring repo
+cd /home/potato/
+git clone https://github.com/libre-computer-project/libretech-wiring-tool.git
+cd libretech-wiring-tool
+sudo ./install.sh
+
 # Set Wiring Overlay
-sudo ldto merge uart-a
+sudo ./ldto merge uart-a spicc spicc-st7789v-240x320-legacy
 

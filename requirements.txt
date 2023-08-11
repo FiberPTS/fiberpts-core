@@ -4,4 +4,6 @@ libjson-c-dev
 libgpiod-dev
 jq
 libretech-dtoverlay
-autoconf libtool
+autoconf 
+libtool
+python3-pil
