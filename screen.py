@@ -161,7 +161,11 @@ def main():
     field_ids = [("fldJQd3TmtxURsQy0","employee_name"),("fldcFVtGOWbd8RgT6","order_id"), ("fld0prkx6YJPRJ8iO", "current_order_count"), ("fldi9iM5pRoPA3Gne", "total_count"), ("fldcaeaey2E5R8Iqp","last_order_tap"), ("fldVALQ4NGPNVrvZz","last_employee_tap")]
     record_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", get_machine_id())
     employee_name = record_dict["employee_name"][0]
-    order_id = record_dict["order_id"][0]
+    order_id = record_dict["order_id"][0]    
+    if record_dict["employee_name"] == "None":
+        employee_name = "No Employee"
+    if record_dict["order_id"] == "None":
+        order_id = "No Order"
     last_order_tap = format_utc_to_est(record_dict["last_order_tap"])
     last_employee_tap = format_utc_to_est(record_dict["last_employee_tap"])
     units_order = record_dict["current_order_count"]
