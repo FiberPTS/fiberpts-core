@@ -147,7 +147,7 @@ def reset_screen_image(res, color="white"):
 def format_utc_to_est(date_str):
     """Converts a UTC datetime string to EST and formats it."""
     if date_str == "None":
-	return ""
+        return ""
     date_str = date_str.replace('Z', '')
     # Adjust the format to match the given string
     date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
