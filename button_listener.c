@@ -12,7 +12,7 @@
 
 #define BUTTON_LINE_NUMBER 80 // Black on GND and Red on GPIO
 //#define BUTTON_LINE_NUMBER 96
-#define DEBOUNCE_TIME 500 // debounce time in milliseconds
+#define DEBOUNCE_TIME 1000 // debounce time in milliseconds
 #define VOLTAGE_VALUE 1
 
 // Time of the last button press
