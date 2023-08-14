@@ -6,7 +6,7 @@ LIBNFC: /home/potato/libnfc
 Permission File: /lib/udev/rules.d/
 Config File: /etc/nfc/libnfc.conf
 
-Must run commands on setup:
+Must run commands on setup
 Linux:
 username: potato
 password: ...
@@ -26,4 +26,5 @@ To Do:
 	- cc -E -nostdinc -I/home/potato/libretech-wiring-tool/include/ -x assembler-with-cpp -undef -o spicc-st7789v-240x240.pre.dts spicc-st7789v-240x240.dts
 	- dtc -@ -q -I dts -O dtb -o spicc-st7789v-240x320.dtbo spicc-st7789v-240x240.pre.dts
 	- sudo ldto merge spicc-st7789v-240x320
-
+- ili9341 display
+- create and merge spicc overlays (modify preexisting spicc-ili9341 with spicc-st7789v-240x320-legacy)

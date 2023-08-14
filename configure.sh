@@ -134,8 +134,8 @@ sudo sed -i "/^#.*device.name/c\\device.name = \"$DEVICE_NAME\"" $FILE
 cd /home/potato/
 git clone https://github.com/libre-computer-project/libretech-wiring-tool.git
 cd libretech-wiring-tool
+cp /home/potato/NFC_Tracking/spicc-ili9341-new.dts /home/potato/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt/
 sudo ./install.sh
 
 # Set Wiring Overlay
-sudo ./ldto merge uart-a spicc spicc-st7789v-240x320-legacy
-
+sudo ./ldto merge uart-a spicc spicc-ili9341-new

@@ -121,7 +121,7 @@ def draw_rotated_text(image, text, font, position, text_color, bg_color):
     return image
 
 def convert_to_rgb565(image):
-    r, g, b = image.split()
+    b, g, r = image.split()
     r = np.array(r, dtype=np.uint16) >> 3
     g = np.array(g, dtype=np.uint16) >> 2
     b = np.array(b, dtype=np.uint16) >> 3
@@ -183,14 +183,14 @@ def main():
             image = create_image(res[0], res[1], bg_color)
 
             image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, bg_color)
-            image = draw_rotated_text(image, last_employee_tap, font, (5, 30), text_color, bg_color)
+            image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, bg_color)
 
-            image = draw_rotated_text(image, order_id, font, (5, 60), text_color, bg_color)
-            image = draw_rotated_text(image, last_order_tap, font, (5, 90), text_color, bg_color)
+            image = draw_rotated_text(image, order_id, font, (5, 50), text_color, bg_color)
+            image = draw_rotated_text(image, last_order_tap, font, (5, 75), text_color, bg_color)
 
-            image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 120), text_color, bg_color)
+            image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 100), text_color, bg_color)
 
-            image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 150), text_color, bg_color)
+            image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, bg_color)
     
             # Convert the image to RGB565 format and write to framebuffer
             raw_data = convert_to_rgb565(image)
@@ -242,14 +242,14 @@ def main():
                     image = create_image(res[0], res[1], temp_color)
 
                     image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, temp_color)
-                    image = draw_rotated_text(image, last_employee_tap, font, (5, 30), text_color, temp_color)
+                    image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, temp_color)
 
-                    image = draw_rotated_text(image, order_id, font, (5, 60), text_color, temp_color)
-                    image = draw_rotated_text(image, last_order_tap, font, (5, 90), text_color, temp_color)
+                    image = draw_rotated_text(image, order_id, font, (5, 50), text_color, temp_color)
+                    image = draw_rotated_text(image, last_order_tap, font, (5, 75), text_color, temp_color)
 
-                    image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 120), text_color, temp_color)
+                    image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 100), text_color, temp_color)
 
-                    image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 150), text_color, temp_color)
+                    image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, temp_color)
     
                     # Convert the image to RGB565 format and write to framebuffer
                     raw_data = convert_to_rgb565(image)
