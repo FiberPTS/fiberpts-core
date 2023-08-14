@@ -232,7 +232,7 @@ int main(void) {
             if (!button_pressed) {
                 // This is a new button press
                 // Check if enough time has passed since the last release
-                if ((current_time.tv_sec > last_release_time.tv_sec) ||
+                if ((current_time.tv_sec > last_release_time.tv_sec + DEBOUNCE_TIME / 1000) ||
                     (current_time.tv_sec == last_release_time.tv_sec && current_time.tv_nsec > last_release_time.tv_nsec + DEBOUNCE_TIME * 1000000)) {
                     // Enough time has passed, handle the button press
                     handle_button_press();
