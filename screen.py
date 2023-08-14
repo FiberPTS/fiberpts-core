@@ -173,8 +173,8 @@ def main():
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (240,240,240)
-    bg_color = (255,0,0)
-    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 25)
+    bg_color = (75,150,255)
+    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
     res = (240, 320)
     fail = False
     try:
@@ -233,9 +233,9 @@ def main():
                     else: # Button tap increases unit count
                         units_order += 1
                         units_employee += 1
-                    temp_color = (0,0,240)
+                    temp_color = (50,255,50)
                     if fail:
-                        temp_color = (0,255,0)
+                        temp_color = (255,50,50)
                         fail = False
                     # Handle the data, for example, draw on the LCD screen
                     # Create an image and draw rotated text onto it
