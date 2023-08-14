@@ -237,7 +237,7 @@ int main(void) {
                     // Enough time has passed, handle the button press
                     handle_button_press();
                     button_pressed = 1;
-                    send_signal_to_read_mifare();
+                    //send_signal_to_read_mifare();
                     const char * data_to_send = "button_listener.c-program-Button Pressed";
                     send_pipe_to_screen(data_to_send);
                     print_log("Button Pressed\n");
