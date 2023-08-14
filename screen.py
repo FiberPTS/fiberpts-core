@@ -233,7 +233,7 @@ def main():
                     else: # Button tap increases unit count
                         units_order += 1
                         units_employee += 1
-                    temp_color = (0,240,0)
+                    temp_color = (0,230,0)
                     if fail:
                         temp_color = (255,0,0)
                         fail = False
