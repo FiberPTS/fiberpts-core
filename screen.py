@@ -209,20 +209,25 @@ def main():
     boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name='us-east-1')
     machine_id = get_machine_id()
     signal.signal(signal.SIGTERM, handle_sigterm)
-    field_ids = [("fldJQd3TmtxURsQy0","employee_name"),("fldcFVtGOWbd8RgT6","order_id"), ("fld0prkx6YJPRJ8iO", "current_order_count"), ("fldi9iM5pRoPA3Gne", "total_count"), ("fldcaeaey2E5R8Iqp","last_order_tap"), ("fldVALQ4NGPNVrvZz","last_employee_tap")]
+    field_ids = [("fldJQd3TmtxURsQy0","employee_name"),("fldcFVtGOWbd8RgT6","order_id"), ("fld0prkx6YJPRJ8iO", "current_order_count"), ("fldi9iM5pRoPA3Gne", "total_count"), ("fldcaeaey2E5R8Iqp","last_order_tap"), ("fldVALQ4NGPNVrvZz","last_employee_tap"), ("fldbaqdqMh2lsbeDF","employee_tag_id"), ("fldzC7IFPyBOYCTjG","order_tag_id")]
     record_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
     employee_name = record_dict["employee_name"][0]
     order_id = record_dict["order_id"][0]    
     if record_dict["employee_name"] == "None":
         employee_name = "No Employee"
+	last_employee_tag = "None"
+    else:
+        last_employee_tag = record_dict["employee_tag_id"][0]
     if record_dict["order_id"] == "None":
         order_id = "No Order"
+	last_order_tag = "None"
+    else:
+        last_order_tag = record_dict["order_tag_id"][0]
+    print(last_order_tag,last_employee_tag)
     last_order_tap = format_utc_to_est(record_dict["last_order_tap"])
     last_employee_tap = format_utc_to_est(record_dict["last_employee_tap"])
     units_order = record_dict["current_order_count"]
     units_employee = record_dict["total_count"]
-    last_order_tag = "None"
-    last_employee_tag = "None"
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (240,240,240)
