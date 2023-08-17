@@ -286,12 +286,12 @@ def main():
                                     last_employee_tap = formatted_time
                                     units_order = 0
                                     units_employee = 0
-				    send_sqs_message(machine_id, "employee", tagId, last_employee_tap)
+                                    send_sqs_message(machine_id, "employee", tagId, last_employee_tap)
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
                             units_order += 1
                             units_employee += 1
-			    send_sqs_message(machine_id, "button", "None", formatted_time)
+                            send_sqs_message(machine_id, "button", "None", formatted_time)
                         else:
                             fail = True
                     temp_color = (0,150,0)
