@@ -273,7 +273,7 @@ def main():
                                     last_order_tap = formatted_time
                                     units_order = 0
                                     order_id = order_dict["order_id"][0]
-				    send_sqs_message(machine_id, "order", tagId, last_order_tap)
+                                    send_sqs_message(machine_id, "order", tagId, last_order_tap)
                             else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if employee_dict:
                                     if employee_dict["employee_name"] == "None":
