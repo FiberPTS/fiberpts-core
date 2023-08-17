@@ -223,7 +223,6 @@ def main():
         last_order_tag = "None"
     else:
         last_order_tag = record_dict["order_tag_id"][0]
-    print(last_order_tag,last_employee_tag)
     last_order_tap = format_utc_to_est(record_dict["last_order_tap"])
     last_employee_tap = format_utc_to_est(record_dict["last_employee_tap"])
     units_order = record_dict["current_order_count"]
@@ -263,6 +262,7 @@ def main():
                     now_est = now_utc.astimezone(ZoneInfo('US/Eastern'))
                     # Format the time to desired format: date, time, AM/PM
                     formatted_time = now_est.strftime('%Y-%m-%d %l:%M %p')
+                    formatted_time_sec = now_est.strftime('%Y-%m-%d %l:%M:%S %p')
                     if data[0] == "read_ultralight.c":
                         if data[1][:-1] == "Failed":
                             fail = True
@@ -278,7 +278,7 @@ def main():
                                     last_order_tap = formatted_time
                                     units_order = 0
                                     order_id = order_dict["order_id"][0]
-                                    send_sqs_message(machine_id, "order", tagId, last_order_tap)
+                                    send_sqs_message(machine_id, "order", tagId, formatted_time_sec)
                             else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if employee_dict:
                                     if employee_dict["employee_name"] == "None":
@@ -291,12 +291,12 @@ def main():
                                     last_employee_tap = formatted_time
                                     units_order = 0
                                     units_employee = 0
-                                    send_sqs_message(machine_id, "employee", tagId, last_employee_tap)
+                                    send_sqs_message(machine_id, "employee", tagId, formatted_time_sec)
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
                             units_order += 1
                             units_employee += 1
-                            send_sqs_message(machine_id, "button", "None", formatted_time)
+                            send_sqs_message(machine_id, "button", "None", formatted_time_sec)
                         else:
                             fail = True
                     temp_color = (0,150,0)
