@@ -1,0 +1,6 @@
+get connect_device_package.zip
+unzip connect_device_package.zip
+sudo apt install python3-pip
+chmod +x start.sh
+./start.sh
+

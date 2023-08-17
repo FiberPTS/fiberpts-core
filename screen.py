@@ -9,6 +9,8 @@ from zoneinfo import ZoneInfo
 import sys
 import os
 import signal
+import boto3
+import configparser
 
 def handle_sigterm(signum, frame):
     print_log("Received SIGTERM, ending program...")
@@ -156,10 +158,59 @@ def format_utc_to_est(date_str):
         date_est += datetime.timedelta(hours=1)
     return date_est.strftime('%Y-%m-%d %l:%M %p')
 
+def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_url='https://sqs.us-east-1.amazonaws.com/279304726956/AWSQueue.fifo'):
+    """
+    Send a message to an SQS queue.
+
+    Parameters:
+    - machine_id (str): The machine ID.
+    - request_type (str): The type of request.
+    - request_data (str): The data related to the request.
+    - timestamp (str): The timestamp of the request.
+    - queue_url (str, optional): The SQS queue URL. Default is the provided URL.
+
+    Returns:
+    - dict: A dictionary with MessageId and MD5OfMessageBody of the sent message.
+    """
+    
+    # Initialize the SQS client
+    sqs = boto3.client('sqs', region_name='us-east-1')
+
+    # Create the message payload
+    message_body = {
+        "machine_id": machine_id,
+        "request_type": request_type,
+        "request_data": request_data,
+        "timestamp": timestamp
+    }
+
+    response = sqs.send_message(
+        QueueUrl=queue_url,
+        MessageBody=json.dumps(message_body),  # Convert dict to string
+        MessageGroupId=machine_id  # Only required for FIFO queues
+    )
+    
+    # Print the message ID and MD5 (This can be adjusted based on whether you want to print or return this information.)
+    print_log("MessageId:", response['MessageId'])
+    print_log("MD5:", response['MD5OfMessageBody'])
+    
+    return {
+        "MessageId": response['MessageId'],
+        "MD5": response['MD5OfMessageBody']
+    }
+
 def main():
+    # Load AWS credentials from file
+    config = configparser.ConfigParser()
+    config.read('aws_credentials.txt')
+
+    aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
+    aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
+    boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name='us-east-1')
+    machine_id = get_machine_id()
     signal.signal(signal.SIGTERM, handle_sigterm)
     field_ids = [("fldJQd3TmtxURsQy0","employee_name"),("fldcFVtGOWbd8RgT6","order_id"), ("fld0prkx6YJPRJ8iO", "current_order_count"), ("fldi9iM5pRoPA3Gne", "total_count"), ("fldcaeaey2E5R8Iqp","last_order_tap"), ("fldVALQ4NGPNVrvZz","last_employee_tap")]
-    record_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", get_machine_id())
+    record_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
     employee_name = record_dict["employee_name"][0]
     order_id = record_dict["order_id"][0]    
     if record_dict["employee_name"] == "None":
@@ -170,6 +221,8 @@ def main():
     last_employee_tap = format_utc_to_est(record_dict["last_employee_tap"])
     units_order = record_dict["current_order_count"]
     units_employee = record_dict["total_count"]
+    last_order_tag = "None"
+    last_employee_tag = "None"
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (240,240,240)
@@ -199,6 +252,12 @@ def main():
                 data = fifo.read()
                 if data:
                     data = data.split("-program-")
+                    # Get current UTC time
+                    now_utc = datetime.datetime.now(datetime.timezone.utc)
+                    # Convert to Eastern Time Zone
+                    now_est = now_utc.astimezone(ZoneInfo('US/Eastern'))
+                    # Format the time to desired format: date, time, AM/PM
+                    formatted_time = now_est.strftime('%Y-%m-%d %l:%M %p')
                     if data[0] == "read_ultralight.c":
                         if data[1][:-1] == "Failed":
                             fail = True
@@ -208,17 +267,13 @@ def main():
                             employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids, "fldyYKc2g0dBdolKQ", tagId)
                             field_ids = [("fldSrxknmVrsETFPx","order_id")]
                             order_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", tagId)
-                            # Get current UTC time
-                            now_utc = datetime.datetime.now(datetime.timezone.utc)
-                            # Convert to Eastern Time Zone
-                            now_est = now_utc.astimezone(ZoneInfo('US/Eastern'))
-                            # Format the time to desired format: date, time, AM/PM
-                            formatted_time = now_est.strftime('%Y-%m-%d %l:%M %p')
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
-                                units_order = 0
-                                order_id = order_dict["order_id"][0]
-                                last_order_tap = formatted_time
+                                if tagId != last_order_tag:
+                                    last_order_tap = formatted_time
+                                    units_order = 0
+                                    order_id = order_dict["order_id"][0]
+				    send_sqs_message(machine_id, "order", tagId, last_order_tap)
                             else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if employee_dict:
                                     if employee_dict["employee_name"] == "None":
@@ -227,12 +282,18 @@ def main():
                                         employee_name = employee_dict["employee_name"][0]
                                 else:
                                     employee_name = tagId
-                                last_employee_tap = formatted_time
-                                units_order = 0
-                                units_employee = 0
+                                if tagId != last_employee_tag:
+                                    last_employee_tap = formatted_time
+                                    units_order = 0
+                                    units_employee = 0
+				    send_sqs_message(machine_id, "employee", tagId, last_employee_tap)
                     else: # Button tap increases unit count
-                        units_order += 1
-                        units_employee += 1
+                        if last_employee_tag != "None" and last_order_tag != "None":
+                            units_order += 1
+                            units_employee += 1
+			    send_sqs_message(machine_id, "button", "None", formatted_time)
+                        else:
+                            fail = True
                     temp_color = (0,150,0)
                     if fail:
                         temp_color = (255,0,0)
