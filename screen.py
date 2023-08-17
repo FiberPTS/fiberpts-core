@@ -202,7 +202,7 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
 def main():
     # Load AWS credentials from file
     config = configparser.ConfigParser()
-    config.read('aws_credentials.txt')
+    config.read('/home/potato/NFC_Tracking/.aws/credentials.txt')
 
     aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
     aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
