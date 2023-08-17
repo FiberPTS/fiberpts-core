@@ -215,12 +215,12 @@ def main():
     order_id = record_dict["order_id"][0]    
     if record_dict["employee_name"] == "None":
         employee_name = "No Employee"
-	last_employee_tag = "None"
+        last_employee_tag = "None"
     else:
         last_employee_tag = record_dict["employee_tag_id"][0]
     if record_dict["order_id"] == "None":
         order_id = "No Order"
-	last_order_tag = "None"
+        last_order_tag = "None"
     else:
         last_order_tag = record_dict["order_tag_id"][0]
     print(last_order_tag,last_employee_tag)
