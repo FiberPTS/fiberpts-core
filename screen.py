@@ -191,8 +191,8 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
     )
     
     # Print the message ID and MD5 (This can be adjusted based on whether you want to print or return this information.)
-    print_log("MessageId:", response['MessageId'])
-    print_log("MD5:", response['MD5OfMessageBody'])
+    print_log(f"MessageId: {response['MessageId']}")
+    print_log(f"MD5: {response['MD5OfMessageBody']}")
     
     return {
         "MessageId": response['MessageId'],
