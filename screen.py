@@ -104,8 +104,8 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key="p
 
     return reader_data
 
-def create_image(width, height, color):
-    return Image.new("BGR;16", (width, height), color)
+#def create_image(width, height, color):
+#    return Image.new("BGR;16", (width, height), color)
 
 def draw_rotated_text(image, text, font, position, text_color, bg_color):
     draw = ImageDraw.Draw(image)
@@ -177,6 +177,8 @@ def create_bg_image(bg_color, width=240, height=320):
 
     return image
 
+
+
 def format_utc_to_est(date_str):
     """Converts a UTC datetime string to EST and formats it."""
     if date_str == "None":
@@ -232,6 +234,14 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
         "MessageId": response['MessageId'],
         "MD5": response['MD5OfMessageBody']
     }
+
+def rgb_to_bgr565(r, g, b):
+    return ((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3)
+
+def create_image(width, height, bg_color):
+    r, g, b = bg_color
+    color = rgb_to_bgr565(r, g, b)
+    return Image.new("BGR;16", (width, height), color)
 
 def main():
     # Load AWS credentials from file
