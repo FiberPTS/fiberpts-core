@@ -50,6 +50,7 @@ void send_post_request(char *url, const char *payload) {
 }
 
 int main() {
+    return 0;
     char command[MAX_COMMAND];
     char ip_address[MAX_IP_LENGTH];
     char url[] = "https://hooks.airtable.com/workflows/v1/genericWebhook/appZUSMwDABUaufib/wfllY6VRTf8uXLhkW/wtrKdDfdnzPVIufVU";
