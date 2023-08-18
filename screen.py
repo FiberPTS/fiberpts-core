@@ -270,9 +270,7 @@ def main():
             # Convert the image to RGB565 format and write to framebuffer
             raw_data = convert_to_rgb565(image)
             write_to_framebuffer(raw_data)
-            time.sleep(0.25)
-            reset_screen()
-            time.sleep(0.25)
+            time.sleep(0.5)
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
@@ -316,7 +314,7 @@ def main():
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
                             print_log("screen.py:button pressed")
-                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time})
+                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time_sec})
                             current_count += 1
                             if current_count == batch_count:
                                 send_sqs_message(machine_id, "button", button_presses, formatted_time_sec)
@@ -348,9 +346,7 @@ def main():
                     raw_data = convert_to_rgb565(image)
                     write_to_framebuffer(raw_data)
 
-            time.sleep(0.25)
-            reset_screen()
-            time.sleep(0.25)
+            time.sleep(0.5)
             pingTime += 1
             if pingTime >= 120:
                 send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
