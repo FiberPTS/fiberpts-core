@@ -239,6 +239,7 @@ def main():
     fail = False
     pingTime = 0
     batch_count = 10
+    current_count = 0
     button_presses = {"Records": []}
     try:
         while True:
