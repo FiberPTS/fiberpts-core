@@ -154,6 +154,29 @@ def reset_screen(buffer_size=153600, path="/dev/fb1"):
     with open(path, "wb") as f:
         f.write(zero_data)
 
+
+def create_bg_image(bg_color, width=240, height=320):
+    """
+    Create an image with the specified background color.
+
+    Parameters:
+    - bg_color: Tuple of RGB values e.g., (255, 255, 255) for white.
+    - width: Width of the image. Default is 240.
+    - height: Height of the image. Default is 320.
+
+    Returns:
+    - Image object with the specified background color.
+    """
+
+    # Create an array filled with the background color
+    array = np.zeros((height, width, 3), dtype=np.uint8)
+    array[:, :] = bg_color
+
+    # Convert the numpy array to a PIL Image
+    image = Image.fromarray(array)
+
+    return image
+
 def format_utc_to_est(date_str):
     """Converts a UTC datetime string to EST and formats it."""
     if date_str == "None":
@@ -255,7 +278,8 @@ def main():
     try:
         while True:
             # Create an image and draw rotated text onto it
-            image = create_image(res[0], res[1], bg_color)
+            #image = create_image(res[0], res[1], bg_color)
+            image = create_bg_image(bg_color)
             """
             image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, bg_color)
             image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, bg_color)
@@ -330,7 +354,8 @@ def main():
                         fail = False
                     # Handle the data, for example, draw on the LCD screen
                     # Create an image and draw rotated text onto it
-                    image = create_image(res[0], res[1], temp_color)
+                    #image = create_image(res[0], res[1], temp_color)
+                    image = create_bg_image(temp_color)
                     """
                     image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, temp_color)
                     image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, temp_color)
