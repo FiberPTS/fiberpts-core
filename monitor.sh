@@ -42,6 +42,8 @@ check_wifi() {
     fi
 }
 
+export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.9/site-packages
+
 while true; do
     check_wifi
     # Check if the programs are running
