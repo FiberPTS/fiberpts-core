@@ -616,7 +616,7 @@ int main(int argc, const char *argv[]) {
 			strcpy(data_to_send_buffer, "read_ultralight.c-program-");
 			strcat(data_to_send_buffer, uid_str);
 			send_pipe_to_screen((const char *) data_to_send_buffer);
-			print_log("read_ultralight::NFC Read")
+			print_log("read_ultralight::NFC Read");
 		}
 		free_ndef_message(&message);
 		// Wait for 100ms before the next loop iteration
