@@ -226,6 +226,7 @@ def main():
         last_order_tag = "None"
     else:
         last_order_tag = record_dict["order_tag_id"][0]
+    print(last_order_tag,last_employee_tag)
     last_order_tap = format_utc_to_est(record_dict["last_order_tap"])
     last_employee_tap = format_utc_to_est(record_dict["last_employee_tap"])
     units_order = record_dict["current_order_count"]
