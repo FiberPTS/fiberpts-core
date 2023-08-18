@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.9
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import time
