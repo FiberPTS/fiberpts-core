@@ -220,6 +220,8 @@ def main():
     boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name='us-east-1')
     machine_id = get_machine_id()
     signal.signal(signal.SIGTERM, handle_sigterm)
+    print_log("Starting Screen.py")
+    print_log("Pulling Airtable Data")
     field_ids = [("fldJQd3TmtxURsQy0","employee_name"),("fldcFVtGOWbd8RgT6","order_id"), ("fld0prkx6YJPRJ8iO", "current_order_count"), ("fldi9iM5pRoPA3Gne", "total_count"), ("fldcaeaey2E5R8Iqp","last_order_tap"), ("fldVALQ4NGPNVrvZz","last_employee_tap"), ("fldbaqdqMh2lsbeDF","employee_tag_id"), ("fldzC7IFPyBOYCTjG","order_tag_id")]
     record_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
     employee_name = record_dict["employee_name"][0]
@@ -249,6 +251,7 @@ def main():
     batch_count = 10
     current_count = 0
     button_presses = {"Records": []}
+    print_log("Starting Display")
     try:
         while True:
             # Create an image and draw rotated text onto it
