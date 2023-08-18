@@ -256,7 +256,7 @@ def main():
         while True:
             # Create an image and draw rotated text onto it
             image = create_image(res[0], res[1], bg_color)
-
+            """
             image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, bg_color)
             image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, bg_color)
 
@@ -266,7 +266,7 @@ def main():
             image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 100), text_color, bg_color)
 
             image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, bg_color)
-    
+            """
             # Convert the image to RGB565 format and write to framebuffer
             raw_data = convert_to_rgb565(image)
             write_to_framebuffer(raw_data)
@@ -331,7 +331,7 @@ def main():
                     # Handle the data, for example, draw on the LCD screen
                     # Create an image and draw rotated text onto it
                     image = create_image(res[0], res[1], temp_color)
-
+                    """
                     image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, temp_color)
                     image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, temp_color)
 
@@ -341,7 +341,7 @@ def main():
                     image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 100), text_color, temp_color)
 
                     image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, temp_color)
-    
+                    """
                     # Convert the image to RGB565 format and write to framebuffer
                     raw_data = convert_to_rgb565(image)
                     write_to_framebuffer(raw_data)
