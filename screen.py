@@ -28,10 +28,10 @@ def print_log(format_str, *args):
     timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
     if format_str.startswith('\n'):
-        print(f"\n{timestamp}: ", end='')  # add newline before the timestamp
+        print(f"\n{timestamp}::screen.py::", end='')  # add newline before the timestamp
         format_str = format_str[1:]  # remove the first character
     else:
-        print(f"{timestamp}: ", end='')
+        print(f"{timestamp}::screen.py::", end='')
 
     print(format_str.format(*args))
 
@@ -42,7 +42,7 @@ def perror_log(format_str, *args):
     """
     current_time = datetime.datetime.now(ZoneInfo('US/Eastern'))
     timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{timestamp}: {format_str.format(*args)}", file=sys.stderr)
+    print(f"{timestamp}::screen.py::{format_str.format(*args)}", file=sys.stderr)
 
 def get_machine_id():
     machine_id = None
@@ -313,8 +313,8 @@ def main():
                                     send_sqs_message(machine_id, "employee", tagId, formatted_time_sec)
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
-                            print_log("screen.py:button pressed")
-                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time_sec})
+                            print_log("button pressed")
+                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time})
                             current_count += 1
                             if current_count == batch_count:
                                 send_sqs_message(machine_id, "button", button_presses, formatted_time_sec)

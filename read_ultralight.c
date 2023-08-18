@@ -44,10 +44,10 @@ void print_log(const char *format, ...) {
 
     // check if the first character of the format string is a newline
     if (format[0] == '\n') {
-        printf("\n%s: ", buffer);  // add newline before the timestamp
+        printf("\n%s::read_ultralight::", buffer);  // add newline before the timestamp
         format++;  // move the pointer to skip the first character
     } else {
-        printf("%s: ", buffer);
+        printf("%s::read_ultralight::", buffer);
     }
     vprintf(format, argptr);
 
@@ -70,7 +70,7 @@ void perror_log(const char *format, ...) {
 
     char buffer[80];
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-    fprintf(stderr, "%s: ", buffer);
+    fprintf(stderr, "%s::read_ultralight::", buffer);
     vfprintf(stderr, format, argptr);
 
     perror("");
@@ -561,12 +561,8 @@ int main(int argc, const char *argv[]) {
   while(!interrupted){
 	if (nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt) > 0) {
 		print_log("The following (NFC) ISO14443A tag was found:\n");
-		print_log("ATQA (SENS_RES): \n");
-		print_hex(nt.nti.nai.abtAtqa, 2);
 		print_log("UID (NFCID%c): \n", (nt.nti.nai.abtUid[0] == 0x08 ? '3' : '1'));
 		print_hex(nt.nti.nai.abtUid, nt.nti.nai.szUidLen);
-		print_log("SAK (SEL_RES): \n");
-		print_hex(&nt.nti.nai.btSak, 1);
 		if (memcmp(nt.nti.nai.abtUid, last_uid, nt.nti.nai.szUidLen) == 0 && same_card) {
 			// The same card is still present, don't read it again
 			print_log("Same card found!\n");
@@ -620,6 +616,7 @@ int main(int argc, const char *argv[]) {
 			strcpy(data_to_send_buffer, "read_ultralight.c-program-");
 			strcat(data_to_send_buffer, uid_str);
 			send_pipe_to_screen((const char *) data_to_send_buffer);
+			print_log("read_ultralight::NFC Read")
 		}
 		free_ndef_message(&message);
 		// Wait for 100ms before the next loop iteration

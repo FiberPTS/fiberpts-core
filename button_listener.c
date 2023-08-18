@@ -55,10 +55,10 @@ void print_log(const char *format, ...) {
 
     // check if the first character of the format string is a newline
     if (format[0] == '\n') {
-        printf("\n%s: ", buffer);  // add newline before the timestamp
+        printf("\n%s::button_listener::", buffer);  // add newline before the timestamp
         format++;  // move the pointer to skip the first character
     } else {
-        printf("%s: ", buffer);
+        printf("%s::button_listener::", buffer);
     }
     vprintf(format, argptr);
 
@@ -81,7 +81,7 @@ void perror_log(const char *format, ...) {
 
     char buffer[80];
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-    fprintf(stderr, "%s: ", buffer);
+    fprintf(stderr, "%s::button_listener::", buffer);
     vfprintf(stderr, format, argptr);
 
     perror("");
