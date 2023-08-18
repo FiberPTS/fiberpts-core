@@ -165,7 +165,7 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
     Parameters:
     - machine_id (str): The machine ID.
     - request_type (str): The type of request.
-    - request_data (str): The data related to the request.
+    - request_data (str/dict): The data related to the request.
     - timestamp (str): The timestamp of the request.
     - queue_url (str, optional): The SQS queue URL. Default is the provided URL.
 
@@ -175,7 +175,10 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
     
     # Initialize the SQS client
     sqs = boto3.client('sqs', region_name='us-east-1')
-
+    
+    if request_type == "button":
+        request_data = json.dumps(request_data)
+        
     # Create the message payload
     message_body = {
         "machine_id": machine_id,
@@ -234,6 +237,9 @@ def main():
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
     res = (240, 320)
     fail = False
+    pingTime = 0
+    batch_count = 10
+    button_presses = {"Records": []}
     try:
         while True:
             # Create an image and draw rotated text onto it
@@ -294,9 +300,14 @@ def main():
                                     send_sqs_message(machine_id, "employee", tagId, formatted_time_sec)
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
+                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time})
+                            current_count += 1
+                            if current_count == batch_count:
+                                send_sqs_message(machine_id, "button", button_presses, formatted_time_sec)
+                                current_count = 0
+                                button_presses = {"Records": []}
                             units_order += 1
                             units_employee += 1
-                            send_sqs_message(machine_id, "button", "None", formatted_time_sec)
                         else:
                             fail = True
                     temp_color = (0,150,0)
@@ -322,6 +333,10 @@ def main():
                     write_to_framebuffer(raw_data)
 
             time.sleep(1)
+            pingTime += 1
+            if pingTime >= 120:
+                send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
+                pingTime = 0
     except KeyboardInterrupt:
         print_log("Program Interrupted")
 if __name__ == "__main__":
