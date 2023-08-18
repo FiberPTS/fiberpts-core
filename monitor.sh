@@ -40,9 +40,7 @@ check_wifi() {
     echo "$local_ip" | nc -u -wl -b 255.255.255.255 12345
     if ! nmcli con show --active | grep -q "iPhone (202)"; then
         nmcli device wifi connect "iPhone (202)" password thehomiepass
-        #nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
-        # If not connected, try to reconnect
-        #nmcli con up FERRARAMFG
+	nmcli con up "iPhone (202)"
     fi
 }
 
