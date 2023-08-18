@@ -335,7 +335,7 @@ def main():
                     raw_data = convert_to_rgb565(image)
                     write_to_framebuffer(raw_data)
 
-            time.sleep(0.5)
+            time.sleep(5)
             pingTime += 1
             if pingTime >= 120:
                 send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
