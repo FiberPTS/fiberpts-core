@@ -146,6 +146,14 @@ def reset_screen_image(res, color="white"):
     raw_data = convert_to_rgb565(image)
     write_to_framebuffer(raw_data)
 
+def reset_screen(buffer_size=153600, path="/dev/fb1"):
+    """
+    Resets the screen to zeros
+    """
+    zero_data = bytearray(buffer_size)
+    with open(path, "wb") as f:
+        f.write(zero_data)
+
 def format_utc_to_est(date_str):
     """Converts a UTC datetime string to EST and formats it."""
     if date_str == "None":
@@ -259,7 +267,9 @@ def main():
             # Convert the image to RGB565 format and write to framebuffer
             raw_data = convert_to_rgb565(image)
             write_to_framebuffer(raw_data)
-            time.sleep(0.5)
+            time.sleep(0.25)
+            reset_screen()
+            time.sleep(0.25)
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
@@ -335,8 +345,9 @@ def main():
                     raw_data = convert_to_rgb565(image)
                     write_to_framebuffer(raw_data)
 
-            time.sleep(0.5)
-            reset_screen_image(res, color="blue")
+            time.sleep(0.25)
+            reset_screen()
+            time.sleep(0.25)
             pingTime += 1
             if pingTime >= 120:
                 send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
