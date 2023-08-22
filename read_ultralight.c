@@ -38,7 +38,10 @@ void print_log(const char *format, ...) {
 
     time (&rawtime);
     timeinfo = localtime(&rawtime);
-
+    // Add one hour to the current time
+    timeinfo->tm_hour += 1;
+    // Adjust for overflow (e.g., going from 23:00 to 00:00)
+    mktime(timeinfo);
     char buffer[80];
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
 
@@ -67,7 +70,10 @@ void perror_log(const char *format, ...) {
 
     time (&rawtime);
     timeinfo = localtime(&rawtime);
-
+    // Add one hour to the current time
+    timeinfo->tm_hour += 1;
+    // Adjust for overflow (e.g., going from 23:00 to 00:00)
+    mktime(timeinfo);
     char buffer[80];
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
     fprintf(stderr, "%s::read_ultralight::", buffer);
