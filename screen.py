@@ -131,7 +131,7 @@ def convert_to_rgb565(image):
 
 def image_to_rgb565(image):
     # Split into R, G, B channels
-    r, b, g = image.split()
+    r, g, b = image.split()
 
     # Convert each channel to an appropriate numpy array
     r = np.array(r, dtype=np.uint16)
@@ -233,6 +233,7 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
     }
 
 def create_image(width, height, bg_color):
+    temp_color = (bg_color[0], bg_color[2], bg_color[1])
     return Image.new("RGB", (width, height), bg_color)
 
 def main():
