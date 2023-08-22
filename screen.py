@@ -233,8 +233,7 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
     }
 
 def create_image(width, height, bg_color):
-    temp_color = (bg_color[0], bg_color[2], bg_color[1])
-    return Image.new("RGB", (width, height), temp_color)
+    return Image.new("RGB", (width, height), bg_color)
 
 def main():
     # Load AWS credentials from file
