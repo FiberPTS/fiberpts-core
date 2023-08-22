@@ -31,15 +31,15 @@ trap on_sigterm SIGTERM
 # Function to check WiFi connection and reconnect if disconnected
 check_wifi() {
     # Check if connected to "FERRARAMFG"
-    #if ! nmcli con show --active | grep -q "FERRARAMFG"; then
-    #	nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
-    #    # If not connected, try to reconnect
-    #    nmcli con up FERRARAMFG
-    #fi
-    if ! nmcli con show --active | grep -q "iPhone (202)"; then
-        nmcli device wifi connect "iPhone (202)" password thehomiepass
-	nmcli con up "iPhone (202)"
+    if ! nmcli con show --active | grep -q "FERRARAMFG"; then
+    	nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
+        # If not connected, try to reconnect
+        nmcli con up FERRARAMFG
     fi
+    #if ! nmcli con show --active | grep -q "iPhone (202)"; then
+    #    nmcli device wifi connect "iPhone (202)" password thehomiepass
+    #    nmcli con up "iPhone (202)"
+    #fi
 }
 
 export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.9/site-packages
