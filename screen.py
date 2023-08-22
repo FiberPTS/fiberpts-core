@@ -242,13 +242,8 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
         "MD5": response['MD5OfMessageBody']
     }
 
-def rgb_to_bgr565(r, g, b):
-    return ((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3)
-
 def create_image(width, height, bg_color):
-    r, g, b = bg_color
-    color = rgb_to_bgr565(r, g, b)
-    return Image.new("BGR;16", (width, height), color)
+    return Image.new("RGB", (width, height), bg_color)
 
 def main():
     # Load AWS credentials from file
