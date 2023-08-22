@@ -129,6 +129,13 @@ def convert_to_rgb565(image):
     b = np.array(b, dtype=np.uint16) >> 3
     return (r << 11) | (g << 5) | b
 
+def convert_to_rgb666(image):
+    r, g, b = image.split()
+    r = np.array(r, dtype=np.uint32) >> 2   # Keep the top 6 bits of the 8-bit red channel
+    g = np.array(g, dtype=np.uint32) >> 2   # Keep the top 6 bits of the 8-bit green channel
+    b = np.array(b, dtype=np.uint32) >> 2   # Keep the top 6 bits of the 8-bit blue channel
+    return (r << 12) | (g << 6) | b         # 18-bit color value
+
 def write_to_framebuffer(data, path="/dev/fb1"):
     with open(path, "wb") as f:
         f.write(data.tobytes())
@@ -287,6 +294,7 @@ def main():
     print_log("Starting Display")
     try:
         while True:
+            # MUST CHANGE LCD PIXEL FORMAT -- NOT WORKING RN
             # Create an image and draw rotated text onto it
             image = create_image(res[0], res[1], bg_color)
             #image = create_bg_image(bg_color)
@@ -302,8 +310,7 @@ def main():
             image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, bg_color)
             """
             # Convert the image to RGB565 format and write to framebuffer
-            #raw_data = convert_to_rgb565(image)
-            raw_data = image.split()
+            raw_data = convert_to_rgb666(image)
             write_to_framebuffer(raw_data)
             time.sleep(0.5)
             with open(fifo_path, "r") as fifo:
@@ -379,10 +386,8 @@ def main():
                     image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, temp_color)
                     """
                     # Convert the image to RGB565 format and write to framebuffer
-                    #raw_data = convert_to_rgb565(image)
-                    raw_data = image.split()
+                    raw_data = convert_to_rgb666(image)
                     write_to_framebuffer(raw_data)
-
             time.sleep(0.5)
             pingTime += 1
             if pingTime >= 120:
