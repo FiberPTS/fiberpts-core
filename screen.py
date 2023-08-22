@@ -188,7 +188,8 @@ def format_utc_to_est(date_str):
         date_est += datetime.timedelta(hours=1)
     return date_est.strftime('%Y-%m-%d %l:%M %p')
 
-def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_url='https://sqs.us-east-1.amazonaws.com/279304726956/AWSQueue.fifo'):
+def send_sqs_message(machine_id, request_type, request_data, timestamp,
+                     queue_url='https://sqs.us-east-1.amazonaws.com/279304726956/AWSQueue.fifo'):
     """
     Send a message to an SQS queue.
 
@@ -200,15 +201,15 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
     - queue_url (str, optional): The SQS queue URL. Default is the provided URL.
 
     Returns:
-    - dict: A dictionary with MessageId and MD5OfMessageBody of the sent message.
+    - bool: True if the message was successfully sent, False otherwise.
     """
-    
+
     # Initialize the SQS client
     sqs = boto3.client('sqs', region_name='us-east-1')
-    
+
     if request_type == "button":
         request_data = json.dumps(request_data)
-        
+
     # Create the message payload
     message_body = {
         "machine_id": machine_id,
@@ -217,20 +218,23 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp, queue_ur
         "timestamp": timestamp
     }
 
-    response = sqs.send_message(
-        QueueUrl=queue_url,
-        MessageBody=json.dumps(message_body),  # Convert dict to string
-        MessageGroupId=machine_id  # Only required for FIFO queues
-    )
-    
-    # Print the message ID and MD5 (This can be adjusted based on whether you want to print or return this information.)
-    print_log(f"MessageId: {response['MessageId']}")
-    print_log(f"MD5: {response['MD5OfMessageBody']}")
-    
-    return {
-        "MessageId": response['MessageId'],
-        "MD5": response['MD5OfMessageBody']
-    }
+    try:
+        response = sqs.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(message_body),  # Convert dict to string
+            MessageGroupId=machine_id  # Only required for FIFO queues
+        )
+
+        # Print the message ID and MD5 (This can be adjusted based on whether you want to print or return this information.)
+        print_log(f"MessageId: {response['MessageId']}")
+        print_log(f"MD5: {response['MD5OfMessageBody']}")
+
+        return True  # Message was successfully sent
+
+    except botocore.exceptions.EndpointConnectionError as e:
+        # Handle the exception and print/log an error message
+        print_log(f"Error sending message to SQS: {e}")
+        return False  # Failed to send the message
 
 def create_image(width, height, bg_color):
     return Image.new("RGB", (width, height), bg_color)
@@ -320,32 +324,38 @@ def main():
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
                                 if tagId != last_order_tag:
-                                    last_order_tap = formatted_time
-                                    units_order = 0
-                                    order_id = order_dict["order_id"][0]
-                                    send_sqs_message(machine_id, "order", tagId, formatted_time_sec)
-                            else: # Unregistered tag treated as employee tag or employee tag is registered
-                                if employee_dict:
-                                    if employee_dict["employee_name"] == "None":
-                                        employee_name = tagId
+                                    if send_sqs_message(machine_id, "order", tagId, formatted_time_sec):
+                                        last_order_tap = formatted_time
+                                        units_order = 0
+                                        order_id = order_dict["order_id"][0]
                                     else:
-                                        employee_name = employee_dict["employee_name"][0]
-                                else:
-                                    employee_name = tagId
+                                        fail = True
+                            else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if tagId != last_employee_tag:
-                                    last_employee_tap = formatted_time
-                                    units_order = 0
-                                    units_employee = 0
-                                    send_sqs_message(machine_id, "employee", tagId, formatted_time_sec)
+                                    if send_sqs_message(machine_id, "employee", tagId, formatted_time_sec):
+                                        last_employee_tap = formatted_time
+                                        units_order = 0
+                                        units_employee = 0
+                                        if employee_dict:
+                                            if employee_dict["employee_name"] == "None":
+                                                employee_name = tagId
+                                            else:
+                                                employee_name = employee_dict["employee_name"][0]
+                                        else:
+                                            employee_name = tagId
+                                    else:
+                                        fail = True
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
                             print_log("button pressed")
-                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time})
+                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time_sec})
                             current_count += 1
-                            if current_count == batch_count:
-                                send_sqs_message(machine_id, "button", button_presses, formatted_time_sec)
-                                current_count = 0
-                                button_presses = {"Records": []}
+                            if current_count >= batch_count:
+                                if send_sqs_message(machine_id, "button", button_presses, formatted_time_sec):
+                                    current_count = 0
+                                    button_presses = {"Records": []}
+                                else:
+                                    fail = True
                             units_order += 1
                             units_employee += 1
                         else:
@@ -374,8 +384,8 @@ def main():
             time.sleep(0.5)
             pingTime += 1
             if pingTime >= 120:
-                send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
-                pingTime = 0
+                if send_sqs_message(machine_id, "Ping", "None", formatted_time_sec):
+                    pingTime = 0
     except KeyboardInterrupt:
         print_log("Program Interrupted")
 if __name__ == "__main__":
