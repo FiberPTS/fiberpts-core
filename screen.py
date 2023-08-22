@@ -297,7 +297,7 @@ def main():
             # Convert the image to RGB565 format and write to framebuffer
             raw_data = image_to_rgb565(image)
             write_to_framebuffer(raw_data)
-            time.sleep(0.5)
+            time.sleep(1)
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
@@ -373,7 +373,7 @@ def main():
                     # Convert the image to RGB565 format and write to framebuffer
                     raw_data = image_to_rgb565(image)
                     write_to_framebuffer(raw_data)
-            time.sleep(0.5)
+            time.sleep(1)
             pingTime += 1
             if pingTime >= 120:
                 send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
