@@ -268,7 +268,7 @@ def main():
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (240,240,240)
-    bg_color = (0,255,0)
+    bg_color = (0,0,255)
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
     res = (240, 320)
     fail = False
@@ -350,7 +350,7 @@ def main():
                             units_employee += 1
                         else:
                             fail = True
-                    temp_color = (0,0,150)
+                    temp_color = (0,0,170)
                     if fail:
                         temp_color = (255,0,0)
                         fail = False
