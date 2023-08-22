@@ -129,12 +129,27 @@ def convert_to_rgb565(image):
     b = np.array(b, dtype=np.uint16) >> 3
     return (r << 11) | (g << 5) | b
 
-def convert_to_rgb666(image):
+def image_to_rgb565(image):
+    # Split into R, G, B channels
     r, g, b = image.split()
-    r = np.array(r, dtype=np.uint32) >> 2   # Keep the top 6 bits of the 8-bit red channel
-    g = np.array(g, dtype=np.uint32) >> 2   # Keep the top 6 bits of the 8-bit green channel
-    b = np.array(b, dtype=np.uint32) >> 2   # Keep the top 6 bits of the 8-bit blue channel
-    return (r << 12) | (g << 6) | b         # 18-bit color value
+
+    # Convert each channel to an appropriate numpy array
+    r = np.array(r, dtype=np.uint16)
+    g = np.array(g, dtype=np.uint16)
+    b = np.array(b, dtype=np.uint16)
+
+    # Right shift to fit into 565 format
+    r >>= 3  # Keep top 5 bits
+    g >>= 2  # Keep top 6 bits
+    b >>= 3  # Keep top 5 bits
+
+    # Combine into RGB 565 format
+    rgb565 = (r << 11) | (g << 5) | b
+
+    # Convert the 2D array to a 1D array (raw data)
+    raw_data = rgb565.ravel()
+
+    return raw_data
 
 def write_to_framebuffer(data, path="/dev/fb1"):
     with open(path, "wb") as f:
@@ -160,31 +175,6 @@ def reset_screen(buffer_size=153600, path="/dev/fb1"):
     zero_data = bytearray(buffer_size)
     with open(path, "wb") as f:
         f.write(zero_data)
-
-
-def create_bg_image(bg_color, width=240, height=320):
-    """
-    Create an image with the specified background color.
-
-    Parameters:
-    - bg_color: Tuple of RGB values e.g., (255, 255, 255) for white.
-    - width: Width of the image. Default is 240.
-    - height: Height of the image. Default is 320.
-
-    Returns:
-    - Image object with the specified background color.
-    """
-
-    # Create an array filled with the background color
-    array = np.zeros((height, width, 3), dtype=np.uint8)
-    array[:, :] = bg_color
-
-    # Convert the numpy array to a PIL Image
-    image = Image.fromarray(array)
-
-    return image
-
-
 
 def format_utc_to_est(date_str):
     """Converts a UTC datetime string to EST and formats it."""
@@ -305,7 +295,7 @@ def main():
             image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, bg_color)
             """
             # Convert the image to RGB565 format and write to framebuffer
-            raw_data = convert_to_rgb666(image)
+            raw_data = image_to_rgb565(image)
             write_to_framebuffer(raw_data)
             time.sleep(0.5)
             with open(fifo_path, "r") as fifo:
@@ -381,7 +371,7 @@ def main():
                     image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, temp_color)
                     """
                     # Convert the image to RGB565 format and write to framebuffer
-                    raw_data = convert_to_rgb666(image)
+                    raw_data = image_to_rgb565(image)
                     write_to_framebuffer(raw_data)
             time.sleep(0.5)
             pingTime += 1
