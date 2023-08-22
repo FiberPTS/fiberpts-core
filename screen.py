@@ -116,7 +116,7 @@ def draw_rotated_text(image, text, font, position, text_color, bg_color):
     text_draw.text((0, 0), text, font=font, fill=text_color)
 
     # Rotate the text image by 90 degrees
-    rotated_text = text_image.rotate(90, expand=False)
+    rotated_text = text_image.rotate(90, expand=True)
 
     # Paste the rotated text onto the main image at the calculated x-position
     image.paste(rotated_text, (position[1], image.height - rotated_text.height - position[0]))
@@ -267,7 +267,7 @@ def main():
     units_employee = record_dict["total_count"]
     fifo_path = "/tmp/screenPipe"
     # Load a font
-    text_color = (240,240,240)
+    text_color = (245,245,245)
     bg_color = (0,255,0)
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
     res = (240, 320)
