@@ -131,7 +131,7 @@ def convert_to_rgb565(image):
 
 def image_to_rgb565(image):
     # Split into R, G, B channels
-    b, g, r = image.split()
+    r, b, g = image.split()
 
     # Convert each channel to an appropriate numpy array
     r = np.array(r, dtype=np.uint16)
