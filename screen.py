@@ -350,7 +350,7 @@ def main():
                             units_employee += 1
                         else:
                             fail = True
-                    temp_color = (0,150,0)
+                    temp_color = (0,0,150)
                     if fail:
                         temp_color = (255,0,0)
                         fail = False
