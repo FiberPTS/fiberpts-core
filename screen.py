@@ -116,7 +116,7 @@ def draw_rotated_text(image, text, font, position, text_color, bg_color):
     text_draw.text((0, 0), text, font=font, fill=text_color)
 
     # Rotate the text image by 90 degrees
-    rotated_text = text_image.rotate(90, expand=True)
+    rotated_text = text_image.rotate(90, expand=False)
 
     # Paste the rotated text onto the main image at the calculated x-position
     image.paste(rotated_text, (position[1], image.height - rotated_text.height - position[0]))
