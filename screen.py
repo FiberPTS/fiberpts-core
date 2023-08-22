@@ -272,7 +272,7 @@ def main():
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (255,255,255)
-    bg_color = (0,0,255)
+    bg_color = (255,0,0)
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
     res = (240, 320)
     fail = False
@@ -360,9 +360,9 @@ def main():
                             units_employee += 1
                         else:
                             fail = True
-                    temp_color = (0,0,170)
+                    temp_color = (0,170,0)
                     if fail:
-                        temp_color = (255,0,0)
+                        temp_color = (0,0,255)
                         fail = False
                     # Handle the data, for example, draw on the LCD screen
                     # Create an image and draw rotated text onto it
