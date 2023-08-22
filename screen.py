@@ -131,7 +131,7 @@ def convert_to_rgb565(image):
 
 def image_to_rgb565(image):
     # Split into R, G, B channels
-    r, g, b = image.split()
+    b, g, r = image.split()
 
     # Convert each channel to an appropriate numpy array
     r = np.array(r, dtype=np.uint16)
@@ -282,8 +282,7 @@ def main():
             # MUST CHANGE LCD PIXEL FORMAT -- NOT WORKING RN
             # Create an image and draw rotated text onto it
             image = create_image(res[0], res[1], bg_color)
-            #image = create_bg_image(bg_color)
-            """
+
             image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, bg_color)
             image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, bg_color)
 
@@ -293,11 +292,11 @@ def main():
             image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 100), text_color, bg_color)
 
             image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, bg_color)
-            """
+
             # Convert the image to RGB565 format and write to framebuffer
             raw_data = image_to_rgb565(image)
             write_to_framebuffer(raw_data)
-            time.sleep(1)
+            time.sleep(0.5)
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
@@ -358,8 +357,7 @@ def main():
                     # Handle the data, for example, draw on the LCD screen
                     # Create an image and draw rotated text onto it
                     image = create_image(res[0], res[1], temp_color)
-                    #image = create_bg_image(temp_color)
-                    """
+
                     image = draw_rotated_text(image, employee_name, font, (5, 0), text_color, temp_color)
                     image = draw_rotated_text(image, last_employee_tap, font, (5, 25), text_color, temp_color)
 
@@ -369,11 +367,11 @@ def main():
                     image = draw_rotated_text(image, f"Total Count: {units_employee}", font, (5, 100), text_color, temp_color)
 
                     image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 125), text_color, temp_color)
-                    """
+
                     # Convert the image to RGB565 format and write to framebuffer
                     raw_data = image_to_rgb565(image)
                     write_to_framebuffer(raw_data)
-            time.sleep(1)
+            time.sleep(0.5)
             pingTime += 1
             if pingTime >= 120:
                 send_sqs_message(machine_id, "Ping", "None", formatted_time_sec)
