@@ -269,7 +269,7 @@ def main():
     # Load a font
     text_color = (240,240,240)
     bg_color = (0,255,0)
-    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
     res = (240, 320)
     fail = False
     pingTime = 0
