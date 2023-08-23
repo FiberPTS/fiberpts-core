@@ -275,6 +275,19 @@ def load_last_tags_and_ids_from_file():
             "units_employee": 0
         }
 
+def save_batch_to_file(batch):
+    """Save the current batched button presses to a file."""
+    with open(BATCH_FILE_PATH, 'w') as file:
+        json.dump(batch, file)
+
+def load_batch_from_file():
+    """Load the saved batched button presses from the file."""
+    try:
+        with open(BATCH_FILE_PATH, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"Records": []}
+
 def main():
     # Load AWS credentials from file
     config = configparser.ConfigParser()
