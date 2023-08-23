@@ -108,6 +108,38 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key="p
 
     return reader_data
 
+def create_record(base_id, table_id, field_data, api_key="patAQ8FpGw4j3oKk2.5f0606ba0571c34a403bdd282a25681187c1ac5f37050cca35a880e4def1a5ee"):
+    """
+    Create a new record in the specified table.
+
+    Parameters:
+    - base_id (str): The ID of the base you want to access.
+    - table_id (str): The ID of the table you want to access.
+    - field_data (dict): The data for the new record's fields. Example: {"FieldID1": "Value1", "FieldID2": "Value2"}
+    - api_key (str, optional): The API key for authentication.
+
+    Returns:
+    - dict: The created record's data.
+    """
+
+    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}"
+
+    HEADERS = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-type": "application/json"
+    }
+
+    payload = {
+        "records": [{"fields": field_data}]
+    }
+
+    response = requests.post(URL, headers=HEADERS, data=json.dumps(payload))
+
+    if response.status_code != 200:
+        print(f"Error {response.status_code}: {response.text}")
+        return None
+    return json.loads(response.text)
+
 #def create_image(width, height, color):
 #    return Image.new("BGR;16", (width, height), color)
 
@@ -243,7 +275,7 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp,
 def create_image(width, height, bg_color):
     return Image.new("RGB", (width, height), bg_color)
 
-def save_last_tags_and_ids_to_file(machine_record_id, employee_tag, employee_name, order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee):
+def save_last_tags_and_ids_to_file(machine_record_id, employee_tag, last_employee_record_id, employee_name, order_tag, last_order_record_id, order_id, last_employee_tap, last_order_tap, units_order, units_employee):
     """Save the last employee tag, employee name, order tag, order id, last employee tap, and last order tap to a file."""
     data = {
         "machine_record_id": machine_record_id,
@@ -254,7 +286,9 @@ def save_last_tags_and_ids_to_file(machine_record_id, employee_tag, employee_nam
         "last_employee_tap": last_employee_tap,
         "last_order_tap": last_order_tap,
         "units_order": units_order,
-        "units_employee": units_employee
+        "units_employee": units_employee,
+        "last_order_record_id": last_order_record_id,
+        "last_employee_record_id": last_employee_record_id
     }
     with open(LAST_TAGS_AND_IDS_FILE_PATH, 'w') as file:
         json.dump(data, file)
@@ -314,6 +348,8 @@ def main():
     last_order_tap = last_tags_and_ids["last_order_tap"]
     units_order = last_tags_and_ids["units_order"]
     units_employee = last_tags_and_ids["units_employee"]
+    last_employee_record_id = last_tags_and_ids["last_employee_record_id"]
+    last_order_record_id = last_tags_and_ids["last_order_record_id"]
     if machine_record_id == "None":
         field_ids = [("fldZsM3YEVQqpJMFF", "record_id")]
         reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
@@ -371,6 +407,7 @@ def main():
                             order_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", tagId)
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
+                                last_order_record_id = order_dict["record_id"][0]
                                 if tagId != last_order_tag:
                                     if send_sqs_message(machine_id, "order", tagId, formatted_time_sec):
                                         last_order_tag = tagId
@@ -392,9 +429,14 @@ def main():
                                         if employee_dict:
                                             if employee_dict["employee_name"] == "None":
                                                 employee_name = tagId
-                                                # NEED TO CREATE EMPLOYEE TAG RECORD SO RECORD ID ISNT NONE
+                                                field_data = {"fldyYKc2g0dBdolKQ": tagId}
+                                                tag_record = create_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_data)
+                                                #last_employee_record_id = tag_record
+                                                print_log(json.dumps(tag_record))
+
                                             else:
                                                 employee_name = employee_dict["employee_name"][0]
+                                                last_employee_record_id = employee_dict["record_id"][0]
                                         else:
                                             employee_name = tagId
                                     else:
