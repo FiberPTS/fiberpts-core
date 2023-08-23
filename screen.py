@@ -314,7 +314,7 @@ def main():
     last_order_tap = last_tags_and_ids["last_order_tap"]
     units_order = last_tags_and_ids["units_order"]
     units_employee = last_tags_and_ids["units_employee"]
-    if machine_record_id != "None":
+    if machine_record_id == "None":
         field_ids = [("fldZsM3YEVQqpJMFF", "record_id")]
         reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
         if reader_dict:
