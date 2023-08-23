@@ -20,8 +20,8 @@ def handle_sigterm(signum, frame):
 os.environ['TZ'] = 'EST5EDT'
 time.tzset()
 
-BATCH_FILE_PATH = "/var/lib/your_app_name/batched_button_presses.json"
-LAST_TAGS_AND_IDS_FILE_PATH = "/var/lib/your_app_name/last_tags_and_ids.json"
+BATCH_FILE_PATH = "/var/lib/screen/batched_button_presses.json"
+LAST_TAGS_AND_IDS_FILE_PATH = "/var/lib/screen/last_tags_and_ids.json"
 
 
 def print_log(format_str, *args):
