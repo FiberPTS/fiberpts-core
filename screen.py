@@ -367,15 +367,17 @@ def main():
                             if order_dict: # Order tag is registered
                                 if tagId != last_order_tag:
                                     if send_sqs_message(machine_id, "order", tagId, formatted_time_sec):
+                                        last_order_tag = tagId
                                         last_order_tap = formatted_time
                                         units_order = 0
                                         order_id = order_dict["order_id"][0]
-                                        save_last_tags_and_ids_to_file(employee_tag, employee_name, order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
+                                        save_last_tags_and_ids_to_file(last_employee_tag, employee_name, last_order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
                                     else:
                                         fail = True
                             else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if tagId != last_employee_tag:
                                     if send_sqs_message(machine_id, "employee", tagId, formatted_time_sec):
+                                        last_employee_tag = tagId
                                         last_employee_tap = formatted_time
                                         units_order = 0
                                         units_employee = 0
@@ -389,7 +391,7 @@ def main():
                                                 employee_name = employee_dict["employee_name"][0]
                                         else:
                                             employee_name = tagId
-                                        save_last_tags_and_ids_to_file(employee_tag, employee_name, order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
+                                        save_last_tags_and_ids_to_file(last_employee_tag, employee_name, last_order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
                                     else:
                                         fail = True
                     else: # Button tap increases unit count
