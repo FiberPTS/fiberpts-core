@@ -243,9 +243,10 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp,
 def create_image(width, height, bg_color):
     return Image.new("RGB", (width, height), bg_color)
 
-def save_last_tags_and_ids_to_file(employee_tag, employee_name, order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee):
+def save_last_tags_and_ids_to_file(machine_record_id, employee_tag, employee_name, order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee):
     """Save the last employee tag, employee name, order tag, order id, last employee tap, and last order tap to a file."""
     data = {
+        "machine_record_id": machine_record_id,
         "last_employee_tag": employee_tag,
         "employee_name": employee_name,
         "last_order_tag": order_tag,
@@ -304,6 +305,7 @@ def main():
 
     # Load the last tags, ids, and taps from file
     last_tags_and_ids = load_last_tags_and_ids_from_file()
+    machine_record_id = last_tags_and_ids.get("machine_record_id","None")
     last_employee_tag = last_tags_and_ids["last_employee_tag"]
     employee_name = last_tags_and_ids["employee_name"]
     last_order_tag = last_tags_and_ids["last_order_tag"]
@@ -312,7 +314,11 @@ def main():
     last_order_tap = last_tags_and_ids["last_order_tap"]
     units_order = last_tags_and_ids["units_order"]
     units_employee = last_tags_and_ids["units_employee"]
-
+    if machine_record_id != "None":
+        field_ids = [("fldZsM3YEVQqpJMFF", "record_id")]
+        reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
+        if reader_dict:
+            machine_record_id = reader_dict["record_id"]
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
 
@@ -361,7 +367,7 @@ def main():
                             fail = True
                         else:
                             tagId = data[1][:-1].lower()
-                            field_ids = [("fldSrxknmVrsETFPx","order_id")]
+                            field_ids = [("fldSrxknmVrsETFPx","order_id"), ("fldRi8wjAdfBkDhH8","record_id")]
                             order_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", tagId)
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
@@ -380,12 +386,13 @@ def main():
                                         last_employee_tap = formatted_time
                                         units_order = 0
                                         units_employee = 0
-                                        field_ids = [("fldOYvm4LsaM9pJNw", "employee_name")]
+                                        field_ids = [("fldOYvm4LsaM9pJNw", "employee_name"),("fld49C1CkqgW9hA3p","record_id")]
                                         employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids,
                                                                    "fldyYKc2g0dBdolKQ", tagId)
                                         if employee_dict:
                                             if employee_dict["employee_name"] == "None":
                                                 employee_name = tagId
+                                                # NEED TO CREATE EMPLOYEE TAG RECORD SO RECORD ID ISNT NONE
                                             else:
                                                 employee_name = employee_dict["employee_name"][0]
                                         else:
@@ -408,7 +415,7 @@ def main():
                         else:
                             fail = True
                         save_batch_to_file(button_presses)
-                    save_last_tags_and_ids_to_file(last_employee_tag, employee_name, last_order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
+                    save_last_tags_and_ids_to_file(machine_record_id, last_employee_tag, employee_name, last_order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
                     temp_color = (0,170,0)
                     if fail:
                         temp_color = (0,0,255)
