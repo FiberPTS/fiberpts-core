@@ -1,5 +1,10 @@
 #!/bin/bash
 
+sudo mkdir /var/lib/screen
+sudo chown potato:potato /var/lib/screen
+
+
+
 # Check if command-line argument is provided
 if [ -z "$1" ]
 then

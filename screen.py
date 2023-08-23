@@ -20,6 +20,10 @@ def handle_sigterm(signum, frame):
 os.environ['TZ'] = 'EST5EDT'
 time.tzset()
 
+BATCH_FILE_PATH = "/var/lib/your_app_name/batched_button_presses.json"
+LAST_TAGS_AND_IDS_FILE_PATH = "/var/lib/your_app_name/last_tags_and_ids.json"
+
+
 def print_log(format_str, *args):
     """
     Logs messages with a timestamp.
@@ -239,6 +243,38 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp,
 def create_image(width, height, bg_color):
     return Image.new("RGB", (width, height), bg_color)
 
+def save_last_tags_and_ids_to_file(employee_tag, employee_name, order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee):
+    """Save the last employee tag, employee name, order tag, order id, last employee tap, and last order tap to a file."""
+    data = {
+        "last_employee_tag": employee_tag,
+        "employee_name": employee_name,
+        "last_order_tag": order_tag,
+        "order_id": order_id,
+        "last_employee_tap": last_employee_tap,
+        "last_order_tap": last_order_tap,
+        "units_order": units_order,
+        "units_employee": units_employee
+    }
+    with open(LAST_TAGS_AND_IDS_FILE_PATH, 'w') as file:
+        json.dump(data, file)
+
+def load_last_tags_and_ids_from_file():
+    """Load the last employee tag, employee name, order tag, order id, last employee tap, and last order tap from the file."""
+    try:
+        with open(LAST_TAGS_AND_IDS_FILE_PATH, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {
+            "last_employee_tag": "None",
+            "employee_name": "No Employee",
+            "last_order_tag": "None",
+            "order_id": "No Order",
+            "last_employee_tap": "Unknown",
+            "last_order_tap": "Unknown",
+            "units_order": 0,
+            "units_employee": 0
+        }
+
 def main():
     # Load AWS credentials from file
     config = configparser.ConfigParser()
@@ -246,44 +282,39 @@ def main():
 
     aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
     aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
-    boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name='us-east-1')
+    boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                                region_name='us-east-1')
     machine_id = get_machine_id()
     signal.signal(signal.SIGTERM, handle_sigterm)
     print_log("Starting Screen.py")
-    print_log("Pulling Airtable Data")
-    field_ids = [("fldJQd3TmtxURsQy0","employee_name"),("fldcFVtGOWbd8RgT6","order_id"), ("fld0prkx6YJPRJ8iO", "current_order_count"), ("fldi9iM5pRoPA3Gne", "total_count"), ("fldcaeaey2E5R8Iqp","last_order_tap"), ("fldVALQ4NGPNVrvZz","last_employee_tap"), ("fldbaqdqMh2lsbeDF","employee_tag_id"), ("fldzC7IFPyBOYCTjG","order_tag_id")]
-    record_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
-    employee_name = record_dict["employee_name"][0]
-    order_id = record_dict["order_id"][0]    
-    if record_dict["employee_name"] == "None":
-        employee_name = "No Employee"
-        last_employee_tag = "None"
-    else:
-        last_employee_tag = record_dict["employee_tag_id"][0]
-    if record_dict["order_id"] == "None":
-        order_id = "No Order"
-        last_order_tag = "None"
-    else:
-        last_order_tag = record_dict["order_tag_id"][0]
-    last_order_tap = format_utc_to_est(record_dict["last_order_tap"])
-    last_employee_tap = format_utc_to_est(record_dict["last_employee_tap"])
-    units_order = record_dict["current_order_count"]
-    units_employee = record_dict["total_count"]
+    print_log("Pulling Previous Data")
+
+    # Load the last tags, ids, and taps from file
+    last_tags_and_ids = load_last_tags_and_ids_from_file()
+    last_employee_tag = last_tags_and_ids["last_employee_tag"]
+    employee_name = last_tags_and_ids["employee_name"]
+    last_order_tag = last_tags_and_ids["last_order_tag"]
+    order_id = last_tags_and_ids["order_id"]
+    last_employee_tap = last_tags_and_ids["last_employee_tap"]
+    last_order_tap = last_tags_and_ids["last_order_tap"]
+    units_order = last_tags_and_ids["units_order"]
+    units_employee = last_tags_and_ids["units_employee"]
+
+    # Load the batched button presses from file
+    button_presses = load_batch_from_file()
+
     fifo_path = "/tmp/screenPipe"
     # Load a font
-    text_color = (255,255,255)
-    bg_color = (255,0,0)
+    text_color = (255, 255, 255)
+    bg_color = (255, 0, 0)
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
     res = (240, 320)
     fail = False
-    pingTime = 0
-    batch_count = 10
-    current_count = 0
-    button_presses = {"Records": []}
+    batch_count = 5
+    current_count = len(button_presses["Records"])  # Update current count based on the loaded batch
     print_log("Starting Display")
     try:
         while True:
-            # MUST CHANGE LCD PIXEL FORMAT -- NOT WORKING RN
             # Create an image and draw rotated text onto it
             image = create_image(res[0], res[1], bg_color)
 
@@ -317,8 +348,6 @@ def main():
                             fail = True
                         else:
                             tagId = data[1][:-1].lower()
-                            field_ids = [("fldOYvm4LsaM9pJNw","employee_name")]
-                            employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids, "fldyYKc2g0dBdolKQ", tagId)
                             field_ids = [("fldSrxknmVrsETFPx","order_id")]
                             order_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", tagId)
                             # When an employee tag is registered, the session unit counting is reset
@@ -328,6 +357,8 @@ def main():
                                         last_order_tap = formatted_time
                                         units_order = 0
                                         order_id = order_dict["order_id"][0]
+                                        save_last_tags_and_ids_to_file(last_employee_tag, employee_name, last_order_tag,
+                                                                       order_id, units_order, units_employee)
                                     else:
                                         fail = True
                             else: # Unregistered tag treated as employee tag or employee tag is registered
@@ -336,6 +367,9 @@ def main():
                                         last_employee_tap = formatted_time
                                         units_order = 0
                                         units_employee = 0
+                                        field_ids = [("fldOYvm4LsaM9pJNw", "employee_name")]
+                                        employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids,
+                                                                   "fldyYKc2g0dBdolKQ", tagId)
                                         if employee_dict:
                                             if employee_dict["employee_name"] == "None":
                                                 employee_name = tagId
@@ -343,6 +377,8 @@ def main():
                                                 employee_name = employee_dict["employee_name"][0]
                                         else:
                                             employee_name = tagId
+                                        save_last_tags_and_ids_to_file(last_employee_tag, employee_name, last_order_tag,
+                                                                       order_id, units_order, units_employee)
                                     else:
                                         fail = True
                     else: # Button tap increases unit count
@@ -360,6 +396,7 @@ def main():
                             units_employee += 1
                         else:
                             fail = True
+                        save_batch_to_file(button_presses)
                     temp_color = (0,170,0)
                     if fail:
                         temp_color = (0,0,255)
@@ -382,11 +419,8 @@ def main():
                     raw_data = image_to_rgb565(image)
                     write_to_framebuffer(raw_data)
             time.sleep(0.5)
-            pingTime += 1
-            if pingTime >= 120:
-                if send_sqs_message(machine_id, "Ping", "None", formatted_time_sec):
-                    pingTime = 0
     except KeyboardInterrupt:
         print_log("Program Interrupted")
+
 if __name__ == "__main__":
     main()
