@@ -370,6 +370,7 @@ def main():
     field_data = {"fldyYKc2g0dBdolKQ": last_employee_tag}
     tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
                                field_data)
+    print(tag_record)
     print(tag_record["records"][0]["fields"]["fld49C1CkqgW9hA3p"])
     fifo_path = "/tmp/screenPipe"
     # Load a font
