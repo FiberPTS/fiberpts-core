@@ -122,7 +122,7 @@ def create_record(base_id, table_id, field_data, api_key="patAQ8FpGw4j3oKk2.5f06
     - dict: The created record's data.
     """
 
-    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}"
+    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
 
     HEADERS = {
         "Authorization": f"Bearer {api_key}",
@@ -370,7 +370,7 @@ def main():
     field_data = {"fldyYKc2g0dBdolKQ": last_employee_tag}
     tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
                                field_data)
-    print(tag_record["records"][0]["fields"]["Record ID"])
+    print(tag_record["records"][0]["fields"]["fld49C1CkqgW9hA3p"])
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (255, 255, 255)
@@ -445,7 +445,7 @@ def main():
                                                 field_data = {"fldyYKc2g0dBdolKQ": tagId}
                                                 tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
                                                                            field_data)
-                                                print(tag_record["records"][0]["fields"]["Record ID"])
+                                                print(tag_record["records"][0]["fields"]["fld49C1CkqgW9hA3p"])
 
                                             else:
                                                 employee_name = employee_dict["employee_name"][0]
