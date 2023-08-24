@@ -367,7 +367,8 @@ def main():
             last_employee_record_id = order_tag_dict["record_id"]
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
-
+    field_data = {"fldyYKc2g0dBdolKQ": last_employee_tag}
+    tag_record = create_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_data)
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (255, 255, 255)
