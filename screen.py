@@ -369,7 +369,7 @@ def main():
     button_presses = load_batch_from_file()
     field_data = {"Tag ID": ""}
     tag_record = create_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_data)
-    print(tag_record["records"][0]["Record ID"])
+    print(tag_record["records"][0]["fields"]["Record ID"])
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (255, 255, 255)
