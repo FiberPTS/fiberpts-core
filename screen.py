@@ -297,18 +297,12 @@ def load_last_tags_and_ids_from_file():
     """Load the last employee tag, employee name, order tag, order id, last employee tap, and last order tap from the file."""
     try:
         with open(LAST_TAGS_AND_IDS_FILE_PATH, 'r') as file:
-            return json.load(file)
+            try:
+                return json.load(file)
+            except json.decoder.JSONDecodeError:
+                return {}
     except FileNotFoundError:
-        return {
-            "last_employee_tag": "None",
-            "employee_name": "No Employee",
-            "last_order_tag": "None",
-            "order_id": "No Order",
-            "last_employee_tap": "Unknown",
-            "last_order_tap": "Unknown",
-            "units_order": 0,
-            "units_employee": 0
-        }
+        return {}
 
 def save_batch_to_file(batch):
     """Save the current batched button presses to a file."""
