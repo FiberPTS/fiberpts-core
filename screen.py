@@ -364,7 +364,7 @@ def main():
         field_ids = [("fld49C1CkqgW9hA3p", "record_id")]
         employee_tag_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids, "fldyYKc2g0dBdolKQ", last_employee_tag)
         if employee_tag_dict:
-            last_employee_record_id = order_tag_dict["record_id"]
+            last_employee_record_id = employee_tag_dict["record_id"]
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
     fifo_path = "/tmp/screenPipe"
