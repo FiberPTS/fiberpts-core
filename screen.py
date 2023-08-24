@@ -387,7 +387,7 @@ def main():
             image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 150), text_color, bg_color)
 
             # Convert the image to RGB565 format and write to framebuffer
-            raw_data = image_to_rgb565(image)
+            raw_data = image_to_rgb565(image)3
             write_to_framebuffer(raw_data)
             time.sleep(0.5)
             with open(fifo_path, "r") as fifo:
