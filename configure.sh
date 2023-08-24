@@ -3,6 +3,11 @@
 # Make Application files directory
 sudo mkdir /var/lib/screen
 sudo chown potato:potato /var/lib/screen
+touch /var/lib/screen/batched_button_presses.json
+touch /var/lib/screen/last_tags_and_ids.json
+sudo chown potato:potato /var/lib/screen/batched_button_presses.json
+sudo chown potato:potato /var/lib/screen/last_tags_and_ids.json
+
 
 # Check if command-line argument is provided
 if [ -z "$1" ]

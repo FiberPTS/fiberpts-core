@@ -122,7 +122,7 @@ def create_record(base_id, table_id, field_data, api_key="patAQ8FpGw4j3oKk2.5f06
     - dict: The created record's data.
     """
 
-    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
+    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=True"
 
     HEADERS = {
         "Authorization": f"Bearer {api_key}",
@@ -367,11 +367,6 @@ def main():
             last_employee_record_id = order_tag_dict["record_id"]
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
-    field_data = {"fldyYKc2g0dBdolKQ": last_employee_tag}
-    tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
-                               field_data)
-    print(tag_record)
-    print(tag_record["records"][0]["fields"]["fld49C1CkqgW9hA3p"])
     fifo_path = "/tmp/screenPipe"
     # Load a font
     text_color = (255, 255, 255)
@@ -379,7 +374,7 @@ def main():
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
     res = (240, 320)
     fail = False
-    batch_count = 5
+    batch_count = 10
     current_count = len(button_presses["Records"])  # Update current count based on the loaded batch
     print_log("Starting Display")
     try:
@@ -446,8 +441,7 @@ def main():
                                                 field_data = {"fldyYKc2g0dBdolKQ": tagId}
                                                 tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
                                                                            field_data)
-                                                print(tag_record["records"][0]["fields"]["fld49C1CkqgW9hA3p"])
-
+                                                last_employee_record_id = tag_record["records"][0]["fields"]["Record ID"]
                                             else:
                                                 employee_name = employee_dict["employee_name"][0]
                                                 last_employee_record_id = employee_dict["record_id"][0]
@@ -458,7 +452,7 @@ def main():
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
                             print_log("button pressed")
-                            button_presses["Records"].append({"employee_tag": last_employee_tag, "order_tag": last_order_tag, "timestamp": formatted_time_sec})
+                            button_presses["Records"].append({"machine_record_id": machine_record_id, "employee_tag_record_id": last_employee_record_id, "order_tag_record_id": last_order_record_id, "timestamp": formatted_time_sec})
                             current_count += 1
                             if current_count >= batch_count:
                                 if send_sqs_message(machine_id, "button", button_presses, formatted_time_sec):
