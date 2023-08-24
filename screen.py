@@ -340,21 +340,31 @@ def main():
     # Load the last tags, ids, and taps from file
     last_tags_and_ids = load_last_tags_and_ids_from_file()
     machine_record_id = last_tags_and_ids.get("machine_record_id","None")
-    last_employee_tag = last_tags_and_ids["last_employee_tag"]
-    employee_name = last_tags_and_ids["employee_name"]
-    last_order_tag = last_tags_and_ids["last_order_tag"]
-    order_id = last_tags_and_ids["order_id"]
-    last_employee_tap = last_tags_and_ids["last_employee_tap"]
-    last_order_tap = last_tags_and_ids["last_order_tap"]
-    units_order = last_tags_and_ids["units_order"]
-    units_employee = last_tags_and_ids["units_employee"]
-    last_employee_record_id = last_tags_and_ids["last_employee_record_id"]
-    last_order_record_id = last_tags_and_ids["last_order_record_id"]
+    last_employee_tag = last_tags_and_ids.get("last_employee_tag", "None")
+    employee_name = last_tags_and_ids.get("employee_name", "None")
+    last_order_tag = last_tags_and_ids.get("last_order_tag", "None")
+    order_id = last_tags_and_ids.get("order_id", "None")
+    last_employee_tap = last_tags_and_ids.get("last_employee_tap", "None")
+    last_order_tap = last_tags_and_ids.get("last_order_tap", "None")
+    units_order = last_tags_and_ids.get("units_order", "None")
+    units_employee = last_tags_and_ids.get("units_employee", "None")
+    last_employee_record_id = last_tags_and_ids.get("last_employee_record_id", "None")
+    last_order_record_id = last_tags_and_ids.get("last_order_record_id", "None")
     if machine_record_id == "None":
         field_ids = [("fldZsM3YEVQqpJMFF", "record_id")]
         reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
         if reader_dict:
             machine_record_id = reader_dict["record_id"]
+    if last_order_record_id == "None" and last_order_tag != "None":
+        field_ids = [("fldRi8wjAdfBkDhH8", "record_id")]
+        order_tag_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", last_order_tag)
+        if order_tag_dict:
+            last_order_record_id = order_tag_dict["record_id"]
+    if last_employee_record_id == "None" and last_employee_tag != "None":
+        field_ids = [("fld49C1CkqgW9hA3p", "record_id")]
+        employee_tag_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids, "fldyYKc2g0dBdolKQ", last_employee_tag)
+        if employee_tag_dict:
+            last_employee_record_id = order_tag_dict["record_id"]
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
 
@@ -457,7 +467,7 @@ def main():
                         else:
                             fail = True
                         save_batch_to_file(button_presses)
-                    save_last_tags_and_ids_to_file(machine_record_id, last_employee_tag, employee_name, last_order_tag, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
+                    save_last_tags_and_ids_to_file(machine_record_id, last_employee_tag, last_employee_record_id, employee_name, last_order_tag, last_order_record_id, order_id, last_employee_tap, last_order_tap, units_order, units_employee)
                     temp_color = (0,170,0)
                     if fail:
                         temp_color = (0,0,255)
