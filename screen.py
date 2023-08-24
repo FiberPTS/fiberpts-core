@@ -367,8 +367,9 @@ def main():
             last_employee_record_id = order_tag_dict["record_id"]
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
-    field_data = {"Tag ID": ""}
-    tag_record = create_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_data)
+    field_data = {"fldyYKc2g0dBdolKQ": last_employee_tag}
+    tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
+                               field_data)
     print(tag_record["records"][0]["fields"]["Record ID"])
     fifo_path = "/tmp/screenPipe"
     # Load a font
@@ -442,9 +443,9 @@ def main():
                                             if employee_dict["employee_name"] == "None":
                                                 employee_name = tagId
                                                 field_data = {"fldyYKc2g0dBdolKQ": tagId}
-                                                tag_record = create_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_data)
-                                                #last_employee_record_id = tag_record
-                                                print_log(json.dumps(tag_record))
+                                                tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
+                                                                           field_data)
+                                                print(tag_record["records"][0]["fields"]["Record ID"])
 
                                             else:
                                                 employee_name = employee_dict["employee_name"][0]
