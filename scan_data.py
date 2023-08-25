@@ -19,21 +19,6 @@ dynamodb = boto3.resource(
 
 table = dynamodb.Table('API_Requests')
 
-# Data should be a JSON-serialized string
-data = json.dumps({"key1": "value1", "key2": "value2"})
-
-# Insert item
-response = table.put_item(
-   Item={
-        'Request_Type': 'TapEvent',
-        'Data': data,
-        'Status': 'Pending',
-        'Timestamp': '2023-08-25T14:00:00Z'
-    }
-)
-
-print("PutItem succeeded:", response["ResponseMetadata"]["HTTPStatusCode"])
-time.sleep(5)
 response = table.scan()
 
 for item in response['Items']:

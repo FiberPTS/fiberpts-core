@@ -224,54 +224,6 @@ def format_utc_to_est(date_str):
         date_est += datetime.timedelta(hours=1)
     return date_est.strftime('%Y-%m-%d %l:%M %p')
 
-def send_sqs_message(machine_id, request_type, request_data, timestamp,
-                     queue_url='https://sqs.us-east-1.amazonaws.com/279304726956/AWSQueue.fifo'):
-    """
-    Send a message to an SQS queue.
-
-    Parameters:
-    - machine_id (str): The machine ID.
-    - request_type (str): The type of request.
-    - request_data (str/dict): The data related to the request.
-    - timestamp (str): The timestamp of the request.
-    - queue_url (str, optional): The SQS queue URL. Default is the provided URL.
-
-    Returns:
-    - bool: True if the message was successfully sent, False otherwise.
-    """
-
-    # Initialize the SQS client
-    sqs = boto3.client('sqs', region_name='us-east-1')
-
-    if request_type == "button":
-        request_data = json.dumps(request_data)
-
-    # Create the message payload
-    message_body = {
-        "machine_id": machine_id,
-        "request_type": request_type,
-        "request_data": request_data,
-        "timestamp": timestamp
-    }
-
-    try:
-        response = sqs.send_message(
-            QueueUrl=queue_url,
-            MessageBody=json.dumps(message_body),  # Convert dict to string
-            MessageGroupId=machine_id  # Only required for FIFO queues
-        )
-
-        # Print the message ID and MD5 (This can be adjusted based on whether you want to print or return this information.)
-        print_log(f"MessageId: {response['MessageId']}")
-        print_log(f"MD5: {response['MD5OfMessageBody']}")
-
-        return True  # Message was successfully sent
-
-    except botocore.exceptions.EndpointConnectionError as e:
-        # Handle the exception and print/log an error message
-        print_log(f"Error sending message to SQS: {e}")
-        return False  # Failed to send the message
-
 def create_image(width, height, bg_color):
     return Image.new("RGB", (width, height), bg_color)
 
@@ -343,8 +295,12 @@ def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"
             'Status': 'Pending',
         }
     )
-    
-    
+    metaData = response.get('ResponseMetadata', 'None')
+    if metaData != 'None':
+        status = metaData.get('HTTPStatusCode', 'None')
+        if status == 200:
+            return True
+    return False
 
 def main():
     # Load AWS credentials from file
@@ -422,20 +378,15 @@ def main():
             image = draw_rotated_text(image, f"Order Count: {units_order}", font, (5, 150), text_color, bg_color)
 
             # Convert the image to RGB565 format and write to framebuffer
-            raw_data = image_to_rgb565(image)3
+            raw_data = image_to_rgb565(image)
             write_to_framebuffer(raw_data)
             time.sleep(0.5)
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
                     data = data.split("-program-")
-                    # Get current UTC time
-                    now_utc = datetime.datetime.now(datetime.timezone.utc)
-                    # Convert to Eastern Time Zone
-                    now_est = now_utc.astimezone(ZoneInfo('US/Eastern'))
-                    # Format the time to desired format: date, time, AM/PM
-                    formatted_time = now_est.strftime('%Y-%m-%d %l:%M %p')
-                    formatted_time_sec = now_est.strftime('%Y-%m-%d %l:%M:%S %p')
+                    formatted_time = get_current_time(format_seconds=False)
+                    formatted_time_sec = get_current_time(format_seconds=True)
                     if data[0] == "read_ultralight.c":
                         if data[1][:-1] == "Failed":
                             fail = True
@@ -445,9 +396,9 @@ def main():
                             order_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", tagId)
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
-                                last_order_record_id = order_dict["record_id"][0]
                                 if tagId != last_order_tag:
-                                    if send_sqs_message(machine_id, "order", tagId, formatted_time_sec):
+                                    last_order_record_id = order_dict["record_id"][0]
+                                    if push_item_db(dynamodb, "OrderNFC", last_order_record_id):
                                         last_order_tag = tagId
                                         last_order_tap = formatted_time
                                         units_order = 0
@@ -456,35 +407,36 @@ def main():
                                         fail = True
                             else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if tagId != last_employee_tag:
-                                    if send_sqs_message(machine_id, "employee", tagId, formatted_time_sec):
+                                    last_employee_record_id_temp = last_employee_record_id
+                                    last_employee_name = employee_name
+                                    field_ids = [("fldOYvm4LsaM9pJNw", "employee_name"),("fld49C1CkqgW9hA3p","record_id")]
+                                    employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids,
+                                                               "fldyYKc2g0dBdolKQ", tagId)
+                                    if employee_dict["employee_name"] == "None":
+                                        employee_name = tagId
+                                        field_data = {"fldyYKc2g0dBdolKQ": tagId}
+                                        tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
+                                                                   field_data)
+                                        last_employee_record_id = tag_record["records"][0]["fields"]["Record ID"]
+                                    else:
+                                        employee_name = employee_dict["employee_name"][0]
+                                        last_employee_record_id = employee_dict["record_id"][0]
+                                    if push_item_db(dynamodb, "EmployeeNFC", last_employee_record_id):
                                         last_employee_tag = tagId
                                         last_employee_tap = formatted_time
                                         units_order = 0
                                         units_employee = 0
-                                        field_ids = [("fldOYvm4LsaM9pJNw", "employee_name"),("fld49C1CkqgW9hA3p","record_id")]
-                                        employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids,
-                                                                   "fldyYKc2g0dBdolKQ", tagId)
-                                        if employee_dict:
-                                            if employee_dict["employee_name"] == "None":
-                                                employee_name = tagId
-                                                field_data = {"fldyYKc2g0dBdolKQ": tagId}
-                                                tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
-                                                                           field_data)
-                                                last_employee_record_id = tag_record["records"][0]["fields"]["Record ID"]
-                                            else:
-                                                employee_name = employee_dict["employee_name"][0]
-                                                last_employee_record_id = employee_dict["record_id"][0]
-                                        else:
-                                            employee_name = tagId
                                     else:
+                                        last_employee_record_id = last_employee_record_id_temp
+                                        employee_name = last_employee_name
                                         fail = True
                     else: # Button tap increases unit count
                         if last_employee_tag != "None" and last_order_tag != "None":
                             print_log("button pressed")
                             button_presses["Records"].append({"machine_record_id": machine_record_id, "employee_tag_record_id": last_employee_record_id, "order_tag_record_id": last_order_record_id, "timestamp": formatted_time_sec})
                             current_count += 1
-                            if current_count >= batch_count:
-                                if send_sqs_message(machine_id, "button", button_presses, formatted_time_sec):
+                            if current_count >= batch_count: # May have to partition into multiple batches of 10
+                                if push_item_db(dynamodb, "TapEvent", button_presses):
                                     current_count = 0
                                     button_presses = {"Records": []}
                                 else:
