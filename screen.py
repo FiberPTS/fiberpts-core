@@ -343,6 +343,8 @@ def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"
             'Status': 'Pending',
         }
     )
+    
+    
 
 def main():
     # Load AWS credentials from file

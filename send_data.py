@@ -33,7 +33,7 @@ response = table.put_item(
     }
 )
 
-print("PutItem succeeded:", response)
+print("PutItem succeeded:", response["ResponseMetadata"]["HTTPStatusCode"])
 time.sleep(5)
 response = table.scan()
 
