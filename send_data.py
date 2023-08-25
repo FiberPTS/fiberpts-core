@@ -33,3 +33,8 @@ response = table.put_item(
 )
 
 print("PutItem succeeded:", response)
+
+response = table.scan()
+
+for item in response['Items']:
+    print(item)
