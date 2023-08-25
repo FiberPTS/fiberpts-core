@@ -412,7 +412,7 @@ def main():
                                     field_ids = [("fldOYvm4LsaM9pJNw", "employee_name"),("fld49C1CkqgW9hA3p","record_id")]
                                     employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids,
                                                                "fldyYKc2g0dBdolKQ", tagId)
-                                    if employee_dict("employee_name","None") == "None":
+                                    if employee_dict.get("employee_name","None") == "None":
                                         employee_name = tagId
                                         field_data = {"fldyYKc2g0dBdolKQ": tagId}
                                         tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
