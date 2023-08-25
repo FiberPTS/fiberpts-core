@@ -397,7 +397,7 @@ def main():
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
                                 if tagId != last_order_tag:
-                                    last_order_record_id = order_dict["record_id"][0]
+                                    last_order_record_id = order_dict["record_id"]
                                     if push_item_db(dynamodb, "OrderNFC", last_order_record_id):
                                         last_order_tag = tagId
                                         last_order_tap = formatted_time
@@ -420,7 +420,7 @@ def main():
                                         last_employee_record_id = tag_record["records"][0]["fields"]["Record ID"]
                                     else:
                                         employee_name = employee_dict["employee_name"][0]
-                                        last_employee_record_id = employee_dict["record_id"][0]
+                                        last_employee_record_id = employee_dict["record_id"]
                                     if push_item_db(dynamodb, "EmployeeNFC", last_employee_record_id):
                                         last_employee_tag = tagId
                                         last_employee_tap = formatted_time
