@@ -275,8 +275,13 @@ def load_batch_from_file():
     """Load the saved batched button presses from the file."""
     try:
         with open(BATCH_FILE_PATH, 'r') as file:
-            return json.load(file)
+            content = file.read()
+            if not content.strip():  # Check if file is empty
+                return {"Records": []}
+            return json.loads(content)
     except FileNotFoundError:
+        return {"Records": []}
+    except json.JSONDecodeError:  # Handle invalid JSON
         return {"Records": []}
 
 def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"):
