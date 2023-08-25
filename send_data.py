@@ -9,7 +9,7 @@ config.read('/home/potato/NFC_Tracking/.aws/credentials.txt')
 aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
 aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
 
-client = boto3.client(
+dynamodb = boto3.resource(
     'dynamodb',
     aws_access_key_id=aws_access_key_id,
     aws_secret_access_key=aws_secret_access_key,
