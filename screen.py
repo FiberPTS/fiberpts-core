@@ -283,7 +283,10 @@ def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"
     table = dynamodb.Table('API_Requests')
 
     # Data should be a JSON-serialized string
-    data = json.dumps(request_data)
+    if request_type == "TapEvent":
+        data = json.dumps(request_data)
+    else:
+        data = request_data
     machine_id = get_machine_id()
 
     # Insert item
@@ -402,7 +405,10 @@ def main():
                                         last_order_tag = tagId
                                         last_order_tap = formatted_time
                                         units_order = 0
-                                        order_id = order_dict["order_id"][0]
+                                        if order_dict["order_id"] == "None":
+                                            order_id = "None"
+                                        else:
+                                            order_id = order_dict["order_id"][0]
                                     else:
                                         fail = True
                             else: # Unregistered tag treated as employee tag or employee tag is registered
