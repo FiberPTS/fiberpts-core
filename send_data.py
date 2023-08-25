@@ -2,6 +2,7 @@
 import boto3
 import json
 import configparser
+import time
 
 config = configparser.ConfigParser()
 config.read('/home/potato/NFC_Tracking/.aws/credentials.txt')
@@ -33,7 +34,7 @@ response = table.put_item(
 )
 
 print("PutItem succeeded:", response)
-
+time.sleep(5)
 response = table.scan()
 
 for item in response['Items']:
