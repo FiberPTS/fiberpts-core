@@ -275,6 +275,16 @@ def send_sqs_message(machine_id, request_type, request_data, timestamp,
 def create_image(width, height, bg_color):
     return Image.new("RGB", (width, height), bg_color)
 
+def get_current_time(format_seconds=True):
+    # Get current UTC time
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    # Convert to Eastern Time Zone
+    now_est = now_utc.astimezone(ZoneInfo('US/Eastern'))
+    # Format the time to desired format: date, time, AM/PM
+    if format_seconds:
+        return now_est.strftime('%Y-%m-%d %l:%M:%S %p')
+    return now_est.strftime('%Y-%m-%d %l:%M %p')
+
 def save_last_tags_and_ids_to_file(machine_record_id, employee_tag, last_employee_record_id, employee_name, order_tag, last_order_record_id, order_id, last_employee_tap, last_order_tap, units_order, units_employee):
     """Save the last employee tag, employee name, order tag, order id, last employee tap, and last order tap to a file."""
     data = {
@@ -317,6 +327,23 @@ def load_batch_from_file():
     except FileNotFoundError:
         return {"Records": []}
 
+def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"):
+    table = dynamodb.Table('API_Requests')
+
+    # Data should be a JSON-serialized string
+    data = json.dumps(request_data)
+    machine_id = get_machine_id()
+
+    # Insert item
+    response = table.put_item(
+        Item={
+            'partitionKey': f'{get_machine_id()}-{get_current_time()}',
+            'Request_Type': request_type,
+            'Data': data,
+            'Status': 'Pending',
+        }
+    )
+
 def main():
     # Load AWS credentials from file
     config = configparser.ConfigParser()
@@ -324,8 +351,14 @@ def main():
 
     aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
     aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
-    boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
-                                region_name='us-east-1')
+    #boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+    #                            region_name='us-east-1')
+    dynamodb = boto3.resource(
+        'dynamodb',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name='us-east-1'
+    )
     machine_id = get_machine_id()
     signal.signal(signal.SIGTERM, handle_sigterm)
     print_log("Starting Screen.py")
