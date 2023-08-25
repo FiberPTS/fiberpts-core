@@ -25,7 +25,6 @@ data = json.dumps({"key1": "value1", "key2": "value2"})
 # Insert item
 response = table.put_item(
    Item={
-        'partitionKey': 'SomePartitionKeyValue',
         'Request_Type': 'TapEvent',
         'Data': data,
         'Status': 'Pending',
