@@ -1,5 +1,5 @@
 #!/bin/sh
-cd /home/potato
+cd $HOME
 if [ -d "NFC_Tracking" ]; then
     cd NFC_Tracking
     git fetch --all
