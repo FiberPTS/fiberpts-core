@@ -2,11 +2,11 @@
 
 # Make Application files directory
 sudo mkdir /var/lib/screen
-sudo chown potato:potato /var/lib/screen
+sudo chown $USER:$USER /var/lib/screen
 touch /var/lib/screen/batched_button_presses.json
 touch /var/lib/screen/last_tags_and_ids.json
-sudo chown potato:potato /var/lib/screen/batched_button_presses.json
-sudo chown potato:potato /var/lib/screen/last_tags_and_ids.json
+sudo chown $USER:$USER /var/lib/screen/batched_button_presses.json
+sudo chown $USER:$USER /var/lib/screen/last_tags_and_ids.json
 
 
 # Check if command-line argument is provided
@@ -17,10 +17,10 @@ then
 fi
 
 # Check if /home/potato/NFC_Tracking exists before changing directory
-if [ -d "/home/potato/NFC_Tracking" ]; then
-    cd /home/potato/NFC_Tracking
+if [ -d "$HOME/NFC_Tracking" ]; then
+    cd $HOME/NFC_Tracking
 else
-    echo "Directory /home/potato/NFC_Tracking does not exist."
+    echo "Directory $HOME/NFC_Tracking does not exist."
     exit 1
 fi
 
@@ -76,7 +76,7 @@ sudo systemctl enable NetworkManager
 
 # Install packages from requirements.txt if it exists
 if [ -f "/home/potato/NFC_Tracking/requirements.txt" ]; then
-    packages=$(cat /home/potato/NFC_Tracking/requirements.txt)
+    packages=$(cat $HOME/NFC_Tracking/requirements.txt)
     apt-get install -y $packages
 fi
 pip3 install boto3
@@ -89,7 +89,7 @@ driver=$1  # Get driver name from command-line argument
 # Update system
 sudo apt update
 
-cd /home/potato/
+cd $HOME
 # USB Wifi Adapter Driver
 if [ "$driver" = "wn725n" ]
 then
@@ -117,7 +117,7 @@ else
 fi
 
 # Install libnfc
-cd /home/potato
+cd $HOME
 git clone https://github.com/nfc-tools/libnfc.git
 cd libnfc
 autoreconf -vis
@@ -141,10 +141,10 @@ sudo sed -i "/^#.*device.connstring/c\\device.connstring = \"$CONN_STRING\"" $FI
 sudo sed -i "/^#.*device.name/c\\device.name = \"$DEVICE_NAME\"" $FILE
 
 # Install git libre wiring repo
-cd /home/potato/
+cd $HOME
 git clone https://github.com/libre-computer-project/libretech-wiring-tool.git
 cd libretech-wiring-tool
-cp /home/potato/NFC_Tracking/spicc-ili9341-new.dts /home/potato/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt/
+cp $HOME/NFC_Tracking/spicc-ili9341-new.dts $HOME/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt/
 sudo ./install.sh
 
 # Set Wiring Overlay
