@@ -22,7 +22,7 @@ time.tzset()
 
 BATCH_FILE_PATH = "/var/lib/screen/batched_button_presses.json"
 LAST_TAGS_AND_IDS_FILE_PATH = "/var/lib/screen/last_tags_and_ids.json"
-
+AIRTABLE_API_KEY = ""
 
 def print_log(format_str, *args):
     """
@@ -62,7 +62,7 @@ def get_machine_id():
             return None
     return machine_id
 
-def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key="patAQ8FpGw4j3oKk2.5f0606ba0571c34a403bdd282a25681187c1ac5f37050cca35a880e4def1a5ee"):
+def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key=AIRTABLE_API_KEY):
     URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
 
     HEADERS = {
@@ -108,7 +108,7 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key="p
 
     return reader_data
 
-def create_record(base_id, table_id, field_data, api_key="patAQ8FpGw4j3oKk2.5f0606ba0571c34a403bdd282a25681187c1ac5f37050cca35a880e4def1a5ee"):
+def create_record(base_id, table_id, field_data, api_key=AIRTABLE_API_KEY):
     """
     Create a new record in the specified table.
 
@@ -311,14 +311,19 @@ def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"
     return False
 
 def main():
-    # Load AWS credentials from file
-    config = configparser.ConfigParser()
-    config.read('/home/potato/NFC_Tracking/.aws/credentials.txt')
+    # Reading Airtable API Key
+    airtable_config = configparser.ConfigParser()
+    airtable_config.read(os.path.expanduser('~/.airtable/credentials.txt'))
+    global AIRTABLE_API_KEY  # Making sure to use the global variable
+    AIRTABLE_API_KEY = airtable_config.get('Credentials', 'airtable_api_key')
 
-    aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
-    aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
-    #boto3.setup_default_session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
-    #                            region_name='us-east-1')
+    # Load AWS credentials from file
+    aws_config = configparser.ConfigParser()
+    aws_config.read(os.path.expanduser('~/.aws/credentials.txt'))
+
+    aws_access_key_id = aws_config.get('Credentials', 'aws_access_key_id')
+    aws_secret_access_key = aws_config.get('Credentials', 'aws_secret_access_key')
+
     dynamodb = boto3.resource(
         'dynamodb',
         aws_access_key_id=aws_access_key_id,
@@ -405,17 +410,20 @@ def main():
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
                                 if tagId != last_order_tag:
-                                    last_order_record_id = order_dict["record_id"]
-                                    if push_item_db(dynamodb, "OrderNFC", last_order_record_id):
-                                        last_order_tag = tagId
-                                        last_order_tap = formatted_time
-                                        units_order = 0
-                                        if order_dict["order_id"] == "None":
-                                            order_id = "None"
-                                        else:
-                                            order_id = order_dict["order_id"][0]
-                                    else:
+                                    if last_employee_record_id == "None":
                                         fail = True
+                                    else:
+                                        last_order_record_id = order_dict["record_id"]
+                                        if push_item_db(dynamodb, "OrderNFC", {"machine_record_id": machine_record_id, "order_tag_record_id": last_order_record_id, "employee_tag_record_id": last_employee_record_id}):
+                                            last_order_tag = tagId
+                                            last_order_tap = formatted_time
+                                            units_order = 0
+                                            if order_dict["order_id"] == "None":
+                                                order_id = "None"
+                                            else:
+                                                order_id = order_dict["order_id"][0]
+                                        else:
+                                            fail = True
                             else: # Unregistered tag treated as employee tag or employee tag is registered
                                 if tagId != last_employee_tag:
                                     last_employee_record_id_temp = last_employee_record_id
@@ -432,7 +440,7 @@ def main():
                                     else:
                                         employee_name = employee_dict["employee_name"][0]
                                         last_employee_record_id = employee_dict["record_id"]
-                                    if push_item_db(dynamodb, "EmployeeNFC", last_employee_record_id):
+                                    if push_item_db(dynamodb, "EmployeeNFC", {"machine_record_id": machine_record_id, "employee_tag_record_id": last_employee_record_id}):
                                         last_employee_tag = tagId
                                         last_employee_tap = formatted_time
                                         units_order = 0
