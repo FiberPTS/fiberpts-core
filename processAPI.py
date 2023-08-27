@@ -53,9 +53,9 @@ def handle_tap_request(req):
         for record in records:
             airtable_record = {
                 "fields": {
-                    "fldVQGXQ9CVW6KJkJ": record.get("machine_record_id"),
-                    "fldGx0sQJknx4CDFR": record.get("employee_tag_record_id"),
-                    "fld6jiNTUPVRKdf5d": record.get("order_tag_record_id"),
+                    "fldVQGXQ9CVW6KJkJ": [record.get("machine_record_id")],
+                    "fldGx0sQJknx4CDFR": [record.get("employee_tag_record_id")],
+                    "fld6jiNTUPVRKdf5d": [record.get("order_tag_record_id")],
                     "fldGYKh5CAUcqesbt": record.get("timestamp"),
                 }
             }
