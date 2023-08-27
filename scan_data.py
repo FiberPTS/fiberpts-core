@@ -3,9 +3,10 @@ import boto3
 import json
 import configparser
 import time
+import os
 
 config = configparser.ConfigParser()
-config.read('/home/potato/NFC_Tracking/.aws/credentials.txt')
+config.read(os.path.expanduser('~/.aws/credentials.txt'))
 
 aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
 aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
