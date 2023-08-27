@@ -72,6 +72,7 @@ def handle_tap_request(req):
 
         # Make the POST request to Airtable API
         response = requests.post(url, headers=headers, json=payload)
+        print(response.json())
         response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code
         return (True, None)
     except requests.exceptions.RequestException as e:
