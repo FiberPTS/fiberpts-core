@@ -236,7 +236,7 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
-    handled_request = None
+    handled_requests = []
     handle_max = 3  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
 
@@ -281,7 +281,7 @@ def main():
             if success:
                 to_delete.append(req)
                 request_count += expected_increment  # Increment by the expected amount
-                handled_request = req
+                handled_requests.append(req)
             else:
                 request_attempts[key]['count'] += 1
                 request_attempts[key]['errors'].append(error_message)
@@ -296,13 +296,13 @@ def main():
         for req in to_delete + to_update:
             pending_requests.remove(req)
 
-        if handled_request:
-            print(f"Request Processed: {handled_request}")
-            handled_request = None
+        if len(handled_requests) > 0:
+            print(f"Request Processed: {handled_requests}")
+            handled_requests = []
         else:
             print("No Process Requested")
             time.sleep(1)
-            
+
 
 if __name__ == "__main__":
     main()
