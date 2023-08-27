@@ -84,7 +84,7 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key=AI
         data = json.loads(response.text)
 
         if response.status_code != 200:
-            perror_log(f"Error {response.status_code}: {response.text}")
+            print_log(f"Error {response.status_code}: {response.text}")
             break
 
         all_records.extend(data.get("records", []))
