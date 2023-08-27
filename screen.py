@@ -62,7 +62,9 @@ def get_machine_id():
             return None
     return machine_id
 
-def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key=AIRTABLE_API_KEY):
+def get_record(base_id, table_id, field_ids, filter_id, filter_value):
+    global AIRTABLE_API_KEY
+    api_key = AIRTABLE_API_KEY
     URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
 
     HEADERS = {
@@ -84,7 +86,7 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key=AI
         data = json.loads(response.text)
 
         if response.status_code != 200:
-            print("Error "+str(response.status_code)+": "+response.text)
+            perror_log(f"Error {response.status_code}: {json.dumps(response.text)}")
             break
 
         all_records.extend(data.get("records", []))
@@ -108,7 +110,7 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value, api_key=AI
 
     return reader_data
 
-def create_record(base_id, table_id, field_data, api_key=AIRTABLE_API_KEY):
+def create_record(base_id, table_id, field_data):
     """
     Create a new record in the specified table.
 
@@ -121,7 +123,8 @@ def create_record(base_id, table_id, field_data, api_key=AIRTABLE_API_KEY):
     Returns:
     - dict: The created record's data.
     """
-
+    global AIRTABLE_API_KEY
+    api_key = AIRTABLE_API_KEY
     URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=True"
 
     HEADERS = {
@@ -136,7 +139,7 @@ def create_record(base_id, table_id, field_data, api_key=AIRTABLE_API_KEY):
     response = requests.post(URL, headers=HEADERS, data=json.dumps(payload))
 
     if response.status_code != 200:
-        print(f"Error {response.status_code}: {response.text}")
+        perror_log(f"Error {response.status_code}: {json.dumps(response.text)}")
         return None
     return json.loads(response.text)
 
