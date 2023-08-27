@@ -4,6 +4,13 @@ import json
 import configparser
 import time
 
+def delete_records(table, records):
+    for item in records:
+        key = {
+            'partitionKey': item['partitionKey']  # Replace 'PrimaryKeyAttribute' with the actual primary key attribute name of your table
+        }
+        table.delete_item(Key=key)
+
 def main():
     config = configparser.ConfigParser()
     config.read('/home/ec2-user/.aws/credentials.txt')
@@ -21,9 +28,18 @@ def main():
     table = dynamodb.Table('API_Requests')
 
     response = table.scan()
+    pending_requests = [item for item in response['Items'] if item['Status'] == 'Pending']
 
-    for item in response['Items']:
-        print(item)
+    for req in pending_requests:
+        print(req)
+
+    # Delete the pending requests
+    delete_records(table, pending_requests)
+    response = table.scan()
+    pending_requests = [item for item in response['Items'] if item['Status'] == 'Pending']
+
+    for req in pending_requests:
+        print(req)
 
 if __name__ == "__main__":
     main()

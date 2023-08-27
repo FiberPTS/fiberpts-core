@@ -297,7 +297,7 @@ def push_item_db(dynamodb, request_type, request_data, table_name="API_Requests"
     # Insert item
     response = table.put_item(
         Item={
-            'partitionKey': f'{get_machine_id()}-{get_current_time()}',
+            'partitionKey': f'{get_machine_id()}-{request_type}-{get_current_time()}',
             'Request_Type': request_type,
             'Data': data,
             'Status': 'Pending',
