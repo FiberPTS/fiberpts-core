@@ -392,7 +392,7 @@ def main():
         update_failed_requests(table, to_update, request_attempts)
 
         unique_list = []
-
+        # SOMETHING IS HAPPENING HERE WHERE THE RECORD for GetRecord is deleted from linux machine but it is still in this list but ...
         for item in to_update + processed_requests:
             if item not in unique_list:
                 unique_list.append(item)
