@@ -348,7 +348,7 @@ def main():
     }
 
     if push_item_db(dynamodb, "LocalIPAddress", request_data):
-        print_log("Local IP Address pushed successfully.")
+        print_log(f"Local IP Address pushed successfully: {local_ip}")
     else:
         print_log("Failed to push Local IP Address.")
 
