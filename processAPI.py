@@ -20,20 +20,6 @@ def delete_records(table, records):
         table.delete_item(Key=key)
 
 
-def update_status_in_dynamodb(dynamodb, partition_key, new_status, data):
-    table = dynamodb.Table('API_Requests')
-    table.update_item(
-        Key={
-            'partitionKey': partition_key
-        },
-        UpdateExpression="SET Status=:s, Data=:d",
-        ExpressionAttributeValues={
-            ':s': new_status,
-            ':d': json.dumps(data)
-        }
-    )
-
-
 def update_failed_requests(table, to_update, request_attempts):
     for req in to_update:
         key = {
@@ -78,7 +64,7 @@ def handle_get_record(req, dynamodb):
     data_str = req.get('Data', '')
     data_json = json.loads(data_str)
 
-    partition_key = data_json.get('partitionKey', '')
+    partition_key = req.get('partitionKey', '')
     table_name = data_json.get('table_name', '')
     filter_id = data_json.get('filter_id', '')
     filter_value = data_json.get('filter_value', '')
