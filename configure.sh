@@ -79,7 +79,9 @@ if [ -f "/home/potato/NFC_Tracking/requirements.txt" ]; then
     packages=$(cat $HOME/NFC_Tracking/requirements.txt)
     apt-get install -y $packages
 fi
-pip3 install boto3
+
+# Pip installs
+pip3 install boto3 netifaces
 
 sudo sh compile_all.sh
 sudo sh update_permissions.sh

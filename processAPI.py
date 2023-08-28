@@ -39,6 +39,40 @@ def update_failed_requests(table, to_update, request_attempts):
         )
 
 
+def handle_ip_request(req):
+    try:
+        # Extract the data from the request
+        data_str = req.get('Data', '')
+        data_json = json.loads(data_str)
+
+        # URL for updating a record
+        url_update = f"{AIRTABLE_API_URL}tblFOfDowcZNlPRDL/{data_json.get('machine_record_id', ' ')[0]}"
+
+        # Prepare payload for Airtable API to update IP address
+        airtable_update_payload = {
+            "fields": {
+                "fldjOFa17u7mRjN0a": data_json.get('ip_address', '')  # Update this field ID with your actual IP address field ID
+            }
+        }
+
+        headers = {
+            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        # Make the PATCH request to Airtable API
+        response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
+        response_update.raise_for_status()
+
+        return True, None
+    except requests.HTTPError as e:
+        return False, f"Failed to update record: {response_update.json()}"
+    except json.JSONDecodeError as e:
+        return False, str(e)
+    except Exception as e:
+        return False, str(e)
+
+
 def handle_tap_request(req):
     try:
         url = AIRTABLE_API_URL + "tblVoD1DTyiOAMJ5q"
@@ -201,6 +235,8 @@ def handle_request(req):
     elif request_type == 'OrderNFC':
         # Handle OrderNFC
         return handle_order_request(req)
+    elif request_type == 'LocalIPAddress':
+        return handle_ip_request(req)
     else:
         return False, f"Unknown request type: {request_type}"
 

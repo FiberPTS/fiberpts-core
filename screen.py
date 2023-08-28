@@ -11,6 +11,8 @@ import os
 import signal
 import boto3
 import configparser
+import netifaces as ni
+
 
 BATCH_FILE_PATH = "/var/lib/screen/batched_button_presses.json"
 LAST_TAGS_AND_IDS_FILE_PATH = "/var/lib/screen/last_tags_and_ids.json"
@@ -48,18 +50,25 @@ def perror_log(format_str, *args):
 
 
 def get_machine_id():
-    machine_id = None
     try:
         with open("/etc/machine-id", "r") as f:
-            machine_id = f.read().strip()
+            return f.read().strip()
     except FileNotFoundError:
         # If /etc/machine-id doesn't exist, you can also check /var/lib/dbus/machine-id
         try:
             with open("/var/lib/dbus/machine-id", "r") as f:
-                machine_id = f.read().strip()
+                return f.read().strip()
         except FileNotFoundError:
             return None
-    return machine_id
+    return None
+
+
+def get_local_ip(interface='wlan0'):
+    try:
+        ip = ni.ifaddresses(interface)[ni.AF_INET][0]['addr']
+    except (KeyError, ValueError):
+        ip = 'UNKNOWN'
+    return ip
 
 
 def format_utc_to_est(date_str):
@@ -329,6 +338,19 @@ def main():
             last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
             last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
             last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
+    # Obtain local IP address of the Linux machine on wlan0
+    local_ip = get_local_ip()
+
+    # Push local IP address along with machine_record_id to DynamoDB
+    request_data = {
+        "local_ip": local_ip,
+        "machine_record_id": last_tags_and_ids.get("machine_record_id", "None")
+    }
+
+    if push_item_db(dynamodb, "LocalIPAddress", request_data):
+        print_log("Local IP Address pushed successfully.")
+    else:
+        print_log("Failed to push Local IP Address.")
 
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
