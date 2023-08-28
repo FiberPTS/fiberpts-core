@@ -336,6 +336,7 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
+    processed_requests = []
     handle_max = 1  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
     empty_runs = 0
@@ -382,6 +383,7 @@ def main():
                     to_delete.append(req)
                 else:
                     pending_requests.remove(req)
+                processed_requests.append(req)
                 request_count += expected_increment  # Increment by the expected amount
             else:
                 request_attempts[key]['count'] += 1
@@ -391,13 +393,13 @@ def main():
 
         update_failed_requests(table, to_update, request_attempts)
 
-        for req in to_delete + to_update:
+        for req in to_update + processed_requests:
             key = req['partitionKey']
             del request_attempts[key]
             pending_requests.remove(req)
 
-        if len(to_delete) > 0:
-            print(f"Requests Processed: {to_delete}")
+        if len(processed_requests) > 0:
+            print(f"Requests Processed: {processed_requests}")
             empty_runs = 0
         else:
             print("No Requests Processed")
