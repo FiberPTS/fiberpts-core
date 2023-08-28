@@ -352,7 +352,7 @@ def main():
                             # When an employee tag is registered, the session unit counting is reset
                             if order_dict: # Order tag is registered
                                 if tagId != last_tags_and_ids["last_order_tag"]:
-                                    if last_employee_record_id == "None":
+                                    if last_tags_and_ids["last_employee_record_id"] == "None":
                                         fail = True
                                     else:
                                         last_tags_and_ids["last_order_record_id"] = order_dict["record_id"]
