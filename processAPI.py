@@ -61,6 +61,7 @@ def update_database_request(dynamodb, partition_key, data, status):
 
 
 def handle_get_record(req, dynamodb):
+    # SOMETHING HAPPENING HERE WHERE THE DATA ISNT RETREIVABLE BY THE SCREEN.py PROGRAM
     data_str = req.get('Data', '')
     data_json = json.loads(data_str)
 
@@ -376,7 +377,8 @@ def main():
                 continue
 
             if success:
-                to_delete.append(req)
+                if request_type not in ['GetRecord']:
+                    to_delete.append(req)
                 request_count += expected_increment  # Increment by the expected amount
             else:
                 request_attempts[key]['count'] += 1
