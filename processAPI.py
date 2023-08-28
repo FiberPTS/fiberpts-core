@@ -82,6 +82,7 @@ def handle_get_record(req, dynamodb):
 
     try:
         response = requests.get(url, headers=headers, params=params)
+        print(response.json())
         response.raise_for_status()  # Raise error if not successful
         raw_records = response.json().get('records', [])
 
@@ -102,7 +103,7 @@ def handle_get_record(req, dynamodb):
         update_database_request(dynamodb, partition_key, processed_records, "Complete")
         return True, None
     except requests.HTTPError as e:
-        return False, f"HTTP Error: {str(e)}"
+        return False, f"HTTP Error: {response.json()}"
     except Exception as e:
         return False, str(e)
 
