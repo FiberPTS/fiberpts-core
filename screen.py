@@ -323,7 +323,7 @@ def main():
         reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
         if reader_dict:
             last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
-            last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", "")
+            last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
             last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
             last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
             last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
