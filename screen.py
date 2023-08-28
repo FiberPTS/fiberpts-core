@@ -365,9 +365,9 @@ def main():
                                     else:
                                         last_tags_and_ids["last_order_record_id"] = order_dict["record_id"]
                                         request_data = {
-                                            "machine_record_id": [last_tags_and_ids["machine_record_id"]],
-                                            "order_tag_record_id": [last_tags_and_ids["last_order_record_id"]],
-                                            "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
+                                            "machine_record_id": last_tags_and_ids["machine_record_id"],
+                                            "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
+                                            "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"]
                                         }
                                         if push_item_db(dynamodb, "OrderNFC", request_data):
                                             print_log("NFC Order Tapped")

@@ -100,7 +100,7 @@ def handle_order_request(req):
         # Prepare payload for Airtable API to create a new record
         airtable_create_payload = {
             "fields": {
-                "fldoBxDoBfeizCwmT": data_json.get("machine_record_id"),
+                "fldoBxDoBfeizCwmT": [data_json.get("machine_record_id")],
                 "fldNHVn5USJIgTPB6": [data_json.get("employee_tag_record_id")],
                 "fldkG7dswfsYUx8ff": [data_json.get("order_tag_record_id")],
             }
