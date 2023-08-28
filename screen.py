@@ -322,7 +322,7 @@ def pull_item_db(dynamodb, partition_key, max_attempts=5):
                 table.delete_item(Key=key)
                 return True, item
             attempts += 1
-            time.sleep(0.25)
+            time.sleep(0.5)
         except Exception as e:
             print(f"An error occurred while pulling the item: {e}")
             return False, f"An error occurred: {e}"
