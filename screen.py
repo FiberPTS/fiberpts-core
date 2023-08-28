@@ -68,11 +68,10 @@ def format_utc_to_est(date_str):
         return ""
     date_str = date_str.replace('Z', '')
     # Adjust the format to match the given string
-    #date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
-    #date_est = date_utc.astimezone(ZoneInfo('America/New_York'))
-    #if date_est.astimezone(ZoneInfo('US/Eastern')).dst():
-    #    date_est += datetime.timedelta(hours=1)
-    date_est = datetime.datetime.fromisoformat(date_str).astimezone(ZoneInfo('America/New_York'))
+    date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
+    date_est = date_utc.astimezone(ZoneInfo('America/New_York'))
+    if date_est.astimezone(ZoneInfo('US/Eastern')).dst():
+        date_est += datetime.timedelta(hours=1)
     return date_est.strftime('%Y-%m-%d %l:%M %p')
 
 

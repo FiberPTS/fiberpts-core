@@ -100,9 +100,9 @@ def handle_order_request(req):
         # Prepare payload for Airtable API to create a new record
         airtable_create_payload = {
             "fields": {
-                "fldoBxDoBfeizCwmT": data_json.get("machine_record_id"),
-                "fldNHVn5USJIgTPB6": data_json.get("employee_tag_record_id"),
-                "fldkG7dswfsYUx8ff": data_json.get("order_tag_record_id"),
+                "fldoBxDoBfeizCwmT": [data_json.get("machine_record_id")],
+                "fldNHVn5USJIgTPB6": [data_json.get("employee_tag_record_id")],
+                "fldkG7dswfsYUx8ff": [data_json.get("order_tag_record_id")],
             }
         }
 
@@ -112,6 +112,7 @@ def handle_order_request(req):
         }
 
         response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
+        print(response_create.json())
         response_create.raise_for_status()
 
         # Prepare payload for Airtable API to update an existing record
@@ -122,13 +123,13 @@ def handle_order_request(req):
         }
 
         # Assuming machine_record_id is the record id for the record to be updated
-        url_update = f"{url_update}/{data_json.get('machine_record_id')}"
+        url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
 
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
+        print(response_update.json())
         response_update.raise_for_status()
 
         return True, None
-
     except requests.HTTPError as e:
         if response_update:
             return False, f"Failed to update record: {response_update.json()}"
@@ -250,7 +251,7 @@ def main():
 
         for req in pending_requests:
             request_type = req.get('Request_Type')
-
+            print(request_type)
             # If the request is of type OrderNFC or EmployeeNFC, check if there is enough room for 2 API calls
             if request_type in ['OrderNFC', 'EmployeeNFC']:
                 expected_increment = 2
