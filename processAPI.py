@@ -381,8 +381,6 @@ def main():
                 # NEED TO DEAL WITH DELETING THIS
                 if request_type not in ['GetRecord']:
                     to_delete.append(req)
-                else:
-                    pending_requests.remove(req)
                 processed_requests.append(req)
                 request_count += expected_increment  # Increment by the expected amount
             else:
