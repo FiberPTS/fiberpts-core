@@ -20,7 +20,10 @@ def delete_records(table, records):
         table.delete_item(Key=key)
 
 
-def update_failed_requests(table, records, reason='Unknown error'):
+def update_failed_requests(table, to_update, request_attempts):
+    for req in to_update:
+        key = req['partitionKey']
+        error_messages = request_attempts[key]['errors']
     for item in records:
         key = {
             'partitionKey': item['partitionKey']
@@ -74,14 +77,13 @@ def handle_tap_request(req):
         response = requests.post(url, headers=headers, json=payload)
         print(response.json())
         response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code
-        return (True, None)
+        return True, None
     except requests.exceptions.RequestException as e:
-        return (False, str(e))
+        return False, str(e)
     except requests.exceptions.HTTPError as e:
-        return (False,
-                f"Failed to create records: {response.json().get('error', {}).get('message', 'Unknown error')}")
+        return False, f"Failed to create records: {response.json().get('error', {}).get('message', 'Unknown error')}"
     except json.JSONDecodeError as e:
-        return (False, str(e))
+        return False, str(e)
 
 
 def handle_order_request(req):
@@ -128,17 +130,15 @@ def handle_order_request(req):
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
 
-        return (True, None)
+        return True, None
 
     except requests.HTTPError as e:
         if response_update:
-            return (False,
-                    f"Failed to update record: {response_update.json().get('error', {}).get('message', 'Unknown error')}")
+            return False, f"Failed to update record: {response_update.json().get('error', {}).get('message', 'Unknown error')}"
         else:
-            return (False,
-                    f"Failed to create record: {response_create.json().get('error', {}).get('message', 'Unknown error')}")
+            return False, f"Failed to create record: {response_create.json().get('error', {}).get('message', 'Unknown error')}"
     except Exception as e:
-        return (False, str(e))
+        return False, str(e)
 
 
 def handle_employee_request(req):
@@ -184,17 +184,15 @@ def handle_employee_request(req):
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
 
-        return (True, None)
+        return True, None
 
     except requests.HTTPError as e:
         if response_update:
-            return (False,
-                    f"Failed to update record: {response_update.json().get('error', {}).get('message', 'Unknown error')}")
+            return False, f"Failed to update record: {response_update.json().get('error', {}).get('message', 'Unknown error')}"
         else:
-            return (False,
-                    f"Failed to create record: {response_create.json().get('error', {}).get('message', 'Unknown error')}")
+            return False, f"Failed to create record: {response_create.json().get('error', {}).get('message', 'Unknown error')}"
     except Exception as e:
-        return (False, str(e))
+        return False, str(e)
 
 
 def handle_request(req):
@@ -210,8 +208,7 @@ def handle_request(req):
         # Handle OrderNFC
         return handle_order_request(req)
     else:
-        print(f"Unknown request type: {request_type}")
-        return False
+        return False, f"Unknown request type: {request_type}"
 
 
 def main():
@@ -237,9 +234,9 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
-    handled_requests = []
     handle_max = 3  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
+    emptyRuns = 0
 
     while True:
         current_time = time.time()
@@ -282,27 +279,29 @@ def main():
             if success:
                 to_delete.append(req)
                 request_count += expected_increment  # Increment by the expected amount
-                handled_requests.append(req)
             else:
                 request_attempts[key]['count'] += 1
                 request_attempts[key]['errors'].append(error_message)
 
         delete_records(table, to_delete)
 
-        for req in to_update:
-            key = req['partitionKey']
-            error_messages = request_attempts[key]['errors']
-            update_failed_requests(table, [req], reason=error_messages)
+        update_failed_requests(table, to_update, request_attempts)
 
         for req in to_delete + to_update:
+            key = req['partitionKey']
+            del request_attempts[key]
             pending_requests.remove(req)
 
-        if len(handled_requests) > 0:
-            print(f"Request Processed: {handled_requests}")
-            handled_requests = []
+        if len(to_delete) > 0:
+            print(f"Requests Processed: {to_delete}")
+            emptyRuns = 0
         else:
-            print("No Process Requested")
+            print("No Requests Processed")
             time.sleep(1)
+            emptyRuns += 1
+        if emptyRuns > 2:
+            pass
+            # DO STUFF DURING DOWNTOWN
 
 
 if __name__ == "__main__":
