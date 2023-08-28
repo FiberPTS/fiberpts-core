@@ -315,7 +315,7 @@ def main():
 
     # Load the last tags, ids, and taps from file
     last_tags_and_ids = load_last_tags_and_ids_from_file()
-    print(last_tags_and_ids)
+
     machine_id = get_machine_id()
     if True or last_tags_and_ids.get("machine_record_id","None") == "None":
         field_ids = [("fldZsM3YEVQqpJMFF", "record_id"), ("fldfXLG8xbM9S3Evx", "order_tag_record_id"), ("fldN0cePGQy8jMkBa", "employee_tag_record_id"),
@@ -329,7 +329,7 @@ def main():
             last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
             last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
             last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
-    print(last_tags_and_ids)
+
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
     fifo_path = "/tmp/screenPipe"
