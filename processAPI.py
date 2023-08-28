@@ -177,8 +177,7 @@ def handle_employee_request(req):
         }
 
         # Assuming machine_record_id is the record id for the record to be updated
-        url_update = f"{url_update}/{data_json.get('machine_record_id')}"
-        print(url_update)
+        url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
         print("Update JSON:",response_update.json())
         response_update.raise_for_status()
