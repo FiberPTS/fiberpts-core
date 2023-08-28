@@ -299,7 +299,7 @@ def push_item_db(dynamodb, request_type, request_data):
     return False, None
 
 
-def pull_item_db(dynamodb, partition_key, max_attempts=5):
+def pull_item_db(dynamodb, partition_key, max_attempts=20):
     table = dynamodb.Table('API_Requests')
     attempts = 1
     while attempts <= max_attempts:
