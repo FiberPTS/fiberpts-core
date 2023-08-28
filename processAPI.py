@@ -62,7 +62,6 @@ def handle_ip_request(req):
 
         # Make the PATCH request to Airtable API
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
-        print(response_update.json())
         response_update.raise_for_status()
 
         return True, None
