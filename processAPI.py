@@ -163,7 +163,7 @@ def handle_employee_request(req):
             }
 
             response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
-            print("Created JSON:",response_create.json())
+
             response_create.raise_for_status()
         create_failed = False
         # Prepare payload for Airtable API to update an existing record
@@ -176,7 +176,7 @@ def handle_employee_request(req):
         # Assuming machine_record_id is the record id for the record to be updated
         url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
-        print("Update JSON:",response_update.json())
+
         response_update.raise_for_status()
 
         return True, None
