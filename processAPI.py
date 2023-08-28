@@ -46,7 +46,7 @@ def handle_ip_request(req):
         data_json = json.loads(data_str)
 
         # URL for updating a record
-        url_update = f"{AIRTABLE_API_URL}tblFOfDowcZNlPRDL/{data_json.get('machine_record_id', ' ')[0]}"
+        url_update = f"{AIRTABLE_API_URL}tblFOfDowcZNlPRDL/{data_json.get('machine_record_id', ' ')}"
 
         # Prepare payload for Airtable API to update IP address
         airtable_update_payload = {
