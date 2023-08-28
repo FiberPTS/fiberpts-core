@@ -139,7 +139,7 @@ def handle_order_request(req):
 
 
 def handle_employee_request(req):
-    response_create = None
+    create_failed = True
 
     try:
         # For creating a record
@@ -168,7 +168,7 @@ def handle_employee_request(req):
             response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
             print("Created JSON:",response_create.json())
             response_create.raise_for_status()
-
+        create_failed = False
         # Prepare payload for Airtable API to update an existing record
         airtable_update_payload = {
             "fields": {
@@ -186,7 +186,7 @@ def handle_employee_request(req):
         return True, None
 
     except requests.HTTPError as e:
-        if response_create:
+        if create_failed:
             return False, f"1-Failed to create record: {response_create.json()}"
         return False, f"2-Failed to update record: {response_update.json()}"
     except Exception as e:
