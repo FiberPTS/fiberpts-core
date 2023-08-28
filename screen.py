@@ -130,9 +130,9 @@ def draw_display(last_tags_and_ids, res=(240, 320), font=ImageFont.truetype("/us
     image = draw_rotated_text(image, last_tags_and_ids["order_id"], font, (5, 60), text_color, bg_color)
     image = draw_rotated_text(image, last_tags_and_ids["last_order_tap"], font, (5, 90), text_color, bg_color)
 
-    image = draw_rotated_text(image, "Total Count: " + last_tags_and_ids["units_employee"], font, (5, 120), text_color, bg_color)
+    image = draw_rotated_text(image, "Total Count: " + str(last_tags_and_ids["units_employee"]), font, (5, 120), text_color, bg_color)
 
-    image = draw_rotated_text(image, "Order Count: " + last_tags_and_ids["units_order"], font, (5, 150), text_color, bg_color)
+    image = draw_rotated_text(image, "Order Count: " + str(last_tags_and_ids["units_order"]), font, (5, 150), text_color, bg_color)
 
     # Convert the image to RGB565 format and write to framebuffer
     raw_data = image_to_rgb565(image)
