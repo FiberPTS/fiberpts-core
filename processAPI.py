@@ -84,8 +84,7 @@ def handle_tap_request(req):
 
 
 def handle_order_request(req):
-    response_create = None
-    response_update = None
+    create_failed = True
 
     try:
         # For creating a record
@@ -93,28 +92,27 @@ def handle_order_request(req):
 
         # For updating a record
         url_update = AIRTABLE_API_URL + "tblFOfDowcZNlPRDL"
+        reasons = req.get('Reason', None)
+        if not reasons or reasons[0][0] != '2':
+            data_str = req.get('Data', '')
+            data_json = json.loads(data_str)
 
-        data_str = req.get('Data', '')
-        data_json = json.loads(data_str)
-
-        # Prepare payload for Airtable API to create a new record
-        airtable_create_payload = {
-            "fields": {
-                "fldoBxDoBfeizCwmT": data_json.get("machine_record_id"),
-                "fldNHVn5USJIgTPB6": data_json.get("employee_tag_record_id"),
-                "fldkG7dswfsYUx8ff": data_json.get("order_tag_record_id"),
+            # Prepare payload for Airtable API to create a new record
+            airtable_create_payload = {
+                "fields": {
+                    "fldoBxDoBfeizCwmT": data_json.get("machine_record_id"),
+                    "fldNHVn5USJIgTPB6": data_json.get("employee_tag_record_id"),
+                    "fldkG7dswfsYUx8ff": data_json.get("order_tag_record_id"),
+                }
             }
-        }
-        print(airtable_create_payload)
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
-        }
+            headers = {
+                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                "Content-Type": "application/json"
+            }
 
-        response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
-        print(response_create.json())
-        response_create.raise_for_status()
-
+            response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
+            response_create.raise_for_status()
+        create_failed = False
         # Prepare payload for Airtable API to update an existing record
         airtable_update_payload = {
             "fields": {
@@ -126,15 +124,13 @@ def handle_order_request(req):
         url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
 
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
-        print(response_update.json())
         response_update.raise_for_status()
 
         return True, None
     except requests.HTTPError as e:
-        if response_update:
-            return False, f"Failed to update record: {response_update.json()}"
-        else:
-            return False, f"Failed to create record: {response_create.json()}"
+        if create_failed:
+            return False, f"1-Failed to create record: {response_create.json()}"
+        return False, f"2-Failed to update record: {response_update.json()}"
     except Exception as e:
         return False, str(e)
 
