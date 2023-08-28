@@ -321,13 +321,13 @@ def main():
                      ("fldcaeaey2E5R8Iqp", "last_order_tap"), ("fldVALQ4NGPNVrvZz", "last_employee_tap"), ("fldcFVtGOWbd8RgT6", "order_id"), ("fldJQd3TmtxURsQy0", "employee_name")]
         reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
         if reader_dict:
-            last_tags_and_ids["machine_record_id"] = reader_dict["record_id"]
-            last_tags_and_ids["last_order_record_id"] = reader_dict["order_tag_record_id"]
-            last_tags_and_ids["last_employee_record_id"] = reader_dict["employee_tag_record_id"]
-            last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict["last_order_tap"])
-            last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict["last_employee_tap"])
-            last_tags_and_ids["order_id"] = reader_dict["order_id"]
-            last_tags_and_ids["employee_name"] = reader_dict["employee_name"]
+            last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
+            last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", "")
+            last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", "")
+            last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
+            last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
+            last_tags_and_ids["order_id"] = reader_dict.get("order_id", "")
+            last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", "")
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
     fifo_path = "/tmp/screenPipe"
