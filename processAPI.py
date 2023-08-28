@@ -20,6 +20,20 @@ def delete_records(table, records):
         table.delete_item(Key=key)
 
 
+def update_status_in_dynamodb(dynamodb, partition_key, new_status, data):
+    table = dynamodb.Table('API_Requests')
+    table.update_item(
+        Key={
+            'partitionKey': partition_key
+        },
+        UpdateExpression="SET Status=:s, Data=:d",
+        ExpressionAttributeValues={
+            ':s': new_status,
+            ':d': json.dumps(data)
+        }
+    )
+
+
 def update_failed_requests(table, to_update, request_attempts):
     for req in to_update:
         key = {
@@ -37,6 +51,74 @@ def update_failed_requests(table, to_update, request_attempts):
                 ':r': request_attempts[req['partitionKey']]['errors']
             }
         )
+
+
+def update_database_request(dynamodb, partition_key, data, status):
+    try:
+        table = dynamodb.Table('API_Requests')
+        table.update_item(
+            Key={'partitionKey': partition_key},
+            UpdateExpression="set #d = :d, #s = :s",
+            ExpressionAttributeNames={
+                '#d': 'Data',
+                '#s': 'Status'
+            },
+            ExpressionAttributeValues={
+                ':d': json.dumps(data),
+                ':s': status
+            }
+        )
+        return True
+    except Exception as e:
+        print(f"An error occurred while updating the database: {e}")
+        return False
+
+
+def handle_get_record(req, dynamodb):
+    data_str = req.get('Data', '')
+    data_json = json.loads(data_str)
+
+    partition_key = data_json.get('partitionKey', '')
+    table_name = data_json.get('table_name', '')
+    filter_id = data_json.get('filter_id', '')
+    filter_value = data_json.get('filter_value', '')
+    field_mappings = data_json.get('field_mappings', '')
+
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+    }
+
+    params = {
+        "filterByFormula": f"({filter_id} = '{filter_value}')"
+    }
+
+    url = f"{AIRTABLE_API_URL}{table_name}"
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()  # Raise error if not successful
+        raw_records = response.json().get('records', [])
+
+        if not raw_records:
+            return False, "No records found"
+
+        # Create a list of dictionaries to hold the processed records
+        processed_records = []
+
+        for raw_record in raw_records:
+            processed_record = {}
+            fields = raw_record.get('fields', {})
+
+            for field_api_name, field_custom_name in field_mappings:
+                processed_record[field_custom_name] = fields.get(field_api_name, None)
+
+            processed_records.append(processed_record)
+        update_database_request(dynamodb, partition_key, processed_records, "Complete")
+        return True, None
+    except requests.HTTPError as e:
+        return False, f"HTTP Error: {str(e)}"
+    except Exception as e:
+        return False, str(e)
 
 
 def handle_ip_request(req):
@@ -223,7 +305,7 @@ def handle_employee_request(req):
         return False, str(e)
 
 
-def handle_request(req):
+def handle_request(req, dynamodb):
     # Implement your logic for handling different 'Request_Type' here
     request_type = req.get('Request_Type', '')
     if request_type == 'TapEvent':
@@ -237,6 +319,8 @@ def handle_request(req):
         return handle_order_request(req)
     elif request_type == 'LocalIPAddress':
         return handle_ip_request(req)
+    elif request_type == 'GetRecord':
+        return handle_get_record(req, dynamodb)
     else:
         return False, f"Unknown request type: {request_type}"
 
@@ -295,7 +379,7 @@ def main():
                 continue
 
             key = req['partitionKey']
-            success, error_message = handle_request(req)
+            success, error_message = handle_request(req, dynamodb)
 
             if key not in request_attempts:
                 request_attempts[key] = {'count': 0, 'errors': []}
@@ -329,7 +413,9 @@ def main():
             empty_runs += 1
         if empty_runs > 2:
             pass
-            # DO STUFF DURING DOWNTOWN
+            # DO STUFF DURING DOWNTIME
+            # 1. Check for heart beats (reader status)
+
 
 
 if __name__ == "__main__":

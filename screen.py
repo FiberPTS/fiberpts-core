@@ -10,6 +10,7 @@ import sys
 import os
 import signal
 import boto3
+from boto3.dynamodb.conditions import Key, Attr
 import configparser
 import netifaces as ni
 
@@ -281,10 +282,10 @@ def create_record(base_id, table_id, field_data):
 
 def push_item_db(dynamodb, request_type, request_data):
     table = dynamodb.Table('API_Requests')
-
+    partition_key = f'{get_machine_id()}-{request_type}-{get_current_time()}'
     response = table.put_item(
         Item={
-            'partitionKey': f'{get_machine_id()}-{request_type}-{get_current_time()}',
+            'partitionKey': partition_key,
             'Request_Type': request_type,
             'Data': json.dumps(request_data),
             'Status': 'Pending',
@@ -294,8 +295,39 @@ def push_item_db(dynamodb, request_type, request_data):
     if metaData != 'None':
         status = metaData.get('HTTPStatusCode', 'None')
         if status == 200:
-            return True
-    return False
+            return True, partition_key
+    return False, None
+
+
+def pull_item_db(dynamodb, partition_key, max_attempts=5):
+    table = dynamodb.Table('API_Requests')
+    attempts = 1
+    while attempts <= max_attempts:
+        try:
+            # Retrieve the item from the DynamoDB table
+            response = table.get_item(
+                Key={
+                    'partitionKey': partition_key
+                }
+            )
+
+            # Extract the item from the response
+            item = response.get('Item', {})
+
+            # Check if the item exists and has the status "Complete"
+            if item and item.get('Status') == 'Complete':
+                key = {
+                    'partitionKey': partition_key
+                }
+                table.delete_item(Key=key)
+                return True, item
+            attempts += 1
+            time.sleep(0.25)
+        except Exception as e:
+            print(f"An error occurred while pulling the item: {e}")
+            return False, f"An error occurred: {e}"
+    return False, "Item not found or not complete"
+
 
 def main():
     # Reading Airtable API Key
@@ -327,17 +359,35 @@ def main():
 
     machine_id = get_machine_id()
     if True or last_tags_and_ids.get("machine_record_id","None") == "None":
-        field_ids = [("fldZsM3YEVQqpJMFF", "record_id"), ("fldfXLG8xbM9S3Evx", "order_tag_record_id"), ("fldN0cePGQy8jMkBa", "employee_tag_record_id"),
-                     ("fldcaeaey2E5R8Iqp", "last_order_tap"), ("fldVALQ4NGPNVrvZz", "last_employee_tap"), ("fldcFVtGOWbd8RgT6", "order_id"), ("fldJQd3TmtxURsQy0", "employee_name")]
-        reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
-        if reader_dict:
-            last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
-            last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
-            last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
-            last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
-            last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
-            last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
-            last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
+        #field_ids = [("fldZsM3YEVQqpJMFF", "record_id"), ("fldfXLG8xbM9S3Evx", "order_tag_record_id"), ("fldN0cePGQy8jMkBa", "employee_tag_record_id"),
+        #             ("fldcaeaey2E5R8Iqp", "last_order_tap"), ("fldVALQ4NGPNVrvZz", "last_employee_tap"), ("fldcFVtGOWbd8RgT6", "order_id"), ("fldJQd3TmtxURsQy0", "employee_name")]
+        #reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
+        request_data = {
+            'table_name': 'tblFOfDowcZNlPRDL',
+            'filter_id': 'fldbh9aMmA6qAoNKq',
+            'filter_value': machine_id,
+            'field_mappings': [
+                ("fldZsM3YEVQqpJMFF", "record_id"),
+                ("fldfXLG8xbM9S3Evx", "order_tag_record_id"),
+                ("fldN0cePGQy8jMkBa", "employee_tag_record_id"),
+                ("fldcaeaey2E5R8Iqp", "last_order_tap"),
+                ("fldVALQ4NGPNVrvZz", "last_employee_tap"),
+                ("fldcFVtGOWbd8RgT6", "order_id"),
+                ("fldJQd3TmtxURsQy0", "employee_name")
+            ]
+        }
+        success, partition_key = push_item_db(dynamodb, "GetRecord", request_data)
+        if success:
+            success, data = pull_item_db(dynamodb, partition_key)
+            if success:
+                print(data)
+            # last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
+            # last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
+            # last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
+            # last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
+            # last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
+            # last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
+            # last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
     # Obtain local IP address of the Linux machine on wlan0
     local_ip = get_local_ip()
 
@@ -347,7 +397,7 @@ def main():
         "machine_record_id": last_tags_and_ids.get("machine_record_id", "None")
     }
 
-    if push_item_db(dynamodb, "LocalIPAddress", request_data):
+    if push_item_db(dynamodb, "LocalIPAddress", request_data)[0]:
         print_log(f"Local IP Address pushed successfully: {local_ip}")
     else:
         print_log("Failed to push Local IP Address.")
