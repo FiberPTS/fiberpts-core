@@ -22,11 +22,8 @@ def delete_records(table, records):
 
 def update_failed_requests(table, to_update, request_attempts):
     for req in to_update:
-        key = req['partitionKey']
-        error_messages = request_attempts[key]['errors']
-    for item in records:
         key = {
-            'partitionKey': item['partitionKey']
+            'partitionKey': req['partitionKey']
         }
         table.update_item(
             Key=key,
@@ -37,7 +34,7 @@ def update_failed_requests(table, to_update, request_attempts):
             },
             ExpressionAttributeValues={
                 ':s': 'Failed',
-                ':r': reason
+                ':r': request_attempts[req['partitionKey']]['errors']
             }
         )
 
