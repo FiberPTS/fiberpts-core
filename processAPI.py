@@ -396,7 +396,7 @@ def main():
         for item in to_update + processed_requests:
             if item not in unique_list:
                 unique_list.append(item)
-
+        print(unique_list)
         for req in unique_list:
             key = req['partitionKey']
             if key in request_attempts.keys():
