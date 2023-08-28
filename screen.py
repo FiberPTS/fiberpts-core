@@ -321,8 +321,8 @@ def pull_item_db(dynamodb, partition_key, max_attempts=20):
                 }
                 table.delete_item(Key=key)
                 return True, item
-            attempts += 1
-            time.sleep(0.5)
+            # attempts += 1
+            # time.sleep(0.5)
         except Exception as e:
             print(f"An error occurred while pulling the item: {e}")
             return False, f"An error occurred: {e}"
@@ -379,8 +379,7 @@ def main():
         success, partition_key = push_item_db(dynamodb, "GetRecord", request_data)
         if success:
             success, data = pull_item_db(dynamodb, partition_key)
-            if success:
-                print(data)
+            print(data)
             # last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
             # last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
             # last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
