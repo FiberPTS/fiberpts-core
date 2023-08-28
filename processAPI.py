@@ -99,7 +99,7 @@ def handle_get_record(req, dynamodb):
                 processed_record[field_custom_name] = fields.get(field_api_name, None)
 
             processed_records["Records"].append(processed_record)
-
+        print(processed_records)
         update_database_request(dynamodb, partition_key, processed_records, "Complete")
         return True, None
     except requests.HTTPError as e:
