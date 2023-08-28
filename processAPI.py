@@ -78,7 +78,7 @@ def handle_get_record(req, dynamodb):
         "filterByFormula": f"({filter_id} = '{filter_value}')"
     }
 
-    url = f"{AIRTABLE_API_URL}{table_name}"
+    url = f"{AIRTABLE_API_URL}{table_name}?returnFieldsByFieldId=true"
 
     try:
         response = requests.get(url, headers=headers, params=params)
