@@ -65,6 +65,7 @@ def handle_get_record(req, dynamodb):
     data_json = json.loads(data_str)
 
     partition_key = req.get('partitionKey', '')
+    print(partition_key)
     table_name = data_json.get('table_name', '')
     filter_id = data_json.get('filter_id', '')
     filter_value = data_json.get('filter_value', '')
@@ -99,7 +100,7 @@ def handle_get_record(req, dynamodb):
                 processed_record[field_custom_name] = fields.get(field_api_name, None)
 
             processed_records["Records"].append(processed_record)
-        print(processed_records)
+
         update_database_request(dynamodb, partition_key, processed_records, "Complete")
         return True, None
     except requests.HTTPError as e:
