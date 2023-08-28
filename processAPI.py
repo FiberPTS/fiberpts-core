@@ -65,7 +65,6 @@ def handle_get_record(req, dynamodb):
     data_json = json.loads(data_str)
 
     partition_key = req.get('partitionKey', '')
-    print(partition_key)
     table_name = data_json.get('table_name', '')
     filter_id = data_json.get('filter_id', '')
     filter_value = data_json.get('filter_value', '')
