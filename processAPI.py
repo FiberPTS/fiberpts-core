@@ -393,7 +393,8 @@ def main():
 
         for req in to_update + processed_requests:
             key = req['partitionKey']
-            del request_attempts[key]
+            if key in request_attempts.keys():
+                del request_attempts[key]
             pending_requests.remove(req)
 
         if len(processed_requests) > 0:
