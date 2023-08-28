@@ -82,7 +82,6 @@ def handle_get_record(req, dynamodb):
 
     try:
         response = requests.get(url, headers=headers, params=params)
-        print(response.json())
         response.raise_for_status()  # Raise error if not successful
         raw_records = response.json().get('records', [])
 
@@ -90,7 +89,7 @@ def handle_get_record(req, dynamodb):
             return False, "No records found"
 
         # Create a list of dictionaries to hold the processed records
-        processed_records = []
+        processed_records = {"Records":[]}
 
         for raw_record in raw_records:
             processed_record = {}
@@ -99,7 +98,8 @@ def handle_get_record(req, dynamodb):
             for field_api_name, field_custom_name in field_mappings:
                 processed_record[field_custom_name] = fields.get(field_api_name, None)
 
-            processed_records.append(processed_record)
+            processed_records["Records"].append(processed_record)
+
         update_database_request(dynamodb, partition_key, processed_records, "Complete")
         return True, None
     except requests.HTTPError as e:
