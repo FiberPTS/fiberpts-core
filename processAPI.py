@@ -178,7 +178,7 @@ def handle_employee_request(req):
 
         # Assuming machine_record_id is the record id for the record to be updated
         url_update = f"{url_update}/{data_json.get('machine_record_id')}"
-
+        print(url_update)
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
         print("Update JSON:",response_update.json())
         response_update.raise_for_status()
@@ -232,7 +232,7 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
-    handle_max = 1  # Max number of times a request should be attempted
+    handle_max = 0  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
     empty_runs = 0
 
