@@ -148,7 +148,8 @@ def handle_employee_request(req):
         # For updating a record
         url_update = AIRTABLE_API_URL + "tblFOfDowcZNlPRDL"
         reasons = req.get('Reason','')
-        if reasons[0][0] != '2':
+        print(reasons)
+        if reasons[0] != '2':
             data_str = req.get('Data', '')
             data_json = json.loads(data_str)
 
