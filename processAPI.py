@@ -335,7 +335,7 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
-    handle_max = 0  # Max number of times a request should be attempted
+    handle_max = 1  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
     empty_runs = 0
 
