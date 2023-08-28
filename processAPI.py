@@ -131,9 +131,9 @@ def handle_order_request(req):
 
     except requests.HTTPError as e:
         if response_update:
-            return False, f"Failed to update record: {response_update.json().get('error', {}).get('message', 'Unknown error')}"
+            return False, f"Failed to update record: {response_update.json()}"
         else:
-            return False, f"Failed to create record: {response_create.json().get('error', {}).get('message', 'Unknown error')}"
+            return False, f"Failed to create record: {response_create.json()}"
     except Exception as e:
         return False, str(e)
 
@@ -166,6 +166,7 @@ def handle_employee_request(req):
         }
 
         response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
+        print(response_create.json())
         response_create.raise_for_status()
 
         # Prepare payload for Airtable API to update an existing record
@@ -179,15 +180,16 @@ def handle_employee_request(req):
         url_update = f"{url_update}/{data_json.get('machine_record_id')}"
 
         response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
+        print(response_update.json())
         response_update.raise_for_status()
 
         return True, None
 
     except requests.HTTPError as e:
         if response_update:
-            return False, f"Failed to update record: {response_update.json().get('error', {}).get('message', 'Unknown error')}"
+            return False, f"Failed to update record: {response_update.json()}"
         else:
-            return False, f"Failed to create record: {response_create.json().get('error', {}).get('message', 'Unknown error')}"
+            return False, f"Failed to create record: {response_create.json()}"
     except Exception as e:
         return False, str(e)
 

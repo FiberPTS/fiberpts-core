@@ -260,14 +260,11 @@ def create_record(base_id, table_id, field_data):
 def push_item_db(dynamodb, request_type, request_data):
     table = dynamodb.Table('API_Requests')
 
-    data = json.dumps(request_data)
-
-    # Insert item
     response = table.put_item(
         Item={
             'partitionKey': f'{get_machine_id()}-{request_type}-{get_current_time()}',
             'Request_Type': request_type,
-            'Data': data,
+            'Data': json.dumps(request_data),
             'Status': 'Pending',
         }
     )
