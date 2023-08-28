@@ -391,7 +391,13 @@ def main():
 
         update_failed_requests(table, to_update, request_attempts)
 
-        for req in to_update + processed_requests:
+        unique_list = []
+
+        for item in to_update + processed_requests:
+            if item not in unique_list:
+                unique_list.append(item)
+
+        for req in unique_list:
             key = req['partitionKey']
             if key in request_attempts.keys():
                 del request_attempts[key]
