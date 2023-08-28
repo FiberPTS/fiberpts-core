@@ -260,12 +260,8 @@ def create_record(base_id, table_id, field_data):
 def push_item_db(dynamodb, request_type, request_data):
     table = dynamodb.Table('API_Requests')
 
-    # Data should be a JSON-serialized string
-    if request_type == "TapEvent":
-        data = json.dumps(request_data)
-    else:
-        data = request_data
-
+    data = json.dumps(request_data)
+    
     # Insert item
     response = table.put_item(
         Item={
