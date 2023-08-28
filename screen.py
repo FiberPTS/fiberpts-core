@@ -62,6 +62,19 @@ def get_machine_id():
     return machine_id
 
 
+def format_utc_to_est(date_str):
+    """Converts a UTC datetime string to EST and formats it."""
+    if not date_str or date_str == "None":
+        return ""
+    date_str = date_str.replace('Z', '')
+    # Adjust the format to match the given string
+    date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
+    date_est = date_utc.astimezone(ZoneInfo('America/New_York'))
+    if date_est.astimezone(ZoneInfo('US/Eastern')).dst():
+        date_est += datetime.timedelta(hours=1)
+    return date_est.strftime('%Y-%m-%d %l:%M %p')
+
+
 def get_current_time(format_seconds=True):
     # Get current UTC time
     now_utc = datetime.datetime.now(datetime.timezone.utc)
@@ -311,8 +324,8 @@ def main():
             last_tags_and_ids["machine_record_id"] = reader_dict["record_id"]
             last_tags_and_ids["last_order_record_id"] = reader_dict["order_tag_record_id"]
             last_tags_and_ids["last_employee_record_id"] = reader_dict["employee_tag_record_id"]
-            last_tags_and_ids["last_order_tap"] = reader_dict["last_order_tap"]
-            last_tags_and_ids["last_employee_tap"] = reader_dict["last_employee_tap"]
+            last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict["last_order_tap"])
+            last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict["last_employee_tap"])
             last_tags_and_ids["order_id"] = reader_dict["order_id"]
             last_tags_and_ids["employee_name"] = reader_dict["employee_name"]
     # Load the batched button presses from file
