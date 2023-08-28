@@ -140,7 +140,6 @@ def handle_order_request(req):
 
 def handle_employee_request(req):
     response_create = None
-    response_update = None
 
     try:
         # For creating a record
@@ -148,26 +147,27 @@ def handle_employee_request(req):
 
         # For updating a record
         url_update = AIRTABLE_API_URL + "tblFOfDowcZNlPRDL"
+        reasons = req.get('Reason','')
+        if reasons[0][0] != '2':
+            data_str = req.get('Data', '')
+            data_json = json.loads(data_str)
 
-        data_str = req.get('Data', '')
-        data_json = json.loads(data_str)
-
-        # Prepare payload for Airtable API to create a new record
-        airtable_create_payload = {
-            "fields": {
-                "fldX6JBtp55h7kXeU": data_json.get("machine_record_id"),
-                "fld9mWGyROaCXDVqP": data_json.get("employee_tag_record_id"),
+            # Prepare payload for Airtable API to create a new record
+            airtable_create_payload = {
+                "fields": {
+                    "fldX6JBtp55h7kXeU": data_json.get("machine_record_id"),
+                    "fld9mWGyROaCXDVqP": data_json.get("employee_tag_record_id"),
+                }
             }
-        }
 
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
-        }
+            headers = {
+                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                "Content-Type": "application/json"
+            }
 
-        response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
-        print("Created JSON:",response_create.json())
-        response_create.raise_for_status()
+            response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
+            print("Created JSON:",response_create.json())
+            response_create.raise_for_status()
 
         # Prepare payload for Airtable API to update an existing record
         airtable_update_payload = {
@@ -186,10 +186,9 @@ def handle_employee_request(req):
         return True, None
 
     except requests.HTTPError as e:
-        if response_update:
-            return False, f"Failed to update record: {response_update.json()}"
-        else:
-            return False, f"Failed to create record: {response_create.json()}"
+        if response_create:
+            return False, f"1-Failed to create record: {response_create.json()}"
+        return False, f"2-Failed to update record: {response_update.json()}"
     except Exception as e:
         return False, str(e)
 
@@ -233,7 +232,7 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
-    handle_max = 3  # Max number of times a request should be attempted
+    handle_max = 1  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
     empty_runs = 0
 
