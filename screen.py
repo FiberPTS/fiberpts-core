@@ -303,7 +303,7 @@ def main():
     # Load the last tags, ids, and taps from file
     last_tags_and_ids = load_last_tags_and_ids_from_file()
     machine_id = get_machine_id()
-    if last_tags_and_ids.get("machine_record_id","None") == "None":
+    if True or last_tags_and_ids.get("machine_record_id","None") == "None":
         field_ids = [("fldZsM3YEVQqpJMFF", "record_id"), ("fldfXLG8xbM9S3Evx", "order_tag_record_id"), ("fldN0cePGQy8jMkBa", "employee_tag_record_id"),
                      ("fldcaeaey2E5R8Iqp", "last_order_tap"), ("fldVALQ4NGPNVrvZz", "last_employee_tap"), ("fldcFVtGOWbd8RgT6", "order_id"), ("fldJQd3TmtxURsQy0", "employee_name")]
         reader_dict = get_record("appZUSMwDABUaufib", "tblFOfDowcZNlPRDL", field_ids, "fldbh9aMmA6qAoNKq", machine_id)
