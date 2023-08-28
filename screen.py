@@ -329,6 +329,7 @@ def main():
             last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
             last_tags_and_ids["order_id"] = reader_dict.get("order_id", "")
             last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", "")
+    print(last_tags_and_ids)
     # Load the batched button presses from file
     button_presses = load_batch_from_file()
     fifo_path = "/tmp/screenPipe"
