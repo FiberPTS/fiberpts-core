@@ -358,6 +358,7 @@ def main():
                                             "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
                                         }
                                         if push_item_db(dynamodb, "OrderNFC", request_data):
+                                            print_log("NFC Order Tapped")
                                             last_tags_and_ids["last_order_tag"] = tagId
                                             last_tags_and_ids["last_order_tap"] = formatted_time
                                             last_tags_and_ids["units_order"] = 0
@@ -387,6 +388,7 @@ def main():
                                         "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
                                     }
                                     if push_item_db(dynamodb, "EmployeeNFC", request_data):
+                                        print_log("NFC Employee Tapped")
                                         last_tags_and_ids["last_employee_tag"] = tagId
                                         last_tags_and_ids["last_employee_tap"] = formatted_time
                                         last_tags_and_ids["units_order"] = 0
@@ -397,7 +399,7 @@ def main():
                                         fail = True
                     else: # Button tap increases unit count
                         if last_tags_and_ids["last_employee_tag"] != "None" and last_tags_and_ids["last_order_tag"] != "None":
-                            print_log("button pressed")
+                            print_log("Button Pressed")
                             request_data = {
                                 "machine_record_id": last_tags_and_ids["machine_record_id"],
                                 "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"],
