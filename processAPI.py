@@ -72,7 +72,7 @@ def handle_tap_request(req):
 
         # Make the POST request to Airtable API
         response = requests.post(url, headers=headers, json=payload)
-        print(response.json())
+
         response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code
         return True, None
     except requests.exceptions.RequestException as e:
@@ -250,7 +250,7 @@ def main():
 
         for req in pending_requests:
             request_type = req.get('Request_Type')
-            print(request_type)
+
             # If the request is of type OrderNFC or EmployeeNFC, check if there is enough room for 2 API calls
             if request_type in ['OrderNFC', 'EmployeeNFC']:
                 expected_increment = 2
