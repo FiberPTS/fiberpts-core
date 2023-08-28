@@ -324,7 +324,7 @@ def main():
         if reader_dict:
             last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
             last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", "")
-            last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", "")
+            last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
             last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
             last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
             last_tags_and_ids["order_id"] = reader_dict.get("order_id", "")
@@ -365,9 +365,9 @@ def main():
                                     else:
                                         last_tags_and_ids["last_order_record_id"] = order_dict["record_id"]
                                         request_data = {
-                                            "machine_record_id": last_tags_and_ids["machine_record_id"],
-                                            "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
-                                            "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"]
+                                            "machine_record_id": [last_tags_and_ids["machine_record_id"]],
+                                            "order_tag_record_id": [last_tags_and_ids["last_order_record_id"]],
+                                            "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
                                         }
                                         if push_item_db(dynamodb, "OrderNFC", request_data):
                                             print_log("NFC Order Tapped")
