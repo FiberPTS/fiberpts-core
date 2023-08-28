@@ -233,7 +233,7 @@ def main():
     pending_requests = []
     handle_max = 3  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
-    emptyRuns = 0
+    empty_runs = 0
 
     while True:
         current_time = time.time()
@@ -250,18 +250,16 @@ def main():
 
         for req in pending_requests:
             request_type = req.get('Request_Type')
-
+            print(request_type)
             # If the request is of type OrderNFC or EmployeeNFC, check if there is enough room for 2 API calls
             if request_type in ['OrderNFC', 'EmployeeNFC']:
-                if request_count >= 2:
-                    continue
                 expected_increment = 2
             else:
                 expected_increment = 1
 
             # Check if adding this request would exceed the rate limit
             if request_count + expected_increment > 3:
-                break
+                continue
 
             key = req['partitionKey']
             success, error_message = handle_request(req)
@@ -291,12 +289,12 @@ def main():
 
         if len(to_delete) > 0:
             print(f"Requests Processed: {to_delete}")
-            emptyRuns = 0
+            empty_runs = 0
         else:
             print("No Requests Processed")
             time.sleep(1)
-            emptyRuns += 1
-        if emptyRuns > 2:
+            empty_runs += 1
+        if empty_runs > 2:
             pass
             # DO STUFF DURING DOWNTOWN
 
