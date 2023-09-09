@@ -356,7 +356,7 @@ def main():
 
     # Load the last tags, ids, and taps from file
     last_tags_and_ids = load_last_tags_and_ids_from_file()
-
+    print(last_tags_and_ids)
     machine_id = get_machine_id()
     if True or last_tags_and_ids.get("machine_record_id","None") == "None":
         request_data = {
