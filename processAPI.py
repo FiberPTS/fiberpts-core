@@ -391,18 +391,17 @@ def main():
 
         update_failed_requests(table, to_update, request_attempts)
 
-        print(f"Pending Requests: {pending_requests}\n")
         unique_list = []
         [unique_list.append(req) for req in to_update + to_delete + processed_requests if req not in unique_list]
         for req in unique_list:
-            print(f"Request: {req}\n")
             key = req['partitionKey']
             if key in request_attempts.keys():
                 del request_attempts[key]
             pending_requests.remove(req)
-
+            
         if len(processed_requests) > 0:
-            print(f"Requests Processed: {processed_requests}")
+            for req in processed_requests:
+                print(f"Request Processed: {req}\n")
             empty_runs = 0
         else:
             print("No Requests Processed")
