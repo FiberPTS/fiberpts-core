@@ -375,9 +375,9 @@ def main():
         }
         success, partition_key = push_item_db(dynamodb, "GetRecord", request_data)
         if success:
-            success, data = pull_item_db(dynamodb, partition_key)
+            success, db_data = pull_item_db(dynamodb, partition_key)
             if success:
-                reader_dict = json.loads(data['Data'])['Records'][0]
+                reader_dict = json.loads(db_data['Data'])['Records'][0]
                 last_tags_and_ids["machine_record_id"] = reader_dict.get('record_id', ' ')
                 last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
                 last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
@@ -427,6 +427,22 @@ def main():
                         else:
                             tagId = data[1][:-1].lower()
                             # NEED TO IMPLEMENT API CALL THROUGH EC2
+                            request_data = {
+                                'table_name': 'tbl6vse0gHkuPxBaT',
+                                'filter_id': 'fldRHuoXAQr4BF83j',
+                                'filter_value': tagId,
+                                'field_mappings': [
+                                    ("fldRi8wjAdfBkDhH8", "record_id"),
+                                    ("fldSrxknmVrsETFPx", "order_id")
+                                ]
+                            }
+                            success, partition_key = push_item_db(dynamodb, "GetRecord", request_data)
+                            db_data = None
+                            if success:
+                                success, db_data = pull_item_db(dynamodb, partition_key)
+                                if success:
+                                    order_dict = json.loads(db_data['Data'])['Records'][0]
+                                    print(order_dict)
                             field_ids = [("fldSrxknmVrsETFPx","order_id"), ("fldRi8wjAdfBkDhH8","record_id")]
                             order_dict = get_record("appZUSMwDABUaufib", "tbl6vse0gHkuPxBaT", field_ids, "fldRHuoXAQr4BF83j", tagId)
                             # When an employee tag is registered, the session unit counting is reset
