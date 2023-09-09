@@ -1,8 +1,9 @@
 Pin Number,Module,Function
 17,LCD Display,VCC
-19,LCD Display,DIN
-22,LCD Display,BL
-23,LCD Display,CLK
+19,LCD Display,DIN (SDI MOSI)
+21,LCD Display,DO (SDO MISO)
+3 (Header 9J1),LCD Display,BL (LED)
+23,LCD Display,CLK (SCK)
 24,LCD Display,CS
 29,LCD Display,DC
 30,LCD Display,GND
