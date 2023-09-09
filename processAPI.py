@@ -356,7 +356,6 @@ def main():
 
         for req in pending_requests:
             request_type = req.get('Request_Type')
-            print(request_type)
             # If the request is of type OrderNFC or EmployeeNFC, check if there is enough room for 2 API calls
             if request_type in ['OrderNFC', 'EmployeeNFC']:
                 expected_increment = 2
@@ -398,10 +397,10 @@ def main():
             if key in request_attempts.keys():
                 del request_attempts[key]
             pending_requests.remove(req)
-            
+
         if len(processed_requests) > 0:
             for req in processed_requests:
-                print(f"Request Processed: {req}\n")
+                print(f"Request Processed: {json.dumps(req, indent=4)}\n")
             empty_runs = 0
         else:
             print("No Requests Processed")
