@@ -336,7 +336,6 @@ def main():
     last_time = time.time()
     request_count = 0
     pending_requests = []
-    processed_requests = []
     handle_max = 1  # Max number of times a request should be attempted
     request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
     empty_runs = 0
@@ -351,6 +350,7 @@ def main():
             response = table.scan()
             pending_requests = [item for item in response['Items'] if item['Status'] == 'Pending']
 
+        processed_requests = []
         to_delete = []
         to_update = []
 
@@ -391,15 +391,8 @@ def main():
 
         update_failed_requests(table, to_update, request_attempts)
 
-        unique_list = []
-        # SOMETHING IS HAPPENING HERE WHERE THE RECORD for GetRecord is deleted from linux machine but it is still in this list but ...
-        for item in to_update + processed_requests:
-            if item not in unique_list:
-                unique_list.append(item)
-                # print(item)
-                # print()
         # print(pending_requests)
-        for req in unique_list:
+        for req in to_update + to_delete + processed_requests:
             key = req['partitionKey']
             if key in request_attempts.keys():
                 del request_attempts[key]
