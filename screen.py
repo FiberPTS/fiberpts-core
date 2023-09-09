@@ -386,6 +386,7 @@ def main():
                 last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
                 last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
                 last_tags_and_ids["units_employee"] = last_tags_and_ids["units_order"] = 0
+                last_tags_and_ids["last_employee_tag"] = last_tags_and_ids["last_order_tag"] = "None"
     print(last_tags_and_ids)
     # Obtain local IP address of the Linux machine on wlan0
     local_ip = get_local_ip()
