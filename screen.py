@@ -332,13 +332,13 @@ def pull_item_db(dynamodb, partition_key, max_attempts=5):
 def main():
     # Reading Airtable API Key
     airtable_config = configparser.ConfigParser()
-    airtable_config.read(os.path.expanduser('~/.airtable/credentials.txt'))
+    airtable_config.read('/home/potato/.airtable/credentials.txt')
     global AIRTABLE_API_KEY  # Making sure to use the global variable
     AIRTABLE_API_KEY = airtable_config.get('Credentials', 'airtable_api_key')
 
     # Load AWS credentials from file
     aws_config = configparser.ConfigParser()
-    aws_config.read(os.path.expanduser('~/.aws/credentials.txt'))
+    aws_config.read('/home/potato/.aws/credentials.txt')
 
     aws_access_key_id = aws_config.get('Credentials', 'aws_access_key_id')
     aws_secret_access_key = aws_config.get('Credentials', 'aws_secret_access_key')
@@ -378,7 +378,6 @@ def main():
             success, data = pull_item_db(dynamodb, partition_key)
             if success:
                 reader_dict = json.loads(data['Data'])['Records'][0]
-                print(reader_dict)
                 last_tags_and_ids["machine_record_id"] = reader_dict.get('record_id', ' ')
                 last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
                 last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
