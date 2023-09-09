@@ -400,7 +400,7 @@ def main():
 
         if len(processed_requests) > 0:
             for req in processed_requests:
-                print(f"Request Processed: {json.dumps(req, indent=4)}\n")
+                print(f"Request Processed: {json.dumps(req, indent=4)}")
             empty_runs = 0
         else:
             print("No Requests Processed")
