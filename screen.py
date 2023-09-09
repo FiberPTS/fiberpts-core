@@ -418,6 +418,7 @@ def main():
             with open(fifo_path, "r") as fifo:
                 data = fifo.read()
                 if data:
+                    print(data)
                     data = data.split("-program-")
                     formatted_time = get_current_time(format_seconds=False)
                     formatted_time_sec = get_current_time(format_seconds=True)
@@ -437,7 +438,6 @@ def main():
                                 ]
                             }
                             success, partition_key = push_item_db(dynamodb, "GetRecord", request_data)
-                            db_data = None
                             if success:
                                 success, db_data = pull_item_db(dynamodb, partition_key)
                                 if success:
