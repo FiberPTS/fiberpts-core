@@ -393,6 +393,7 @@ def main():
 
         print(f"Pending Requests: {pending_requests}\n")
         for req in to_update + to_delete + processed_requests:
+            print(f"Request: {req}\n")
             key = req['partitionKey']
             if key in request_attempts.keys():
                 del request_attempts[key]
