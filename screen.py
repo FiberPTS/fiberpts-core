@@ -378,6 +378,7 @@ def main():
             success, data = pull_item_db(dynamodb, partition_key)
             if success:
                 reader_dict = json.loads(data['Data'])['Records']
+                print(reader_dict)
                 last_tags_and_ids["machine_record_id"] = reader_dict.get('record_id', ' ')
                 last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
                 last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
