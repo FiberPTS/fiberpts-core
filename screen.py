@@ -377,14 +377,14 @@ def main():
         if success:
             success, data = pull_item_db(dynamodb, partition_key)
             if success:
-                print(data)
-                # last_tags_and_ids["machine_record_id"] = reader_dict.get("record_id", "")
-                # last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
-                # last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
-                # last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
-                # last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
-                # last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
-                # last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
+                reader_dict = json.loads(data['Data'])['Records']
+                last_tags_and_ids["machine_record_id"] = reader_dict.get('record_id', ' ')
+                last_tags_and_ids["last_order_record_id"] = reader_dict.get("order_tag_record_id", " ")[0]
+                last_tags_and_ids["last_employee_record_id"] = reader_dict.get("employee_tag_record_id", " ")[0]
+                last_tags_and_ids["last_order_tap"] = format_utc_to_est(reader_dict.get("last_order_tap", ""))
+                last_tags_and_ids["last_employee_tap"] = format_utc_to_est(reader_dict.get("last_employee_tap", ""))
+                last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[0]
+                last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[0]
     # Obtain local IP address of the Linux machine on wlan0
     local_ip = get_local_ip()
 
