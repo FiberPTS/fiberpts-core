@@ -391,7 +391,7 @@ def main():
 
         update_failed_requests(table, to_update, request_attempts)
 
-        # print(pending_requests)
+        print(f"Pending Requests: {pending_requests}\n")
         for req in to_update + to_delete + processed_requests:
             key = req['partitionKey']
             if key in request_attempts.keys():
