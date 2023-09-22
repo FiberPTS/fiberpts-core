@@ -1,0 +1,88 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# C Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# C Executables
+*.exe
+*.out
+*.app
+
+# Shell scripting
+*.log
+
+# Python files
+*.py[cod]
+*.pyd
+*.pyo
+*.egg-info/
+*.egg
+*.eggs/
+*.dist-info/
+*.pypirc
+*.pyc
+*.pyo
+*.old
+*.bak
+*.swp
+*.rej
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Python virtual environment
+venv/
+*.venv
+env/
+*.env
+
+# IDEs and editors
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Backup files
+*.bak
+*.backup
+
+# Other
+*.swp
+*.swo
+
