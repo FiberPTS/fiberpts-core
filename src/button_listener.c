@@ -3,41 +3,57 @@
 #include <signal.h>
 #include <gpiod.h>
 #include <stdarg.h>
-#include <curl/curl.h>
-#include <json-c/json.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #define BUTTON_LINE_NUMBER 80 // Black on GND and Red on GPIO
-//#define BUTTON_LINE_NUMBER 96
 #define DEBOUNCE_TIME 1000 // debounce time in milliseconds
-#define VOLTAGE_VALUE 1
+#define VOLTAGE_VALUE 1 // Voltage value corresponding to a button press being "on"
 
-// Time of the last button press
-static struct timespec last_release_time;
-// Whether the button is currently pressed
-static int button_pressed = 0;
+static struct timespec last_release_time; // Time of the last button press
+static int button_pressed = 0; // Flag for whether button is pressed
 
-const char *fifo_path = "/tmp/screenPipe";
+const char *fifo_path = "/tmp/screenPipe"; // Pipe file path
 
-struct gpiod_chip *chip;
-struct gpiod_line *button_line;
+struct gpiod_chip *chip; // GPIO chip struct
+struct gpiod_line *button_line; // GPIO line struct
 
-volatile sig_atomic_t interrupted = 0;
+volatile sig_atomic_t interrupted = 0; // Flag checking for whether the program was interrupted.
 
 void cleanup_gpio(void);
 
-// This function will be called when SIGINT is sent to the program (Ctrl+C)
 void handle_sigint(int sig) {
+    /**
+     * Function: handle_sigint
+     * -----------------------
+     * Signal handler for SIGINT (For instance, when Ctrl+C occurs).
+     *
+     * Parameters:
+     *   sig: The signal number.
+     *
+     * Returns:
+     *   void
+     */
     interrupted = 1;
     cleanup_gpio();
     exit(0);
 }
 
-// The function that logs messages with timestamp
 void print_log(const char *format, ...) {
+    /**
+     * Function: print_log
+     * -------------------
+     * Logs messages with a timestamp.
+     *
+     * Parameters:
+     *   format: The format string for the log message.
+     *   ...: Variable arguments for the format string.
+     *
+     * Returns:
+     *   void
+     */
     va_list argptr;
     va_start(argptr, format);
     // Set timezone to EST
@@ -65,8 +81,19 @@ void print_log(const char *format, ...) {
     va_end(argptr);
 }
 
-// The function that logs error messages with timestamp
 void perror_log(const char *format, ...) {
+    /**
+     * Function: perror_log
+     * --------------------
+     * Logs error messages with a timestamp.
+     *
+     * Parameters:
+     *   format: The format string for the error message.
+     *   ...: Variable arguments for the format string.
+     *
+     * Returns:
+     *   void
+     */
     va_list argptr;
     va_start(argptr, format);
     // Set timezone to EST
@@ -89,30 +116,15 @@ void perror_log(const char *format, ...) {
     va_end(argptr);
 }
 
-// Function to send a signal to the read_mifare program
-void send_signal_to_read_mifare(void) {
-    FILE *file = fopen("/var/run/read_ultralight.pid", "r");
-    if (!file) {
-        perror_log("Failed to open PID file");
-        return;
-    }
-
-    pid_t read_ultralight_pid;
-    if (fscanf(file, "%d", &read_ultralight_pid) != 1) {
-        perror_log("Failed to read PID from file");
-        fclose(file);
-        return;
-    }
-
-    fclose(file);
-
-    // Send SIGUSR1 to the read_ultralight program
-    if (kill(read_ultralight_pid, SIGUSR1) == -1) {
-        perror_log("Failed to send signal");
-    }
-}
-
 int initialize_gpio(void) {
+    /**
+     * Function: initialize_gpio
+     * -------------------------
+     * Initializes GPIO for button input.
+     *
+     * Returns:
+     *   0 on success, 1 on failure.
+     */
     chip = gpiod_chip_open_by_name("gpiochip1");
     if (!chip) {
         perror_log("Open chip failed");
@@ -138,41 +150,34 @@ int initialize_gpio(void) {
 }
 
 void cleanup_gpio(void) {
+    /**
+     * Function: cleanup_gpio
+     * ----------------------
+     * Releases the GPIO resources.
+     *
+     * Returns:
+     *   void
+     */
     gpiod_line_release(button_line);
     gpiod_chip_close(chip);
 }
 
-void send_post_request(char *url, const char *payload) {
-    CURL *curl;
-    CURLcode res;
-    struct curl_slist *headers = NULL;
-
-    curl = curl_easy_init();
-    if(curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload);
-
-        res = curl_easy_perform(curl);
-
-        if(res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
-        curl_easy_cleanup(curl);
-    }
-}
-
 char* get_machine_id() {
+    /**
+     * Function: get_machine_id
+     * ------------------------
+     * Retrieves the machine's unique ID.
+     *
+     * Returns:
+     *   A string containing the machine's ID or NULL on failure.
+     */
     FILE* file = fopen("/etc/machine-id", "r");
     if (file == NULL) {
         perror_log("Unable to open /etc/machine-id");
         return NULL;
     }
 
-    char* machine_id = malloc(33); // the machine ID is a 32-character string, plus '\0' at the end
+    char* machine_id = malloc(33); // The machine ID is a 32-character string, plus '\0' at the end
     if (fgets(machine_id, 33, file) == NULL) {
         perror_log("Unable to read /etc/machine-id");
         fclose(file);
@@ -184,29 +189,18 @@ char* get_machine_id() {
     return machine_id;
 }
 
-void handle_button_press() {
-    char url[] = "https://hooks.airtable.com/workflows/v1/genericWebhook/appZUSMwDABUaufib/wflBeyntdIrWMVuQG/wtrYOlc9Mgwie9Ui9";
-    // Get machine ID
-    char* machine_id = get_machine_id();
-    if (machine_id == NULL) {
-        // handle error
-        print_log("Failed Sending: Could not find Machine ID\n");
-        return;
-    }
-    json_object * jobj = json_object_new_object();
-    json_object *jstring = json_object_new_string(machine_id);
-    json_object_object_add(jobj,"Machine ID", jstring);
-    const char* json_payload = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PRETTY);
-    send_post_request(url, json_payload);
-    print_log("\nSent POST request.\n");
-
-    // Free allocated memory
-    //free(combined_payload);
-    free(machine_id);
-    json_object_put(jobj); // free json object
-}
-
-void send_pipe_to_screen(const char * data) {
+void send_data_to_pipe(const char * data) {
+    /**
+     * Function: send_data_to_pipe
+     * -----------------------------
+     * Sends data to a program using a named pipe.
+     *
+     * Parameters:
+     *   data: The data to send.
+     *
+     * Returns:
+     *   void
+     */
     int fd;
     fd = open(fifo_path, O_WRONLY);
     write(fd, data, strlen(data) + 1);
@@ -217,14 +211,21 @@ int main(void) {
     // Register the function to call on SIGINT
     signal(SIGINT, handle_sigint);
 
+    // Initialize GPIO.
     if (initialize_gpio() != 0) {
         return 1;
     }
+
+    // Create a named pipe for inter-process communication.
     mkfifo(fifo_path, 0666);
+
+    // Main loop to monitor the button state.
     while (!interrupted) {
         struct timespec current_time;
         clock_gettime(CLOCK_MONOTONIC, &current_time);
         int value = gpiod_line_get_value(button_line);
+        // Check the button state and handle press/release events.
+        // Implement debounce logic to avoid false triggers.
         if (value < 0) {
             perror_log("Read line value failed");
         } else if (value == VOLTAGE_VALUE) {
@@ -235,11 +236,9 @@ int main(void) {
                 if ((current_time.tv_sec > last_release_time.tv_sec + DEBOUNCE_TIME / 1000) ||
                     (current_time.tv_sec == last_release_time.tv_sec && current_time.tv_nsec > last_release_time.tv_nsec + DEBOUNCE_TIME * 1000000)) {
                     // Enough time has passed, handle the button press
-                    handle_button_press();
                     button_pressed = 1;
-                    //send_signal_to_read_mifare();
                     const char * data_to_send = "button_listener.c-program-Button Pressed";
-                    send_pipe_to_screen(data_to_send);
+                    send_data_to_pipe(data_to_send);
                     print_log("Button Pressed\n");
                 } else {
                     button_pressed = 1;

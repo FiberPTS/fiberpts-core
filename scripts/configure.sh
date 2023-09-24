@@ -1,22 +1,24 @@
 #!/bin/bash
 
-# Make Application files directory
+# Create a directory for application files.
 sudo mkdir /var/lib/screen
+# Change ownership of the directory to the current user.
 sudo chown $USER:$USER /var/lib/screen
+# Create two JSON files in the directory.
 touch /var/lib/screen/batched_button_presses.json
 touch /var/lib/screen/last_tags_and_ids.json
+# Change ownership of the JSON files to the current user.
 sudo chown $USER:$USER /var/lib/screen/batched_button_presses.json
 sudo chown $USER:$USER /var/lib/screen/last_tags_and_ids.json
 
-
-# Check if command-line argument is provided
+# Check if a command-line argument (driver name) is provided.
 if [ -z "$1" ]
 then
   echo "Please provide the driver name as a command-line argument."
   exit 1
 fi
 
-# Check if /home/potato/NFC_Tracking exists before changing directory
+# Check if the NFC_Tracking directory exists in the user's home directory.
 if [ -d "$HOME/NFC_Tracking" ]; then
     cd $HOME/NFC_Tracking
 else
@@ -24,9 +26,9 @@ else
     exit 1
 fi
 
-# Create logrotate configuration
+# Create a logrotate configuration if it doesn't exist.
 if [ ! -f "/etc/logrotate.d/programs" ]; then
-    # The file does not exist, create it
+    # Define the log rotation settings for the programs.log file.
     cat << EOF | sudo tee /etc/logrotate.d/programs
 /var/log/programs.log {
     rotate 7
@@ -43,9 +45,9 @@ if [ ! -f "/etc/logrotate.d/programs" ]; then
 EOF
 fi
 
-# Create systemd service file
+# Create a systemd service file if it doesn't exist.
 if [ ! -f "/etc/systemd/system/monitor.service" ]; then
-    # The file does not exist, create it
+    # Define the systemd service settings for the monitor service.
     cat << EOF | sudo tee /etc/systemd/system/monitor.service
 [Unit]
 Description=Monitor and restart C program
@@ -67,35 +69,37 @@ WantedBy=multi-user.target
 EOF
 fi
 
-# Reload systemd manager configuration
+# Reload the systemd manager configuration.
 sudo systemctl daemon-reload
 
-# Enable services
+# Enable the monitor service and NetworkManager service.
 sudo systemctl enable monitor.service
 sudo systemctl enable NetworkManager
 
-# Install packages from requirements.txt if it exists
+# Install packages from requirements.txt if it exists.
 if [ -f "/home/potato/NFC_Tracking/requirements.txt" ]; then
     packages=$(cat $HOME/NFC_Tracking/requirements.txt)
     apt-get install -y $packages
 fi
 
-# Pip installs
+# Install Python packages using pip.
 pip3 install boto3 netifaces
 
+# Execute scripts to compile all programs and update permissions.
 sudo sh compile_all.sh
 sudo sh update_permissions.sh
 
-driver=$1  # Get driver name from command-line argument
+# Get the driver name from the command-line argument.
+driver=$1
 
-# Update system
+# Update the system's package list.
 sudo apt update
 
+# Install the specified USB Wifi Adapter Driver.
 cd $HOME
-# USB Wifi Adapter Driver
 if [ "$driver" = "wn725n" ]
 then
-  # Check if the TL-WN725N-TP-Link-Debian directory exists
+  # Install the TL-WN725N driver.
   if [ ! -d "TL-WN725N-TP-Link-Debian" ]; then
     git clone https://github.com/ilnanny/TL-WN725N-TP-Link-Debian.git
   fi
@@ -106,7 +110,7 @@ then
   insmod 8188eu.ko
 elif [ "$driver" = "ac600" ]
 then
-  # Check if the rtl8812au directory exists
+  # Install the AC600 driver.
   if [ ! -d "rtl8812au" ]; then
     git clone https://github.com/aircrack-ng/rtl8812au.git
     sudo apt install -y dkms git build-essential libelf-dev
@@ -118,7 +122,7 @@ else
   exit 1
 fi
 
-# Install libnfc
+# Install the libnfc library.
 cd $HOME
 git clone https://github.com/nfc-tools/libnfc.git
 cd libnfc
@@ -127,27 +131,22 @@ autoreconf -vis
 make
 make install all
 
-# Copy the permissions file
+# Update the libnfc configuration file.
 sudo cp contrib/udev/93-pn53x.rules /lib/udev/rules.d/
-
-# Copy libnfc device config and change device name
 sudo mkdir -p /etc/nfc
 sudo cp libnfc.conf.sample /etc/nfc/libnfc.conf
 FILE="/etc/nfc/libnfc.conf"
 CONN_STRING="pn532_uart:/dev/ttyAML6"
 DEVICE_NAME="PN532_UART"
-# Use sed to uncomment the line with device.connstring and change its value
 sudo sed -i "/^#.*device.connstring/c\\device.connstring = \"$CONN_STRING\"" $FILE
-
-# Use sed to uncomment the line with device.name and change its value
 sudo sed -i "/^#.*device.name/c\\device.name = \"$DEVICE_NAME\"" $FILE
 
-# Install git libre wiring repo
+# Install the libre wiring tool.
 cd $HOME
 git clone https://github.com/libre-computer-project/libretech-wiring-tool.git
 cd libretech-wiring-tool
 cp $HOME/NFC_Tracking/spicc-ili9341-new.dts $HOME/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt/
 sudo ./install.sh
 
-# Set Wiring Overlay
+# Set the wiring overlay.
 sudo ./ldto merge uart-a spicc spicc-ili9341-new

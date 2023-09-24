@@ -1,20 +1,21 @@
 #!/bin/bash
 
-# Specify the base directory
+# Define the base directory for the NFC tracking application.
 BASE_DIR="/home/potato/NFC_Tracking"
 
-# Specify the name and path of your C programs
+# Define the names and paths of the C programs to be monitored.
 PROGRAM_NAME_1="read_ultralight"
 PROGRAM_NAME_2="button_listener"
-PROGRAM_NAME_3="screen.py"  # New program
+PROGRAM_NAME_3="screen.py"
 PROGRAM_PATH_1="$BASE_DIR/$PROGRAM_NAME_1"
 PROGRAM_PATH_2="$BASE_DIR/$PROGRAM_NAME_2"
 PROGRAM_PATH_3="$BASE_DIR/$PROGRAM_NAME_3"
 
-# Get the machine unique identifier (using /etc/machine-id as an example)
+# Retrieve the unique identifier for the machine.
 MACHINE_ID=$(cat /etc/machine-id)
 
-# Function to handle SIGTERM signal
+# Define a function to handle the SIGTERM signal.
+# This function will kill the monitored programs when the script receives a SIGTERM signal.
 on_sigterm() {
     kill $(cat /var/run/read_ultralight.pid)
     kill $(cat /var/run/button_listener.pid)
@@ -22,68 +23,70 @@ on_sigterm() {
     exit 0
 }
 
-# Register the function to be called on SIGTERM
+# Register the SIGTERM signal handler.
 trap on_sigterm SIGTERM
 
-# Function to check WiFi connection and reconnect if disconnected
+# Define a function to check the WiFi connection and attempt to reconnect if disconnected.
 check_wifi() {
-    # Check if connected to "FERRARAMFG"
+    # Check if the device is connected to the "FERRARAMFG" network.
     if ! nmcli con show --active | grep -q "FERRARAMFG"; then
-    	nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
-        # If not connected, try to reconnect
+        # If not connected, attempt to reconnect.
+        nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
         nmcli con up FERRARAMFG
     fi
-    #if ! nmcli con show --active | grep -q "iPhone (202)"; then
+    # Uncomment the following lines to check and connect to another network named "iPhone (202)".
+    #if ! nmcli con show --active | grep -q "iPhone (202)"
+    #then
     #    nmcli device wifi connect "iPhone (202)" password thehomiepass
     #    nmcli con up "iPhone (202)"
     #fi
 }
 
+# Extend the Python path to include a custom directory.
 export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.9/site-packages
 
+# Main loop to continuously monitor the programs.
 while true; do
+    # Check the WiFi connection.
     check_wifi
-    # Check if the programs are running
+
+    # Check if the first program is running.
     if pgrep -f $PROGRAM_NAME_1 > /dev/null
     then
         STATUS_1="Online"
     else
         STATUS_1="Offline"
-
-        # Try to restart the program
+        # If not running, try to restart the program and log its output.
         $PROGRAM_PATH_1 >> /var/log/programs.log 2>&1 &
-
-        # Write the PID of the new program instance to the pidfile
+        # Store the PID of the restarted program.
         echo $! > /var/run/read_ultralight.pid
     fi
 
+    # Check if the second program is running.
     if pgrep -f $PROGRAM_NAME_2 > /dev/null
     then
         STATUS_2="Online"
     else
         STATUS_2="Offline"
-
-        # Try to restart the program
+        # If not running, try to restart the program and log its output.
         $PROGRAM_PATH_2 >> /var/log/programs.log 2>&1 &
-
-        # Write the PID of the new program instance to the pidfile
+        # Store the PID of the restarted program.
         echo $! > /var/run/button_listener.pid
     fi
-    
+
+    # Check if the third program is running.
     if pgrep -f $PROGRAM_NAME_3 > /dev/null
     then
         STATUS_3="Online"
     else
         STATUS_3="Offline"
-
-        # Try to restart the program
+        # If not running, try to restart the program and log its output.
         $PROGRAM_PATH_3 >> /var/log/programs.log 2>&1 &
-
-        # Write the PID of the new program instance to the pidfile
+        # Store the PID of the restarted program.
         echo $! > /var/run/screen.pid
     fi
 
-    # Set overall status
+    # Determine the overall status of all programs.
     if [ "$STATUS_1" = "Offline" ] || [ "$STATUS_2" = "Offline" ] || [ "$STATUS_3" = "Offline" ]
     then
         STATUS="Offline"
@@ -91,6 +94,6 @@ while true; do
         STATUS="Online"
     fi
 
-    # Wait for a while before checking again
+    # Pause for 60 seconds before checking the programs again.
     sleep 60
 done

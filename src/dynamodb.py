@@ -6,17 +6,29 @@ import time
 import os
 import argparse
 
-
 def delete_all_items(table):
+    """
+    Deletes all items from the given DynamoDB table.
+
+    Parameters:
+    - table: boto3 DynamoDB Table object
+
+    Returns:
+    - None
+    """
     try:
+        # Scan the table to get all items
         scanned_items = table.scan()['Items']
 
+        # Iterate over each item
         for item in scanned_items:
             key = {}
-            if 'partitionKey' in item:  # Assuming 'partitionKey' is your primary key
+            # Assuming 'partitionKey' is your primary key
+            if 'partitionKey' in item:
                 key['partitionKey'] = item['partitionKey']
 
-            if key:  # Only delete if key exists
+            # Only delete if key exists
+            if key:
                 table.delete_item(Key=key)
 
         print("All items deleted successfully.")
@@ -25,6 +37,15 @@ def delete_all_items(table):
 
 
 def scan_table(table):
+    """
+    Scans and prints all items from the given DynamoDB table.
+
+    Parameters:
+    - table: boto3 DynamoDB Table object
+
+    Returns:
+    - None
+    """
     response = table.scan()
     for item in response['Items']:
         print(item)
@@ -39,14 +60,14 @@ if __name__ == "__main__":
     parser.add_argument('--scan', action='store_true', help='Scan the table')
     args = parser.parse_args()
 
-    # Read AWS credentials
+    # Read AWS credentials from the specified file
     config = configparser.ConfigParser()
     config.read(os.path.expanduser('~/.aws/credentials.txt'))
 
     aws_access_key_id = config.get('Credentials', 'aws_access_key_id')
     aws_secret_access_key = config.get('Credentials', 'aws_secret_access_key')
 
-    # Initialize DynamoDB resource
+    # Initialize DynamoDB resource with the provided credentials
     dynamodb = boto3.resource(
         'dynamodb',
         aws_access_key_id=aws_access_key_id,

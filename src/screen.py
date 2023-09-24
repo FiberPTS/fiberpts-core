@@ -21,6 +21,16 @@ AIRTABLE_API_KEY = ""
 
 
 def handle_sigterm(signum, frame):
+    """
+    Handles the SIGTERM signal to gracefully exit the program.
+
+    Parameters:
+    - signum: The signal number.
+    - frame: The current stack frame.
+
+    Returns:
+    - None
+    """
     print_log("Received SIGTERM, ending program...")
     sys.exit(0)  # Exit the program
 
@@ -28,6 +38,13 @@ def handle_sigterm(signum, frame):
 def print_log(format_str, *args):
     """
     Logs messages with a timestamp.
+
+    Parameters:
+    - format_str: The format string for the message.
+    - *args: Arguments to format the string.
+
+    Returns:
+    - None
     """
     current_time = datetime.datetime.now(ZoneInfo('US/Eastern'))
     timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -44,6 +61,13 @@ def print_log(format_str, *args):
 def perror_log(format_str, *args):
     """
     Logs error messages with a timestamp.
+
+    Parameters:
+    - format_str: The format string for the error message.
+    - *args: Arguments to format the string.
+
+    Returns:
+    - None
     """
     current_time = datetime.datetime.now(ZoneInfo('US/Eastern'))
     timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -51,6 +75,12 @@ def perror_log(format_str, *args):
 
 
 def get_machine_id():
+    """
+    Retrieves the machine ID from the system.
+
+    Returns:
+    - str: The machine ID or None if not found.
+    """
     try:
         with open("/etc/machine-id", "r") as f:
             return f.read().strip()
@@ -65,6 +95,15 @@ def get_machine_id():
 
 
 def get_local_ip(interface='wlan0'):
+    """
+    Retrieves the local IP address of the specified interface.
+
+    Parameters:
+    - interface: The network interface to check. Default is 'wlan0'.
+
+    Returns:
+    - str: The IP address or 'UNKNOWN' if not found.
+    """
     try:
         ip = ni.ifaddresses(interface)[ni.AF_INET][0]['addr']
     except (KeyError, ValueError):
@@ -73,7 +112,15 @@ def get_local_ip(interface='wlan0'):
 
 
 def format_utc_to_est(date_str):
-    """Converts a UTC datetime string to EST and formats it."""
+    """
+    Converts a UTC datetime string to EST and formats it.
+
+    Parameters:
+    - date_str: The UTC datetime string.
+
+    Returns:
+    - str: The formatted EST datetime string.
+    """
     if not date_str or date_str == "None":
         return ""
     date_str = date_str.replace('Z', '')
@@ -86,6 +133,15 @@ def format_utc_to_est(date_str):
 
 
 def get_current_time(format_seconds=True):
+    """
+    Retrieves the current time in EST.
+
+    Parameters:
+    - format_seconds: Whether to include seconds in the format.
+
+    Returns:
+    - str: The formatted EST datetime string.
+    """
     # Get current UTC time
     now_utc = datetime.datetime.now(datetime.timezone.utc)
     # Convert to Eastern Time Zone
@@ -97,6 +153,20 @@ def get_current_time(format_seconds=True):
 
 
 def draw_rotated_text(image, text, font, position, text_color, bg_color):
+    """
+    Draws rotated text onto an image.
+
+    Parameters:
+    - image: The PIL Image object to draw on.
+    - text: The text to draw.
+    - font: The font to use.
+    - position: The (x, y) position to draw the text.
+    - text_color: The color of the text.
+    - bg_color: The background color.
+
+    Returns:
+    - Image: The modified image with the rotated text.
+    """
     draw = ImageDraw.Draw(image)
     # Draw text onto a separate image
     text_width, text_height = draw.textsize(text, font=font)
@@ -113,6 +183,15 @@ def draw_rotated_text(image, text, font, position, text_color, bg_color):
 
 
 def image_to_rgb565(image):
+    """
+    Converts a PIL Image to RGB565 format.
+
+    Parameters:
+    - image: The PIL Image object.
+
+    Returns:
+    - np.array: The image data in RGB565 format.
+    """
     # Split into R, G, B channels
     r, g, b = image.split()
 
@@ -135,16 +214,50 @@ def image_to_rgb565(image):
     return raw_data
 
 
+def create_image(width, height, bg_color):
+    """
+    Creates a new PIL Image with the specified dimensions and background color.
+
+    Parameters:
+    - width: The width of the image.
+    - height: The height of the image.
+    - bg_color: The background color.
+
+    Returns:
+    - Image: The created PIL Image object.
+    """
+    return Image.new("RGB", (width, height), bg_color)
+
+
 def write_to_framebuffer(data, path="/dev/fb1"):
+    """
+    Writes data to the framebuffer device.
+
+    Parameters:
+    - data: The data to write.
+    - path: The path to the framebuffer device. Default is "/dev/fb1".
+
+    Returns:
+    - None
+    """
     with open(path, "wb") as f:
         f.write(data.tobytes())
 
 
-def create_image(width, height, bg_color):
-    return Image.new("RGB", (width, height), bg_color)
-
-
 def draw_display(last_tags_and_ids, res=(240, 320), font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24), bg_color=(255, 0, 0), text_color=(255, 255, 255)):
+    """
+    Creates and draws an image for display based on the provided data.
+
+    Parameters:
+    - last_tags_and_ids: A dictionary containing data to display.
+    - res: The resolution of the image. Default is (240, 320).
+    - font: The font to use for text. Default is DejaVuSans-Bold with size 24.
+    - bg_color: The background color. Default is red.
+    - text_color: The text color. Default is white.
+
+    Returns:
+    - None
+    """
     image = create_image(res[0], res[1], bg_color)
 
     image = draw_rotated_text(image, last_tags_and_ids["employee_name"], font, (5, 0), text_color, bg_color)
@@ -163,12 +276,26 @@ def draw_display(last_tags_and_ids, res=(240, 320), font=ImageFont.truetype("/us
 
 
 def save_last_tags_and_ids_to_file(last_tags_and_ids):
+    """
+    Saves the last tags and IDs data to a file.
+
+    Parameters:
+    - last_tags_and_ids: A dictionary containing the data to save.
+
+    Returns:
+    - None
+    """
     with open(LAST_TAGS_AND_IDS_FILE_PATH, 'w') as file:
         json.dump(last_tags_and_ids, file)
 
 
 def load_last_tags_and_ids_from_file():
-    """Load the last employee tag, employee name, order tag, order id, last employee tap, and last order tap from the file."""
+    """
+    Loads the last tags and IDs data from a file.
+
+    Returns:
+    - dict: The loaded data or an empty dictionary if not found.
+    """
     try:
         with open(LAST_TAGS_AND_IDS_FILE_PATH, 'r') as file:
             try:
@@ -179,12 +306,25 @@ def load_last_tags_and_ids_from_file():
         return {}
 
 def save_batch_to_file(batch):
-    """Save the current batched button presses to a file."""
+    """
+    Saves the current batched button presses to a file.
+
+    Parameters:
+    - batch: A dictionary containing the batched button presses.
+
+    Returns:
+    - None
+    """
     with open(BATCH_FILE_PATH, 'w') as file:
         json.dump(batch, file)
 
 def load_batch_from_file():
-    """Load the saved batched button presses from the file."""
+    """
+    Loads the saved batched button presses from a file.
+
+    Returns:
+    - dict: The loaded batched button presses or an empty dictionary if not found.
+    """
     try:
         with open(BATCH_FILE_PATH, 'r') as file:
             content = file.read()
@@ -198,6 +338,19 @@ def load_batch_from_file():
 
 
 def get_record(base_id, table_id, field_ids, filter_id, filter_value):
+    """
+    Retrieves a record from Airtable based on the provided criteria.
+
+    Parameters:
+    - base_id: The ID of the Airtable base.
+    - table_id: The ID of the table within the base.
+    - field_ids: A list of field IDs and their corresponding names.
+    - filter_id: The field ID to filter on.
+    - filter_value: The value to filter on.
+
+    Returns:
+    - dict: The retrieved record data.
+    """
     global AIRTABLE_API_KEY
     api_key = AIRTABLE_API_KEY
     URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
@@ -248,16 +401,15 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value):
 
 def create_record(base_id, table_id, field_data):
     """
-    Create a new record in the specified table.
+    Creates a new record in Airtable.
 
     Parameters:
-    - base_id (str): The ID of the base you want to access.
-    - table_id (str): The ID of the table you want to access.
-    - field_data (dict): The data for the new record's fields. Example: {"FieldID1": "Value1", "FieldID2": "Value2"}
-    - api_key (str, optional): The API key for authentication.
+    - base_id: The ID of the Airtable base.
+    - table_id: The ID of the table within the base.
+    - field_data: A dictionary of field IDs and their values.
 
     Returns:
-    - dict: The created record's data.
+    - dict: The created record data.
     """
     global AIRTABLE_API_KEY
     api_key = AIRTABLE_API_KEY
@@ -281,6 +433,17 @@ def create_record(base_id, table_id, field_data):
 
 
 def push_item_db(dynamodb, request_type, request_data):
+    """
+    Pushes an item to a DynamoDB table.
+
+    Parameters:
+    - dynamodb: The boto3 DynamoDB resource.
+    - request_type: The type of request.
+    - request_data: The data for the request.
+
+    Returns:
+    - tuple: A tuple containing a boolean indicating success and the partition key.
+    """
     table = dynamodb.Table('API_Requests')
     partition_key = f'{get_machine_id()}-{request_type}-{get_current_time()}'
     response = table.put_item(
@@ -300,6 +463,17 @@ def push_item_db(dynamodb, request_type, request_data):
 
 
 def pull_item_db(dynamodb, partition_key, max_attempts=5):
+    """
+    Pulls an item from a DynamoDB table based on the partition key.
+
+    Parameters:
+    - dynamodb: The boto3 DynamoDB resource.
+    - partition_key: The partition key for the item.
+    - max_attempts: The maximum number of attempts to retrieve the item.
+
+    Returns:
+    - tuple: A tuple containing a boolean indicating success and the item data or an error message.
+    """
     table = dynamodb.Table('API_Requests')
     attempts = 1
     while attempts <= max_attempts:
@@ -427,7 +601,6 @@ def main():
                             fail = True
                         else:
                             tagId = data[1][:-1].lower()
-                            # NEED TO IMPLEMENT API CALL THROUGH EC2
                             request_data = {
                                 'table_name': 'tbl6vse0gHkuPxBaT',
                                 'filter_id': 'fldRHuoXAQr4BF83j',
@@ -469,7 +642,7 @@ def main():
                                 if tagId != last_tags_and_ids["last_employee_tag"]:
                                     last_employee_record_id_temp = last_tags_and_ids["last_employee_record_id"]
                                     employee_name_temp = last_tags_and_ids["employee_name"]
-                                    # NEED TO IMPLEMENT API CALL THROUGH EC2
+                                    # TODO: NEED TO IMPLEMENT GetRecord API CALL THROUGH EC2
                                     field_ids = [("fldOYvm4LsaM9pJNw", "employee_name"),("fld49C1CkqgW9hA3p","record_id")]
                                     employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids,
                                                                "fldyYKc2g0dBdolKQ", tagId)
@@ -478,7 +651,7 @@ def main():
                                         last_tags_and_ids["last_employee_record_id"] = employee_dict["record_id"]
                                     else:
                                         last_tags_and_ids["employee_name"] = tagId
-                                        # NEED TO IMPLEMENT API CALL THROUGH EC2
+                                        # TODO: NEED TO IMPLEMENT CreateRecord API CALL THROUGH EC2
                                         field_data = {"fldyYKc2g0dBdolKQ": tagId}
                                         tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6",
                                                                    field_data)
