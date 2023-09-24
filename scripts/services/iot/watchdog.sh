@@ -3,7 +3,7 @@
 # Define the base directory for the NFC tracking application.
 BASE_DIR="/home/potato/NFC_Tracking"
 
-# Define the names and paths of the C programs to be monitored.
+# Define the names and paths of the programs to be monitored.
 PROGRAM_NAMES=(
     "nfc_tap_listener.c"
     "operation_tap_listener.c"
