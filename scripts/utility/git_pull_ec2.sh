@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Navigate to the NFC_Tracking directory and pull the latest changes from the remote repository.
+# Run pull.sh
 sh $HOME/NFC_Tracking/pull.sh
 
-# Update the execute permissions for shell and Python scripts in the NFC_Tracking directory.
+# Run update_permissions.sh
 sh $HOME/NFC_Tracking/update_permissions.sh
