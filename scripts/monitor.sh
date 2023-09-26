@@ -4,12 +4,13 @@
 BASE_DIR="/home/potato/NFC_Tracking"
 
 # Define the names and paths of the C programs to be monitored.
-PROGRAM_NAME_1="read_ultralight"
-PROGRAM_NAME_2="button_listener"
-PROGRAM_NAME_3="screen.py"
-PROGRAM_PATH_1="$BASE_DIR/$PROGRAM_NAME_1"
-PROGRAM_PATH_2="$BASE_DIR/$PROGRAM_NAME_2"
-PROGRAM_PATH_3="$BASE_DIR/$PROGRAM_NAME_3"
+PROGRAM_NAMES=(
+    "nfc_tap_listener.c"
+    "operation_tap_listener.c"
+    "screen.py"
+)
+for idx in ${!PROGRAM_NAMES[@]}; do
+    PROGRAM_PATHS[$idx]=("{$BASE_DIR}/${PROGRAM_NAMES[$idx]}")
 
 # Retrieve the unique identifier for the machine.
 MACHINE_ID=$(cat /etc/machine-id)
@@ -51,37 +52,37 @@ while true; do
     check_wifi
 
     # Check if the first program is running.
-    if pgrep -f $PROGRAM_NAME_1 > /dev/null
+    if pgrep -f $PROGRAM_NAMES[0] > /dev/null
     then
         STATUS_1="Online"
     else
         STATUS_1="Offline"
         # If not running, try to restart the program and log its output.
-        $PROGRAM_PATH_1 >> /var/log/programs.log 2>&1 &
+        $PROGRAM_PATHS[0] >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
         echo $! > /var/run/read_ultralight.pid
     fi
 
     # Check if the second program is running.
-    if pgrep -f $PROGRAM_NAME_2 > /dev/null
+    if pgrep -f $PROGRAM_NAMES[2] > /dev/null
     then
         STATUS_2="Online"
     else
         STATUS_2="Offline"
         # If not running, try to restart the program and log its output.
-        $PROGRAM_PATH_2 >> /var/log/programs.log 2>&1 &
+        $PROGRAM_PATHS[1] >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
         echo $! > /var/run/button_listener.pid
     fi
 
     # Check if the third program is running.
-    if pgrep -f $PROGRAM_NAME_3 > /dev/null
+    if pgrep -f $PROGRAM_NAMES[2] > /dev/null
     then
         STATUS_3="Online"
     else
         STATUS_3="Offline"
         # If not running, try to restart the program and log its output.
-        $PROGRAM_PATH_3 >> /var/log/programs.log 2>&1 &
+        $PROGRAM_PATHS[2] >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
         echo $! > /var/run/screen.pid
     fi
