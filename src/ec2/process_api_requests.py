@@ -15,8 +15,8 @@ def delete_records(table, records):
     Delete records from the given DynamoDB table.
     
     Args:
-    - table: The DynamoDB table object.
-    - records: List of records to be deleted.
+        table: The DynamoDB table object.
+        records: List of records to be deleted.
     """
     for item in records:
         key = {
@@ -29,9 +29,9 @@ def update_failed_requests(table, to_update, request_attempts):
     Update the status and reason of failed requests in the DynamoDB table.
 
     Args:
-    - table: The DynamoDB table object.
-    - to_update: List of requests that failed.
-    - request_attempts: Dictionary containing number of attempts and error messages for each request.
+        table: The DynamoDB table object.
+        to_update: List of requests that failed.
+        request_attempts: Dictionary containing number of attempts and error messages for each request.
     """
     for req in to_update:
         key = {
@@ -55,13 +55,13 @@ def update_database_request(dynamodb, partition_key, data, status):
     Update a request in the DynamoDB table with new data and status.
 
     Args:
-    - dynamodb: DynamoDB resource object.
-    - partition_key: Primary key for the record to be updated.
-    - data: New data to be updated.
-    - status: New status to be updated.
+        dynamodb: DynamoDB resource object.
+        partition_key: Primary key for the record to be updated.
+        data: New data to be updated.
+        status: New status to be updated.
 
     Returns:
-    - True if the update was successful, False otherwise.
+        True if the update was successful, False otherwise.
     """
     try:
         table = dynamodb.Table('API_Requests')
@@ -87,11 +87,11 @@ def handle_get_record(req, dynamodb):
     Handles the 'GetRecord' request type. It fetches data from Airtable based on given criteria.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
-    - dynamodb: DynamoDB resource object.
+        req: The request object containing all necessary information to process the request.
+        dynamodb: DynamoDB resource object.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     data_str = req.get('Data', '')
     data_json = json.loads(data_str)
@@ -143,10 +143,10 @@ def handle_ip_request(req):
     Handles updating the IP address of a machine in Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     # Extract required data from the request
     data_str = req.get('Data', '')
@@ -182,10 +182,10 @@ def handle_tap_request(req):
     Handles the 'TapEvent' request type. It sends tap events to Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     try:
         url = AIRTABLE_API_URL + "tblVoD1DTyiOAMJ5q"
@@ -233,10 +233,10 @@ def handle_order_request(req):
     Handles the 'OrderNFC' request type. It creates or updates order-related records in Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     create_failed = True
 
@@ -296,10 +296,10 @@ def handle_employee_request(req):
     Handles the 'EmployeeNFC' request type. It creates or updates employee-related records in Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     create_failed = True
 
@@ -359,11 +359,11 @@ def handle_request(req, dynamodb):
     Route the request to the appropriate handler based on its type.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
-    - dynamodb: DynamoDB resource object.
+        req: The request object containing all necessary information to process the request.
+        dynamodb: DynamoDB resource object.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     request_type = req.get('Request_Type', '')
     if request_type == 'TapEvent':
@@ -381,7 +381,7 @@ def handle_request(req, dynamodb):
 
 def main():
     """
-    Main function that continuously polls the DynamoDB table for pending requests and processes them.
+    Continuously polls the DynamoDB table for pending requests and processes them.
     """
     # Read API keys from configuration files
     airtable_config = configparser.ConfigParser()
@@ -407,7 +407,7 @@ def main():
     request_count = 0
     pending_requests = []
     handle_max = 1  # Max number of times a request should be attempted
-    request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
+    request_attempts = {}  # Dict to keep track of number of attempts and error messages for ea. request
     empty_runs = 0
 
     # Continuously poll the DynamoDB table for pending requests
@@ -481,7 +481,7 @@ def main():
         # Potential placeholder for additional functionality during downtime
         if empty_runs > 2:
             pass
-            # DO STUFF DURING DOWNTIME
+            # TODO: DO STUFF DURING DOWNTIME
             # 1. Check for heart beats (reader status)
 
 if __name__ == "__main__":

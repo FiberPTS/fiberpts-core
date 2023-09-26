@@ -10,11 +10,11 @@ def delete_all_items(table):
     """
     Deletes all items from the given DynamoDB table.
 
-    Parameters:
-    - table: boto3 DynamoDB Table object
+    Args:
+        table: boto3 DynamoDB Table object
 
     Returns:
-    - None
+        None
     """
     try:
         # Scan the table to get all items
@@ -40,11 +40,11 @@ def scan_table(table):
     """
     Scans and prints all items from the given DynamoDB table.
 
-    Parameters:
-    - table: boto3 DynamoDB Table object
+    Args:
+        table: boto3 DynamoDB Table object
 
     Returns:
-    - None
+        None
     """
     response = table.scan()
     for item in response['Items']:
