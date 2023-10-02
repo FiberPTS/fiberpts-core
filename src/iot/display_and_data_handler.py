@@ -1,6 +1,8 @@
 #!/usr/bin/python3.9
 from PIL import Image, ImageDraw, ImageFont
+from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
+from collections import namedtuple
 from boto3.dynamodb.conditions import Key, Attr
 import numpy as np
 import time
@@ -14,10 +16,26 @@ import boto3
 import configparser
 import netifaces as ni
 
+FilePathConstants = namedtuple(
+    'FilePathConstants', 
+    ['BATCH', LAST_TAGS_AND_IDS]
+)
 
-BATCH_FILE_PATH = "/var/lib/screen/batched_button_presses.json"
-LAST_TAGS_AND_IDS_FILE_PATH = "/var/lib/screen/last_tags_and_ids.json"
-AIRTABLE_API_KEY = ""
+AirtableConstants = namedtuple('AirtableConstants', [API_KEY])
+
+FILE_PATH_INFO = FilePathConstants(
+    BATCH="/var/lib/screen/batched_button_presses.json",
+    LAST_TAGS_AND_IDS="/var/lib/screen/last_tags_and_ids.json"
+)
+
+load_dotenv()
+
+AIRTABLE_CONST = AirtableConstants(
+    API_KEY=os.getenv('AIRTABLE_API_KEY')
+)
+
+if not AIRTABLE_CONST.API_KEY:
+    raise ValueError("'AIRTABLE_API_KEY' is not set.")
 
 
 def handle_sigterm(signum, frame):
@@ -181,7 +199,7 @@ def draw_rotated_text(image, text, font, position, text_color, bg_color):
 
     # Paste the rotated text onto the main image at the calculated x-position
     image.paste(
-        rotated_text, 
+        rotated_text,
         (position[1], image.height - rotated_text.height - position[0])
     )
     return image
@@ -266,31 +284,31 @@ def draw_display(last_tags_and_ids, res=(240, 320), font=ImageFont.truetype("/us
     image = create_image(res[0], res[1], bg_color)
 
     image = draw_rotated_text(
-        image, 
-        last_tags_and_ids["employee_name"], 
-        font, 
-        (5, 0), 
-        text_color, 
+        image,
+        last_tags_and_ids["employee_name"],
+        font,
+        (5, 0),
+        text_color,
         bg_color
     )
     image = draw_rotated_text(
-        image, 
-        last_tags_and_ids["last_employee_tap"], 
-        font, 
-        (5, 30), 
-        text_color, 
+        image,
+        last_tags_and_ids["last_employee_tap"],
+        font,
+        (5, 30),
+        text_color,
         bg_color
     )
     image = draw_rotated_text(
-        image, 
-        last_tags_and_ids["order_id"], 
-        font, 
-        (5, 60), 
-        text_color, 
+        image,
+        last_tags_and_ids["order_id"],
+        font,
+        (5, 60),
+        text_color,
         bg_color
     )
     image = draw_rotated_text(
-        image, 
+        image,
         last_tags_and_ids["last_order_tap"],
         font,
         (5, 90),
@@ -298,19 +316,19 @@ def draw_display(last_tags_and_ids, res=(240, 320), font=ImageFont.truetype("/us
         bg_color
     )
     image = draw_rotated_text(
-        image, 
+        image,
         "Total Count: " + str(last_tags_and_ids["units_employee"]),
-        font, 
-        (5, 120), 
-        text_color, 
+        font,
+        (5, 120),
+        text_color,
         bg_color
     )
     image = draw_rotated_text(
-        image, 
-        "Order Count: " + str(last_tags_and_ids["units_order"]), 
-        font, 
-        (5, 150), 
-        text_color, 
+        image,
+        "Order Count: " + str(last_tags_and_ids["units_order"]),
+        font,
+        (5, 150),
+        text_color,
         bg_color
     )
 
@@ -329,7 +347,7 @@ def save_last_tags_and_ids_to_file(last_tags_and_ids):
     Returns:
         None
     """
-    with open(LAST_TAGS_AND_IDS_FILE_PATH, 'w') as file:
+    with open(FILE_PATH_INFO.LAST_TAGS_AND_IDS, 'w') as file:
         json.dump(last_tags_and_ids, file)
 
 
@@ -341,7 +359,7 @@ def load_last_tags_and_ids_from_file():
         dict: The loaded data or an empty dictionary if not found.
     """
     try:
-        with open(LAST_TAGS_AND_IDS_FILE_PATH, 'r') as file:
+        with open(FILE_PATH_INFO.LAST_TAGS_AND_IDS, 'r') as file:
             try:
                 return json.load(file)
             except json.decoder.JSONDecodeError:
@@ -360,7 +378,7 @@ def save_batch_to_file(batch):
     Returns:
         None
     """
-    with open(BATCH_FILE_PATH, 'w') as file:
+    with open(FILE_PATH_INFO.BATCH, 'w') as file:
         json.dump(batch, file)
 
 
@@ -372,7 +390,7 @@ def load_batch_from_file():
         dict: The loaded batched button presses or an empty dictionary if not found.
     """
     try:
-        with open(BATCH_FILE_PATH, 'r') as file:
+        with open(FILE_PATH_INFO.BATCH, 'r') as file:
             content = file.read()
             if not content.strip():  # Check if file is empty
                 return {"Records": []}
@@ -397,12 +415,10 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value):
     Returns:
         dict: The retrieved record data.
     """
-    global AIRTABLE_API_KEY
-    api_key = AIRTABLE_API_KEY
-    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
+    url = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
 
     HEADERS = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
         "Content-type": "application/json"
     }
 
@@ -412,9 +428,9 @@ def get_record(base_id, table_id, field_ids, filter_id, filter_value):
     # Pagination loop
     while True:
         if offset:
-            paginated_url = f"{URL}&offset={offset}"
+            paginated_url = f"{url}&offset={offset}"
         else:
-            paginated_url = URL
+            paginated_url = url
 
         response = requests.get(paginated_url, headers=HEADERS)
         data = json.loads(response.text)
@@ -458,12 +474,10 @@ def create_record(base_id, table_id, field_data):
     Returns:
         dict: The created record data.
     """
-    global AIRTABLE_API_KEY
-    api_key = AIRTABLE_API_KEY
-    URL = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=True"
+    url = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=True"
 
     HEADERS = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
         "Content-type": "application/json"
     }
 
@@ -471,7 +485,7 @@ def create_record(base_id, table_id, field_data):
         "records": [{"fields": field_data}]
     }
 
-    response = requests.post(URL, headers=HEADERS, data=json.dumps(payload))
+    response = requests.post(url, headers=HEADERS, data=json.dumps(payload))
 
     if response.status_code != 200:
         perror_log(
@@ -552,13 +566,11 @@ def pull_item_db(dynamodb, partition_key, max_attempts=5):
 
 
 # TODO: Modularize. Is it possible to shorten the lenght of main. TLTR
-# TODO: Improve code style. Indentation is +3 levels 
+# TODO: Improve code style. Indentation is +3 levels
 def main():
     # Reading Airtable API Key
     airtable_config = configparser.ConfigParser()
     airtable_config.read('/home/potato/.airtable/credentials.txt')
-    global AIRTABLE_API_KEY  # Making sure to use the global variable
-    AIRTABLE_API_KEY = airtable_config.get('Credentials', 'airtable_api_key')
 
     # Load AWS credentials from file
     aws_config = configparser.ConfigParser()
@@ -750,6 +762,7 @@ def main():
                             }
                             button_presses["Records"].append(request_data)
                             current_count += 1
+                            # TODO: Create CSV file and send it to a) Google Drive (link notifications with Slack)
                             if current_count >= batch_count:  # May have to partition into multiple batches of 10
                                 if push_item_db(dynamodb, "TapEvent", button_presses):
                                     current_count = 0
