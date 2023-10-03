@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+from collections import namedtuple
+from dotenv import load_dotenv
 import boto3
 import json
 import configparser
@@ -6,17 +8,32 @@ import time
 import requests
 import os
 
-# Airtable constants
-AIRTABLE_API_URL = "https://api.airtable.com/v0/appZUSMwDABUaufib/"
-AIRTABLE_API_KEY = "patAQ8FpGw4j3oKk2.5f0606ba0571c34a403bdd282a25681187c1ac5f37050cca35a880e4def1a5ee"
+AirtableConstants = namedtuple(
+    'AirtableConstants', 
+    ['API_KEY', API_URL]
+)
+
+load_dotenv()
+
+# Airtable information
+AIRTABLE_CONST = AirtableConstants(
+    API_KEY=os.getenv('AIRTABLE_API_KEY'),
+    API_URL="https://api.airtable.com/v0/appZUSMwDABUaufib/"
+)
+
+# Check environment variables were set correctly
+for envar in AIRTABLE_CONST.keys():
+    if not AIRTABLE_CONST.envar:
+        raise ValueError(f'\'{envar}\' is not set.')
+
 
 def delete_records(table, records):
     """
     Delete records from the given DynamoDB table.
-    
+
     Args:
-    - table: The DynamoDB table object.
-    - records: List of records to be deleted.
+        table: The DynamoDB table object.
+        records: List of records to be deleted.
     """
     for item in records:
         key = {
@@ -24,14 +41,15 @@ def delete_records(table, records):
         }
         table.delete_item(Key=key)
 
+
 def update_failed_requests(table, to_update, request_attempts):
     """
     Update the status and reason of failed requests in the DynamoDB table.
 
     Args:
-    - table: The DynamoDB table object.
-    - to_update: List of requests that failed.
-    - request_attempts: Dictionary containing number of attempts and error messages for each request.
+        table: The DynamoDB table object.
+        to_update: List of requests that failed.
+        request_attempts: Dictionary containing number of attempts and error messages for each request.
     """
     for req in to_update:
         key = {
@@ -50,18 +68,19 @@ def update_failed_requests(table, to_update, request_attempts):
             }
         )
 
+
 def update_database_request(dynamodb, partition_key, data, status):
     """
     Update a request in the DynamoDB table with new data and status.
 
     Args:
-    - dynamodb: DynamoDB resource object.
-    - partition_key: Primary key for the record to be updated.
-    - data: New data to be updated.
-    - status: New status to be updated.
+        dynamodb: DynamoDB resource object.
+        partition_key: Primary key for the record to be updated.
+        data: New data to be updated.
+        status: New status to be updated.
 
     Returns:
-    - True if the update was successful, False otherwise.
+        True if the update was successful, False otherwise.
     """
     try:
         table = dynamodb.Table('API_Requests')
@@ -82,16 +101,17 @@ def update_database_request(dynamodb, partition_key, data, status):
         print(f"An error occurred while updating the database: {e}")
         return False
 
+
 def handle_get_record(req, dynamodb):
     """
     Handles the 'GetRecord' request type. It fetches data from Airtable based on given criteria.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
-    - dynamodb: DynamoDB resource object.
+        req: The request object containing all necessary information to process the request.
+        dynamodb: DynamoDB resource object.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     data_str = req.get('Data', '')
     data_json = json.loads(data_str)
@@ -103,14 +123,14 @@ def handle_get_record(req, dynamodb):
     field_mappings = data_json.get('field_mappings', '')
 
     headers = {
-        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
     }
 
     params = {
         "filterByFormula": f"({filter_id} = '{filter_value}')"
     }
 
-    url = f"{AIRTABLE_API_URL}{table_name}?returnFieldsByFieldId=true"
+    url = f"{AIRTABLE_CONST.API_URL}{table_name}?returnFieldsByFieldId=true"
 
     try:
         response = requests.get(url, headers=headers, params=params)
@@ -121,37 +141,40 @@ def handle_get_record(req, dynamodb):
             return False, "No records found"
 
         # Transform Airtable records based on field mappings provided
-        processed_records = {"Records":[]}
+        processed_records = {"Records": []}
         for raw_record in raw_records:
             processed_record = {}
             fields = raw_record.get('fields', {})
             for field_api_name, field_custom_name in field_mappings:
-                processed_record[field_custom_name] = fields.get(field_api_name, None)
+                processed_record[field_custom_name] = fields.get(
+                    field_api_name, None)
 
             processed_records["Records"].append(processed_record)
 
         # Update the database with the retrieved records
-        update_database_request(dynamodb, partition_key, processed_records, "Complete")
+        update_database_request(dynamodb, partition_key,
+                                processed_records, "Complete")
         return True, None
     except requests.HTTPError as e:
         return False, f"HTTP Error: {response.json()}"
     except Exception as e:
         return False, str(e)
 
+
 def handle_ip_request(req):
     """
     Handles updating the IP address of a machine in Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     # Extract required data from the request
     data_str = req.get('Data', '')
     data_json = json.loads(data_str)
-    url_update = f"{AIRTABLE_API_URL}tblFOfDowcZNlPRDL/{data_json.get('machine_record_id', ' ')}"
+    url_update = f"{AIRTABLE_CONST.API_URL}tblFOfDowcZNlPRDL/{data_json.get('machine_record_id', ' ')}"
 
     # Prepare payload for Airtable API to update IP address
     airtable_update_payload = {
@@ -161,13 +184,14 @@ def handle_ip_request(req):
     }
 
     headers = {
-        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
         "Content-Type": "application/json"
     }
 
     try:
         # Make the API call to update the record in Airtable
-        response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
+        response_update = requests.patch(
+            url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
         return True, None
     except requests.HTTPError as e:
@@ -177,18 +201,19 @@ def handle_ip_request(req):
     except Exception as e:
         return False, str(e)
 
+
 def handle_tap_request(req):
     """
     Handles the 'TapEvent' request type. It sends tap events to Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     try:
-        url = AIRTABLE_API_URL + "tblVoD1DTyiOAMJ5q"
+        url = AIRTABLE_CONST.API_URL + "tblVoD1DTyiOAMJ5q"
 
         # Extract required data from the request
         data_str = req.get('Data', '')
@@ -213,7 +238,7 @@ def handle_tap_request(req):
         }
 
         headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+            "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
             "Content-Type": "application/json"
         }
 
@@ -228,24 +253,25 @@ def handle_tap_request(req):
     except json.JSONDecodeError as e:
         return False, str(e)
 
+
 def handle_order_request(req):
     """
     Handles the 'OrderNFC' request type. It creates or updates order-related records in Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     create_failed = True
 
     try:
         # URL for creating a record
-        url_create = AIRTABLE_API_URL + "tblAUlYXhh2nTQTnT"
+        url_create = AIRTABLE_CONST.API_URL + "tblAUlYXhh2nTQTnT"
 
         # URL for updating a record
-        url_update = AIRTABLE_API_URL + "tblFOfDowcZNlPRDL"
+        url_update = AIRTABLE_CONST.API_URL + "tblFOfDowcZNlPRDL"
         reasons = req.get('Reason', None)
 
         # Only create a new record if there's no previous failure or the failure wasn't related to creation
@@ -262,11 +288,12 @@ def handle_order_request(req):
                 }
             }
             headers = {
-                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
                 "Content-Type": "application/json"
             }
 
-            response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
+            response_create = requests.post(
+                url_create, headers=headers, json=airtable_create_payload)
             response_create.raise_for_status()
 
         create_failed = False
@@ -280,7 +307,8 @@ def handle_order_request(req):
 
         # Update the specific record based on machine_record_id
         url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
-        response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
+        response_update = requests.patch(
+            url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
 
         return True, None
@@ -291,25 +319,26 @@ def handle_order_request(req):
     except Exception as e:
         return False, str(e)
 
+
 def handle_employee_request(req):
     """
     Handles the 'EmployeeNFC' request type. It creates or updates employee-related records in Airtable.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
+        req: The request object containing all necessary information to process the request.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     create_failed = True
 
     try:
         # URL for creating a record
-        url_create = AIRTABLE_API_URL + "tbloOK7gmmDK94hfc"
+        url_create = AIRTABLE_CONST.API_URL + "tbloOK7gmmDK94hfc"
 
         # URL for updating a record
-        url_update = AIRTABLE_API_URL + "tblFOfDowcZNlPRDL"
-        reasons = req.get('Reason',None)
+        url_update = AIRTABLE_CONST.API_URL + "tblFOfDowcZNlPRDL"
+        reasons = req.get('Reason', None)
 
         # Only create a new record if there's no previous failure or the failure wasn't related to creation
         if not reasons or reasons[0][0] != '2':
@@ -325,11 +354,12 @@ def handle_employee_request(req):
             }
 
             headers = {
-                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
                 "Content-Type": "application/json"
             }
 
-            response_create = requests.post(url_create, headers=headers, json=airtable_create_payload)
+            response_create = requests.post(
+                url_create, headers=headers, json=airtable_create_payload)
             response_create.raise_for_status()
 
         create_failed = False
@@ -343,7 +373,8 @@ def handle_employee_request(req):
 
         # Update the specific record based on machine_record_id
         url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
-        response_update = requests.patch(url_update, headers=headers, json=airtable_update_payload)
+        response_update = requests.patch(
+            url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
 
         return True, None
@@ -354,16 +385,17 @@ def handle_employee_request(req):
     except Exception as e:
         return False, str(e)
 
+
 def handle_request(req, dynamodb):
     """
     Route the request to the appropriate handler based on its type.
 
     Args:
-    - req: The request object containing all necessary information to process the request.
-    - dynamodb: DynamoDB resource object.
+        req: The request object containing all necessary information to process the request.
+        dynamodb: DynamoDB resource object.
 
     Returns:
-    - Tuple containing success status (True or False) and error message (if any).
+        Tuple containing success status (True or False) and error message (if any).
     """
     request_type = req.get('Request_Type', '')
     if request_type == 'TapEvent':
@@ -379,20 +411,26 @@ def handle_request(req, dynamodb):
     else:
         return False, f"Unknown request type: {request_type}"
 
+
 def main():
     """
-    Main function that continuously polls the DynamoDB table for pending requests and processes them.
+    Continuously polls the DynamoDB table for pending requests and processes them.
     """
     # Read API keys from configuration files
     airtable_config = configparser.ConfigParser()
     airtable_config.read(os.path.expanduser('~/.airtable/credentials.txt'))
-    global AIRTABLE_API_KEY
-    AIRTABLE_API_KEY = airtable_config.get('Credentials', 'airtable_api_key')
+    AIRTABLE_CONST.API_KEY = airtable_config.get(
+        'Credentials',
+        'airtable_api_key'
+    )
 
     aws_config = configparser.ConfigParser()
     aws_config.read(os.path.expanduser('~/.aws/credentials.txt'))
     aws_access_key_id = aws_config.get('Credentials', 'aws_access_key_id')
-    aws_secret_access_key = aws_config.get('Credentials', 'aws_secret_access_key')
+    aws_secret_access_key = aws_config.get(
+        'Credentials',
+        'aws_secret_access_key'
+    )
 
     # Initialize DynamoDB resource
     dynamodb = boto3.resource(
@@ -407,7 +445,8 @@ def main():
     request_count = 0
     pending_requests = []
     handle_max = 1  # Max number of times a request should be attempted
-    request_attempts = {}  # Dictionary to keep track of the number of attempts and error messages for each request
+    # Dict to keep track of number of attempts and error messages for ea. request
+    request_attempts = {}
     empty_runs = 0
 
     # Continuously poll the DynamoDB table for pending requests
@@ -419,7 +458,8 @@ def main():
 
         if not pending_requests:
             response = table.scan()
-            pending_requests = [item for item in response['Items'] if item['Status'] == 'Pending']
+            pending_requests = [
+                item for item in response['Items'] if item['Status'] == 'Pending']
 
         processed_requests = []
         to_delete = []
@@ -461,7 +501,8 @@ def main():
 
         # Remove processed requests from the list of pending requests
         unique_list = []
-        [unique_list.append(req) for req in to_update + to_delete + processed_requests if req not in unique_list]
+        [unique_list.append(req) for req in to_update + to_delete +
+         processed_requests if req not in unique_list]
         for req in unique_list:
             key = req['partitionKey']
             if key in request_attempts.keys():
@@ -481,8 +522,9 @@ def main():
         # Potential placeholder for additional functionality during downtime
         if empty_runs > 2:
             pass
-            # DO STUFF DURING DOWNTIME
+            # TODO: DO STUFF DURING DOWNTIME
             # 1. Check for heart beats (reader status)
+
 
 if __name__ == "__main__":
     main()
