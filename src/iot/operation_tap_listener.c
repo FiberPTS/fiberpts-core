@@ -90,8 +90,8 @@ int is_debounce_time_passed(struct timespec current_time, struct timespec last_r
 }
 
 int main(void) {
-    // Initialize SIGINT signal handler
-    if (initialize_signal_handlers(HANDLE_SIGINT) == -1) {
+    // Initialize SIGINT signal handler with the cleanup function
+    if (initialize_signal_handlers(HANDLE_SIGINT, cleanup_gpio) == -1) {
         perror_log(PROGRAM_NAME, "Error initializing signal handlers: ");
         return 1
     }

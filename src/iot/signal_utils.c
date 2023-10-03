@@ -3,20 +3,17 @@
 
 // Global variable to track if a signal interruption has occurred
 volatile sig_atomic_t interrupted = 0;
-
-// Enum to define the bitmask options for various signals
-typedef enum {
-    HANDLE_SIGINT  = 1 << 0,  // Represents the SIGINT signal (e.g., from Ctrl+C)
-    HANDLE_SIGUSR1 = 1 << 1,  // Represents the SIGUSR1 signal
-    // Add other signals as needed
-} SignalOptions;
+// Global variable to store the cleanup function
+static cleanup_function_t cleanup_fn = NULL;
 
 /**
  * @brief Initialize specific signal handlers based on the provided options.
  * @param options Bitmask representing which signals to handle.
+ * @param fn The cleanup function to register to be called when signals are caught.
  * @return 0 on success, -1 on error.
  */
-int initialize_signal_handlers(int options) {
+int initialize_signal_handlers(int options, cleanup_function_t fn) {
+    cleanup_fn = fn;
     if (options & HANDLE_SIGINT) {
         if (signal(SIGINT, handle_sigint) == SIG_ERR) {
             perror("Failed to set SIGINT handler");
@@ -39,7 +36,9 @@ int initialize_signal_handlers(int options) {
  */
 void handle_sigint(int sig) {
     interrupted = 1;
-    cleanup_gpio(); // This should call the specific function in the script inluding signal_utils.h
+    if (cleanup_fn) {  // Check if a cleanup function has been registered
+        cleanup_fn();  // Call the registered cleanup function
+    }
     exit(0);
 }
 
@@ -55,11 +54,11 @@ void handle_sigusr1(int sig) {
 
 /**
  * @brief Sleeps for a specified number of milliseconds, but can be interrupted early if the interrupted flag is set.
- * @param sec The number of seconds to sleep.
+ * @param ms The number of milliseconds to sleep.
  */
-void sleep_interruptible(int sec) {
-    for (int i = 0; i < sec; i++) {
-        usleep(1000);       // Sleep for 1ms
+void sleep_interruptible(int ms) {
+    for (int i = 0; i < ms; i++) {
+        usleep(1000);       // Sleep for 1 millisecond
         if (interrupted) {  // Check if a signal has been received
             break;
         }
