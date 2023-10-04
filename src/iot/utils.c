@@ -63,3 +63,47 @@ void get_current_time_in_est(char *buffer, const char *format) {
 
     strftime(buffer, 32, format, timeinfo);
 }
+
+/**
+ * @brief Converts a uint8_t array to its hexadecimal string representation.
+ * @param uid       The input uint8_t array.
+ * @param uid_len   The length of the input array.
+ * @param uid_str   The output string buffer to store the hexadecimal representation.
+ *                  It should have a size of at least 2*uid_len + 1.
+ */
+void uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
+    // Ensure input pointers are not NULL
+    if (!uid || !uid_str) {
+        return;
+    }
+
+    for (size_t i = 0; i < uid_len; i++) {
+        sprintf(uid_str + 2 * i, "%02X", uid[i]);
+    }
+    uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
+}
+
+/**
+ * @brief Checks if debounce time has passed since the last button release.
+ * @param current_time The current time.
+ * @param last_release The last release time.
+ * @return 1 if debounce time has passed, 0 otherwise.
+ */
+int is_debounce_time_passed(struct timespec current_time, struct timespec last_release, int debounce_time) {
+    // Convert DEBOUNCE_TIME to seconds and nanoseconds components
+    long debounce_sec = debounce_time / 1000;
+    long debounce_nsec = (debounce_time % 1000) * 1000000;
+
+    // Check if the difference in seconds exceeds the debounce seconds
+    if (current_time.tv_sec > last_release.tv_sec + debounce_sec) {
+        return 1;
+    }
+
+    // Check if the seconds are equal and the difference in nanoseconds exceeds the debounce nanoseconds
+    if ((current_time.tv_sec == last_release.tv_sec) &&
+        (current_time.tv_nsec > last_release.tv_nsec + debounce_nsec)) {
+        return 1;
+    }
+
+    return 0;
+}

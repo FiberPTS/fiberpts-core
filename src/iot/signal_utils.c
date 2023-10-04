@@ -14,18 +14,34 @@ static cleanup_function_t cleanup_fn = NULL;
  */
 int initialize_signal_handlers(int options, cleanup_function_t fn) {
     cleanup_fn = fn;
+    struct sigaction sa;
+    sa.sa_flags = 0;  // or SA_RESTART;
+    sigemptyset(&sa.sa_mask);
+
     if (options & HANDLE_SIGINT) {
-        if (signal(SIGINT, handle_sigint) == SIG_ERR) {
+        sa.sa_handler = handle_sigint;
+        if (sigaction(SIGINT, &sa, NULL) == -1) {
             perror("Failed to set SIGINT handler");
             return -1;
         }
     }
+
     if (options & HANDLE_SIGUSR1) {
-        if (signal(SIGUSR1, handle_sigusr1) == SIG_ERR) {
+        sa.sa_handler = handle_sigusr1;
+        if (sigaction(SIGUSR1, &sa, NULL) == -1) {
             perror("Failed to set SIGUSR1 handler");
             return -1;
         }
     }
+
+    if (options & HANDLE_SIGTERM) {
+        sa.sa_handler = handle_sigint;  // Assuming you want the same handler for SIGTERM as for SIGINT
+        if (sigaction(SIGTERM, &sa, NULL) == -1) {
+            perror("Failed to set SIGTERM handler");
+            return -1;
+        }
+    }
+
     return 0;
 }
 
