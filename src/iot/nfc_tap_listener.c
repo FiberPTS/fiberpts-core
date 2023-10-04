@@ -1,5 +1,6 @@
 // Standard library headers
 // TODO: Find and remove libraries that are unnecessary
+// TODO: Fix logging (program_name)
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

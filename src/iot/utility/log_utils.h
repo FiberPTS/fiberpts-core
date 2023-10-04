@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stddef.h>
+// TODO: Find and remove libraries that are unnecessary
 
 void print_log(const char *program_name, const char *format, ...);
 void perror_log(const char *program_name, const char *format, ...);

@@ -1,6 +1,9 @@
 #include "signal_utils.h"
 #include <unistd.h>
 
+// TODO: Fix logging (program_name)
+// TODO: Find and remove libraries that are unnecessary
+
 // Global variable to track if a signal interruption has occurred
 volatile sig_atomic_t interrupted = 0;
 // Global variable to store the cleanup function

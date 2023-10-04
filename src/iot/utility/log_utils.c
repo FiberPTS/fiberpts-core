@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// TODO: Fix logging (program_name)
+// TODO: Find and remove libraries that are unnecessary
+
 /**
  * @brief Prints a formatted log message with a timestamp and program name.
  * @param program_name The name of the program or module.

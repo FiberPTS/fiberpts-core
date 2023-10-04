@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <time.h>
 
+// TODO: Fix logging (program_name)
+// TODO: Find and remove libraries that are unnecessary
+
 /**
  * @brief Retrieves the machine's unique ID.
  * @return A string containing the machine's ID or NULL on failure.
