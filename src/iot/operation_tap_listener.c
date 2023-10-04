@@ -1,14 +1,16 @@
-// Local project headers
-#include "log_utils.h"
-#include "utils.h"
-
 // Standard library headers
+// TODO: Find and remove libraries that are unnecessary
 #include <gpiod.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+// Local project headers
+#include "log_utils.h"
+#include "signal_utils.h"
+#include "utils.h"
 
 // Unknown libraries
 // #include <fcntl.h>
@@ -21,7 +23,7 @@
 
 // File paths and names
 const char *FIFO_PATH = "/tmp/screenPipe"; // File path for FIFO pipe
-const char *PROGRAM_NAME = "operation_tap_listener.c"; // Program name
+const char *PROGRAM_NAME = "operation_tap_listener.c";
 
 // GPIO Configuration
 const char *CHIP_NAME = "gpiochip1"; // Name of the GPIO chip
@@ -64,34 +66,9 @@ void cleanup_gpio(void) {
     gpiod_chip_close(chip);
 }
 
-/**
- * @brief Checks if debounce time has passed since the last button release.
- * @param current_time The current time.
- * @param last_release The last release time.
- * @return 1 if debounce time has passed, 0 otherwise.
- */
-int is_debounce_time_passed(struct timespec current_time, struct timespec last_release) {
-    // Convert DEBOUNCE_TIME to seconds and nanoseconds components
-    long debounce_sec = DEBOUNCE_TIME / 1000;
-    long debounce_nsec = (DEBOUNCE_TIME % 1000) * 1000000;
-
-    // Check if the difference in seconds exceeds the debounce seconds
-    if (current_time.tv_sec > last_release.tv_sec + debounce_sec) {
-        return 1;
-    }
-
-    // Check if the seconds are equal and the difference in nanoseconds exceeds the debounce nanoseconds
-    if ((current_time.tv_sec == last_release.tv_sec) &&
-        (current_time.tv_nsec > last_release.tv_nsec + debounce_nsec)) {
-        return 1;
-    }
-
-    return 0;
-}
-
 int main(void) {
     // Initialize SIGINT signal handler with the cleanup function
-    if (initialize_signal_handlers(HANDLE_SIGINT, cleanup_gpio) == -1) {
+    if (initialize_signal_handlers(HANDLE_SIGINT | HANDLE_SIGTERM, cleanup_gpio) == -1) {
         perror_log(PROGRAM_NAME, "Error initializing signal handlers: ");
         return 1
     }
@@ -109,6 +86,9 @@ int main(void) {
         }
     }
 
+    // Sets the last release time
+    clock_gettime(CLOCK_MONOTONIC, &last_release_time);
+
     // Main loop to monitor the touch sesnor state.
     while (!interrupted) {
         // Gets the current time
@@ -123,24 +103,21 @@ int main(void) {
         if (value < 0) {
             perror_log(PROGRAM_NAME, "Read line value failed");
         } else if (value == VOLTAGE_VALUE) {
-            // Register tap if sensor was not touched within the debounce time
-            if (!sensor_touched) {
-                // Get current timestamp
-                char timestamp[32];
-                get_current_time_in_est(timestamp, "%Y-%m-%d %H:%M:%S");
-                // Data to send through pipe
-                char data_to_send[strlen(PROGRAM_NAME) + strlen("::") + strlen(timestamp) + 1];
-                snprintf(data_to_send, sizeof(data_to_send), "%s::%s", PROGRAM_NAME, timestamp);
-                // Send tap data through pipe
-                send_data_to_pipe(data_to_send, FIFO_PATH);
-                print_log(PROGRAM_NAME, "Button Pressed\n");
+            if (!is_debounce_time_passed(current_time, last_release_time, DEBOUNCE_TIME)) {
+                last_release_time = current_time;
+                continue;
             }
-            // Set flag and last release time
+            // Register tap if sensor was not touched within the debounce time
+            // Get current timestamp
+            char timestamp[32];
+            get_current_time_in_est(timestamp, "%Y-%m-%d %H:%M:%S");
+            // Data to send through pipe
+            char data_to_send[strlen(PROGRAM_NAME) + strlen("::") + strlen(timestamp) + 1];
+            snprintf(data_to_send, sizeof(data_to_send), "%s::%s", PROGRAM_NAME, timestamp);
+            // Send tap data through pipe
+            send_data_to_pipe(data_to_send, FIFO_PATH);
+            print_log(PROGRAM_NAME, "Button Pressed\n");
             last_release_time = current_time;
-            sensor_touched = 1;
-        } else if (sensor_touched && is_debounce_time_passed(current_time, last_release_time)) {
-            // Button was just released
-            sensor_touched = 0;
         }
     }
     cleanup_gpio();
