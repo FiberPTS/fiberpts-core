@@ -1,4 +1,6 @@
 #!/usr/bin/python3.9
+# TODO: Fix logging (program_name)
+# TODO: Find and remove libraries that are unnecessary
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
@@ -16,16 +18,14 @@ import boto3
 import configparser
 import netifaces as ni
 
-FilePathConstants = namedtuple(
-    'FilePathConstants', 
-    ['BATCH', LAST_TAGS_AND_IDS]
-)
+FilePathConstants = namedtuple("FilePathConstants", ["OPERATION_TAPS", "LAST_TAGS_AND_IDS", "FIFO_PATH"])
 
-AirtableConstants = namedtuple('AirtableConstants', [API_KEY])
+AirtableConstants = namedtuple("AirtableConstants", ["API_KEY"])
 
 FILE_PATH_INFO = FilePathConstants(
-    BATCH="/var/lib/screen/batched_button_presses.json",
-    LAST_TAGS_AND_IDS="/var/lib/screen/last_tags_and_ids.json"
+    OPERATION_TAPS="/var/lib/screen/operation_taps.json",
+    LAST_TAGS_AND_IDS="/var/lib/screen/last_tags_and_ids.json",
+    FIFO_PATH="/tmp/screenPipe"
 )
 
 load_dotenv()
@@ -37,565 +37,25 @@ AIRTABLE_CONST = AirtableConstants(
 if not AIRTABLE_CONST.API_KEY:
     raise ValueError("'AIRTABLE_API_KEY' is not set.")
 
+# Constants
+BATCH_SIZE = 10
 
-def handle_sigterm(signum, frame):
+def update_last_tags_and_ids(table):
     """
-    Handles the SIGTERM signal to gracefully exit the program.
-
+    Update the `last_tags_and_ids` dictionary with data from the database.
+    
     Args:
-        signum: The signal number.
-        frame: The current stack frame.
-
+        table (boto3.DynamoDB.Table): The boto3 DynamoDB table resource.
+    
     Returns:
-        None
+        tuple: A tuple containing two elements:
+            - bool: True if the data was successfully retrieved and updated, False otherwise.
+            - dict: The updated `last_tags_and_ids` dictionary.
     """
-    print_log("Received SIGTERM, ending program...")
-    sys.exit(0)  # Exit the program
-
-
-def print_log(format_str, *args):
-    """
-    Logs messages with a timestamp.
-
-    Args:
-        format_str: The format string for the message.
-        *args: Arguments to format the string.
-
-    Returns:
-        None
-    """
-    current_time = datetime.datetime.now(ZoneInfo('US/Eastern'))
-    timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
-
-    if format_str.startswith('\n'):
-        # add newline before the timestamp
-        print(f"\n{timestamp}::screen.py::", end='')
-        format_str = format_str[1:]  # remove the first character
-    else:
-        print(f"{timestamp}::screen.py::", end='')
-
-    print(format_str.format(*args))
-
-
-def perror_log(format_str, *args):
-    """
-    Logs error messages with a timestamp.
-
-    Args:
-        format_str: The format string for the error message.
-        *args: Arguments to format the string.
-
-    Returns:
-        None
-    """
-    current_time = datetime.datetime.now(ZoneInfo('US/Eastern'))
-    timestamp = current_time.strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{timestamp}::screen.py::{format_str.format(*args)}", file=sys.stderr)
-
-
-def get_machine_id():
-    """
-    Retrieves the machine ID from the system.
-
-    Returns:
-        str: The machine ID or None if not found.
-    """
-    try:
-        with open("/etc/machine-id", "r") as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        # If /etc/machine-id doesn't exist, you can also check /var/lib/dbus/machine-id
-        try:
-            with open("/var/lib/dbus/machine-id", "r") as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            return None
-    return None
-
-
-def get_local_ip(interface='wlan0'):
-    """
-    Retrieves the local IP address of the specified interface.
-
-    Args:
-        interface: The network interface to check. Default is 'wlan0'.
-
-    Returns:
-        str: The IP address or 'UNKNOWN' if not found.
-    """
-    try:
-        ip = ni.ifaddresses(interface)[ni.AF_INET][0]['addr']
-    except (KeyError, ValueError):
-        ip = 'UNKNOWN'
-    return ip
-
-
-def format_utc_to_est(date_str):
-    """
-    Converts a UTC datetime string to EST and formats it.
-
-    Args:
-        date_str: The UTC datetime string.
-
-    Returns:
-        str: The formatted EST datetime string.
-    """
-    if not date_str or date_str == "None":
-        return ""
-    date_str = date_str.replace('Z', '')
-    # Adjust the format to match the given string
-    date_utc = datetime.datetime.fromisoformat(
-        date_str).astimezone(datetime.timezone.utc)
-    date_est = date_utc.astimezone(ZoneInfo('America/New_York'))
-    if date_est.astimezone(ZoneInfo('US/Eastern')).dst():
-        date_est += datetime.timedelta(hours=1)
-    return date_est.strftime('%Y-%m-%d %l:%M %p')
-
-
-def get_current_time(format_seconds=True):
-    """
-    Retrieves the current time in EST.
-
-    Args:
-        format_seconds: Whether to include seconds in the format.
-
-    Returns:
-        str: The formatted EST datetime string.
-    """
-    # Get current UTC time
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
-    # Convert to Eastern Time Zone
-    now_est = now_utc.astimezone(ZoneInfo('America/New_York'))
-    # Format the time to desired format: date, time, AM/PM
-    if format_seconds:
-        return now_est.strftime('%Y-%m-%d %l:%M:%S %p')
-    return now_est.strftime('%Y-%m-%d %l:%M %p')
-
-
-def draw_rotated_text(image, text, font, position, text_color, bg_color):
-    """
-    Draws rotated text onto an image.
-
-    Args:
-        image: The PIL Image object to draw on.
-        text: The text to draw.
-        font: The font to use.
-        position: The (x, y) position to draw the text.
-        text_color: The color of the text.
-        bg_color: The background color.
-
-    Returns:
-        The modified image with the rotated text.
-    """
-    # Draw text onto a separate image
-    draw = ImageDraw.Draw(image)
-    text_width, text_height = draw.textsize(text, font=font)
-    text_image = Image.new("RGB", (text_width, text_height), bg_color)
-    text_draw = ImageDraw.Draw(text_image)
-    text_draw.text((0, 0), text, font=font, fill=text_color)
-
-    # Rotate the text image by 90 degrees
-    rotated_text = text_image.rotate(90, expand=True)
-
-    # Paste the rotated text onto the main image at the calculated x-position
-    image.paste(
-        rotated_text,
-        (position[1], image.height - rotated_text.height - position[0])
-    )
-    return image
-
-
-def image_to_rgb565(image):
-    """
-    Converts a PIL Image to RGB565 format.
-
-    Args:
-        image: The PIL Image object.
-
-    Returns:
-        np.array: The image data in RGB565 format.
-    """
-    # Split into R, G, B channels
-    r, g, b = image.split()
-
-    # Convert each channel to an appropriate numpy array
-    r = np.array(r, dtype=np.uint16)
-    g = np.array(g, dtype=np.uint16)
-    b = np.array(b, dtype=np.uint16)
-
-    # Right shift to fit into 565 format
-    r >>= 3  # Keep top 5 bits
-    g >>= 2  # Keep top 6 bits
-    b >>= 3  # Keep top 5 bits
-
-    # Combine into RGB 565 format
-    rgb565 = (r << 11) | (g << 5) | b
-
-    # Convert the 2D array to a 1D array (raw data)
-    raw_data = rgb565.ravel()
-
-    return raw_data
-
-
-def create_image(width, height, bg_color):
-    """
-    Creates a new PIL Image with the specified dimensions and background color.
-
-    Args:
-        width: The width of the image.
-        height: The height of the image.
-        bg_color: The background color.
-
-    Returns:
-        The created PIL Image object.
-    """
-    return Image.new("RGB", (width, height), bg_color)
-
-
-def write_to_framebuffer(data, path="/dev/fb1"):
-    """
-    Writes data to the framebuffer device.
-
-    Args:
-        data: The data to write.
-        path: The path to the framebuffer device. Default is "/dev/fb1".
-
-    Returns:
-        None
-    """
-    with open(path, "wb") as f:
-        f.write(data.tobytes())
-
-
-def draw_display(last_tags_and_ids, res=(240, 320), font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24), bg_color=(255, 0, 0), text_color=(255, 255, 255)):
-    """
-    Creates and draws an image for display based on the provided data.
-
-    Args:
-        last_tags_and_ids: A dictionary containing data to display.
-        res: The resolution of the image. Default is (240, 320).
-        font: The font to use for text. Default is DejaVuSans-Bold with size 24.
-        bg_color: The background color. Default is red.
-        text_color: The text color. Default is white.
-
-    Returns:
-        None
-    """
-    image = create_image(res[0], res[1], bg_color)
-
-    image = draw_rotated_text(
-        image,
-        last_tags_and_ids["employee_name"],
-        font,
-        (5, 0),
-        text_color,
-        bg_color
-    )
-    image = draw_rotated_text(
-        image,
-        last_tags_and_ids["last_employee_tap"],
-        font,
-        (5, 30),
-        text_color,
-        bg_color
-    )
-    image = draw_rotated_text(
-        image,
-        last_tags_and_ids["order_id"],
-        font,
-        (5, 60),
-        text_color,
-        bg_color
-    )
-    image = draw_rotated_text(
-        image,
-        last_tags_and_ids["last_order_tap"],
-        font,
-        (5, 90),
-        text_color,
-        bg_color
-    )
-    image = draw_rotated_text(
-        image,
-        "Total Count: " + str(last_tags_and_ids["units_employee"]),
-        font,
-        (5, 120),
-        text_color,
-        bg_color
-    )
-    image = draw_rotated_text(
-        image,
-        "Order Count: " + str(last_tags_and_ids["units_order"]),
-        font,
-        (5, 150),
-        text_color,
-        bg_color
-    )
-
-    # Convert the image to RGB565 format and write to framebuffer
-    raw_data = image_to_rgb565(image)
-    write_to_framebuffer(raw_data)
-
-
-def save_last_tags_and_ids_to_file(last_tags_and_ids):
-    """
-    Saves the last tags and IDs data to a file.
-
-    Args:
-        last_tags_and_ids: A dictionary containing the data to save.
-
-    Returns:
-        None
-    """
-    with open(FILE_PATH_INFO.LAST_TAGS_AND_IDS, 'w') as file:
-        json.dump(last_tags_and_ids, file)
-
-
-def load_last_tags_and_ids_from_file():
-    """
-    Loads the last tags and IDs data from a file.
-
-    Returns:
-        dict: The loaded data or an empty dictionary if not found.
-    """
-    try:
-        with open(FILE_PATH_INFO.LAST_TAGS_AND_IDS, 'r') as file:
-            try:
-                return json.load(file)
-            except json.decoder.JSONDecodeError:
-                return {}
-    except FileNotFoundError:
-        return {}
-
-
-def save_batch_to_file(batch):
-    """
-    Saves the current batched button presses to a file.
-
-    Args:
-        batch: A dictionary containing the batched button presses.
-
-    Returns:
-        None
-    """
-    with open(FILE_PATH_INFO.BATCH, 'w') as file:
-        json.dump(batch, file)
-
-
-def load_batch_from_file():
-    """
-    Loads the saved batched button presses from a file.
-
-    Returns:
-        dict: The loaded batched button presses or an empty dictionary if not found.
-    """
-    try:
-        with open(FILE_PATH_INFO.BATCH, 'r') as file:
-            content = file.read()
-            if not content.strip():  # Check if file is empty
-                return {"Records": []}
-            return json.loads(content)
-    except FileNotFoundError:
-        return {"Records": []}
-    except json.JSONDecodeError:  # Handle invalid JSON
-        return {"Records": []}
-
-
-def get_record(base_id, table_id, field_ids, filter_id, filter_value):
-    """
-    Retrieves a record from Airtable based on the provided criteria.
-
-    Args:
-        base_id: The ID of the Airtable base.
-        table_id: The ID of the table within the base.
-        field_ids: A list of field IDs and their corresponding names.
-        filter_id: The field ID to filter on.
-        filter_value: The value to filter on.
-
-    Returns:
-        dict: The retrieved record data.
-    """
-    url = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=true"
-
-    HEADERS = {
-        "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
-        "Content-type": "application/json"
-    }
-
-    all_records = []
-    offset = None
-
-    # Pagination loop
-    while True:
-        if offset:
-            paginated_url = f"{url}&offset={offset}"
-        else:
-            paginated_url = url
-
-        response = requests.get(paginated_url, headers=HEADERS)
-        data = json.loads(response.text)
-
-        if response.status_code != 200:
-            perror_log(
-                f"Error {response.status_code}: {json.dumps(response.text)}")
-            break
-
-        all_records.extend(data.get("records", []))
-
-        # Check if there's an offset for the next set of records
-        offset = data.get("offset")
-        if not offset:
-            break
-
-    # Filter records
-    filtered_records = []
-    for record in all_records:
-        fields = record.get("fields", {})
-        if fields.get(filter_id) == filter_value:
-            filtered_records.append(fields)
-
-    reader_data = {}
-    if filtered_records:
-        for field_id, name in field_ids:
-            reader_data[name] = filtered_records[0].get(field_id, "None")
-
-    return reader_data
-
-
-def create_record(base_id, table_id, field_data):
-    """
-    Creates a new record in Airtable.
-
-    Args:
-        base_id: The ID of the Airtable base.
-        table_id: The ID of the table within the base.
-        field_data: A dictionary of field IDs and their values.
-
-    Returns:
-        dict: The created record data.
-    """
-    url = f"https://api.airtable.com/v0/{base_id}/{table_id}?returnFieldsByFieldId=True"
-
-    HEADERS = {
-        "Authorization": f"Bearer {AIRTABLE_CONST.API_KEY}",
-        "Content-type": "application/json"
-    }
-
-    payload = {
-        "records": [{"fields": field_data}]
-    }
-
-    response = requests.post(url, headers=HEADERS, data=json.dumps(payload))
-
-    if response.status_code != 200:
-        perror_log(
-            f"Error {response.status_code}: {json.dumps(response.text)}")
-        return None
-    return json.loads(response.text)
-
-
-def push_item_db(dynamodb, request_type, request_data):
-    """
-    Pushes an item to a DynamoDB table.
-
-    Args:
-        dynamodb: The boto3 DynamoDB resource.
-        request_type: The type of request.
-        request_data: The data for the request.
-
-    Returns:
-        tuple: A tuple containing a boolean indicating success and the partition key.
-    """
-    table = dynamodb.Table('API_Requests')
-    partition_key = f'{get_machine_id()}-{request_type}-{get_current_time()}'
-    response = table.put_item(
-        Item={
-            'partitionKey': partition_key,
-            'Request_Type': request_type,
-            'Data': json.dumps(request_data),
-            'Status': 'Pending',
-        }
-    )
-    metaData = response.get('ResponseMetadata', 'None')
-    if metaData != 'None':
-        status = metaData.get('HTTPStatusCode', 'None')
-        if status == 200:
-            return True, partition_key
-    return False, None
-
-
-def pull_item_db(dynamodb, partition_key, max_attempts=5):
-    """
-    Pulls an item from a DynamoDB table based on the partition key.
-
-    Args:
-        dynamodb: The boto3 DynamoDB resource.
-        partition_key: The partition key for the item.
-        max_attempts: The maximum number of attempts to retrieve the item.
-
-    Returns:
-        tuple: A tuple containing a boolean indicating success and the item data or an error message.
-    """
-    table = dynamodb.Table('API_Requests')
-    attempts = 1
-    while attempts <= max_attempts:
-        try:
-            # Retrieve the item from the DynamoDB table
-            response = table.get_item(
-                Key={
-                    'partitionKey': partition_key
-                }
-            )
-
-            # Extract the item from the response
-            item = response.get('Item', {})
-
-            # Check if the item exists and has the status "Complete"
-            if item and item.get('Status') == 'Complete':
-                key = {
-                    'partitionKey': partition_key
-                }
-                table.delete_item(Key=key)
-                return True, item
-            attempts += 1
-            time.sleep(0.5)
-        except Exception as e:
-            print(f"An error occurred while pulling the item: {e}")
-            return False, f"An error occurred: {e}"
-    return False, "Item not found or not complete"
-
-
-# TODO: Modularize. Is it possible to shorten the lenght of main. TLTR
-# TODO: Improve code style. Indentation is +3 levels
-def main():
-    # Reading Airtable API Key
-    airtable_config = configparser.ConfigParser()
-    airtable_config.read('/home/potato/.airtable/credentials.txt')
-
-    # Load AWS credentials from file
-    aws_config = configparser.ConfigParser()
-    aws_config.read('/home/potato/.aws/credentials.txt')
-
-    aws_access_key_id = aws_config.get('Credentials', 'aws_access_key_id')
-    aws_secret_access_key = aws_config.get(
-        'Credentials', 'aws_secret_access_key')
-
-    dynamodb = boto3.resource(
-        'dynamodb',
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        region_name='us-east-1'
-    )
-
-    signal.signal(signal.SIGTERM, handle_sigterm)
-    print_log("Starting Screen.py")
-    print_log("Pulling Previous Data")
-
     # Load the last tags, ids, and taps from file
-    last_tags_and_ids = load_last_tags_and_ids_from_file()
-    print(last_tags_and_ids)
+    last_tags_and_ids = load_json_from_file(FILE_PATH_INFO.LAST_TAGS_AND_IDS)
     machine_id = get_machine_id()
-    if last_tags_and_ids.get("machine_record_id", "None") == "None":
+    if not last_tags_and_ids.get("machine_record_id"):
         request_data = {
             'table_name': 'tblFOfDowcZNlPRDL',
             'filter_id': 'fldbh9aMmA6qAoNKq',
@@ -610,58 +70,198 @@ def main():
                 ("fldJQd3TmtxURsQy0", "employee_name")
             ]
         }
-        success, partition_key = push_item_db(
-            dynamodb, "GetRecord", request_data)
-        if success:
-            success, db_data = pull_item_db(dynamodb, partition_key)
-            if success:
-                reader_dict = json.loads(db_data['Data'])['Records'][0]
-                last_tags_and_ids["machine_record_id"] = reader_dict.get(
-                    'record_id', ' ')
-                last_tags_and_ids["last_order_record_id"] = reader_dict.get(
-                    "order_tag_record_id", " ")[0]
-                last_tags_and_ids["last_employee_record_id"] = reader_dict.get(
-                    "employee_tag_record_id", " ")[0]
-                last_tags_and_ids["last_order_tap"] = format_utc_to_est(
-                    reader_dict.get("last_order_tap", ""))
-                last_tags_and_ids["last_employee_tap"] = format_utc_to_est(
-                    reader_dict.get("last_employee_tap", ""))
-                last_tags_and_ids["order_id"] = reader_dict.get("order_id", " ")[
-                    0]
-                last_tags_and_ids["employee_name"] = reader_dict.get("employee_name", " ")[
-                    0]
-                last_tags_and_ids["units_employee"] = last_tags_and_ids["units_order"] = 0
-                last_tags_and_ids["last_employee_tag"] = last_tags_and_ids["last_order_tag"] = "None"
-    print(last_tags_and_ids)
+
+        is_push_success, partition_key = push_item_db(table, "GetRecord", request_data)
+
+        if is_push_success:
+            is_pull_success, data = pull_item_db(table, partition_key)
+            if is_pull_success:
+                data_json = json.loads(data['Data'])['Records'][0]
+
+                last_tags_and_ids.update({
+                    "machine_record_id": data_json.get('record_id', ' '),
+                    "last_order_record_id": data_json.get("order_tag_record_id", " ")[0],
+                    "last_employee_record_id": data_json.get("employee_tag_record_id", " ")[0],
+                    "last_order_tap": format_utc_to_est(data_json.get("last_order_tap", "")),
+                    "last_employee_tap": format_utc_to_est(data_json.get("last_employee_tap", "")),
+                    "order_id": data_json.get("order_id", " ")[0],
+                    "employee_name": data_json.get("employee_name", " ")[0],
+                    "units_employee": 0,
+                    "units_order": 0,
+                    "last_employee_tag": "None",
+                    "last_order_tag": "None"
+                })
+    return (not is_push_success or not is_push_success), last_tags_and_ids
+
+def push_local_ip_to_db(table, last_tags_and_ids):
+    """
+    Pushes the local IP address of the machine to the DynamoDB.
+
+    Args:
+        table (boto3.DynamoDB.Table): The boto3 DynamoDB table resource.
+        last_tags_and_ids (dict): A dictionary containing the current tags and IDs.
+
+    Returns:
+        bool: True if the IP address was pushed successfully, False otherwise.
+    """
     # Obtain local IP address of the Linux machine on wlan0
     local_ip = get_local_ip()
 
-    # Push local IP address along with machine_record_id to DynamoDB
+    # Prepare request data with local IP and machine_record_id
     request_data = {
         "local_ip": local_ip,
         "machine_record_id": last_tags_and_ids.get("machine_record_id", "None")
     }
 
-    if push_item_db(dynamodb, "LocalIPAddress", request_data)[0]:
+    # Attempt to push data to DynamoDB
+    if push_item_db(table, "LocalIPAddress", request_data)[0]:
         print_log(f"Local IP Address pushed successfully: {local_ip}")
+        return True
     else:
-        print_log("Failed to push Local IP Address.")
+        return False
+
+
+def handle_employee_tap(table, last_tags_and_ids, tag_uid, timestamp):
+    last_employee_record_id_temp = last_tags_and_ids["last_employee_record_id"]
+    employee_name_temp = last_tags_and_ids["employee_name"]
+
+    field_ids = [("fldOYvm4LsaM9pJNw", "employee_name"), ("fld49C1CkqgW9hA3p", "record_id")]
+    employee_dict = get_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_ids, "fldyYKc2g0dBdolKQ", tagId)
+
+    if employee_dict:
+        last_tags_and_ids.update({
+            "employee_name": employee_dict["employee_name"][0],
+            "last_employee_record_id": employee_dict["record_id"]
+        })
+    else:
+        last_tags_and_ids["employee_name"] = tagId
+        field_data = {"fldyYKc2g0dBdolKQ": tagId}
+        tag_record = create_record("appZUSMwDABUaufib", "tblbRYLt6rr4nTbP6", field_data)
+        last_tags_and_ids["last_employee_record_id"] = tag_record["records"][0]["fields"]["Record ID"]
+
+    request_data = {
+        "machine_record_id": [last_tags_and_ids["machine_record_id"]],
+        "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
+    }
+    if not push_item_db(dynamodb, "EmployeeNFC", request_data):
+        last_tags_and_ids.update({
+            "last_employee_record_id": last_employee_record_id_temp,
+            "employee_name": employee_name_temp
+        })
+        return True  # tap_success
+
+    last_tags_and_ids.update({
+        "last_employee_tag": tagId,
+        "last_employee_tap": formatted_time,
+        "units_order": 0,
+        "units_employee": 0
+    })
+    return False  # tap_success
+
+def handle_nfc_tap(table, fifo_data, last_tags_and_ids):
+    tag_uid = fifo_data_split[1].lower()
+    timestamp = fifo_data_split[2]
+    request_data = {
+        'table_name': 'tbl6vse0gHkuPxBaT',
+        'filter_id': 'fldRHuoXAQr4BF83j',
+        'filter_value': tag_uid,
+        'field_mappings': [
+            ("fldRi8wjAdfBkDhH8", "record_id"),
+            ("fldSrxknmVrsETFPx", "order_id")
+        ]
+    }
+
+    pull_success, order_record = get_record(table, request_data)
+
+    if not order_record:
+        return handle_employee_tap(table, last_tags_and_ids, tag_uid, timestamp)
+
+    if last_tags_and_ids["last_employee_record_id"] == "None":
+        return False
+
+    last_tags_and_ids.update({
+        "last_order_record_id": order_record["record_id"],
+        "last_order_tag": tag_uid,
+        "last_order_tap": timestamp,
+        "units_order": 0,
+        "order_id": "None" if order_record["order_id"] == "None" else order_dict["order_id"][0]
+    })
+
+    request_data = {
+        "machine_record_id": [last_tags_and_ids["machine_record_id"]],
+        "order_tag_record_id": [last_tags_and_ids["last_order_record_id"]],
+        "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
+    }
+
+    if not push_item_db(dynamodb, "OrderNFC", request_data):
+        return False
+
+    return True
+
+def main():
+    initialize_signal_handlers(["SIGTERM"])
+    
+    # Reading Airtable API Key
+    airtable_config = configparser.ConfigParser()
+    airtable_config.read("/home/potato/.airtable/credentials.txt")
+
+    # Load AWS credentials from file
+    aws_config = configparser.ConfigParser()
+    aws_config.read("/home/potato/.aws/credentials.txt")
+
+    aws_access_key_id = aws_config.get("Credentials", "aws_access_key_id")
+    aws_secret_access_key = aws_config.get("Credentials", "aws_secret_access_key")
+
+    dynamodb = boto3.resource(
+        "dynamodb",
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name="us-east-1"
+    )
+
+    table = dynamodb.Table(table_name)
+    
+    print_log("Starting Screen.py")
+    print_log("Pulling Previous Data")
+
+    is_update_success, last_tags_and_ids = update_last_tags_and_ids(table, machine_id, last_tags_and_ids)
+    if not is_update_success:
+        perror_log("Failed to update last_tags_and_ids from AWS database")
+        sys.exit(0)
 
     # Load the batched button presses from file
-    button_presses = load_batch_from_file()
-    fifo_path = "/tmp/screenPipe"
+    operation_taps = load_json_from_file(FILE_PATH_INFO.OPERATION_TAPS, default_value={"Records": []})
+    
+    is_push_success = push_local_ip_to_db(table, last_tags_and_ids)
+    if not is_push_success:
+        perror_log("Failed to push local ip address to AWS database")
+        sys.exit(0)
 
-    fail = False
-    batch_count = 10
-    # Update current count based on the loaded batch
-    current_count = len(button_presses["Records"])
+    tap_success = False
+    # Update current batch count based on the loaded tap data
+    current_batch_count = len(operation_taps["Records"])
+    
     print_log("Starting Display")
     try:
         while True:
-            # Create an image and draw rotated text onto it
+            # Display the relevant data on the screen
             draw_display(last_tags_and_ids)
             time.sleep(0.25)
-            with open(fifo_path, "r") as fifo:
+            fifo_data = read_from_file(FILE_PATH_INFO.FIFO_PATH)
+            if not fifo_data:
+                continue
+            fifo_data_split = fifo_data.split("::")
+            program_name = fifo_data_split[0]
+            if program_name == "operation_tap_listener.c":
+                timestamp = fifo_data_split[1]
+            else if program_name == "nfc_tap_listener.c":
+                if not handle_nfc_tap(table, fifo_data, last_tags_and_ids):
+                    perror_log(f"Error: NFC tap not registered \n FIFO Data: {fifo_data}")
+                    tap_success = False
+            else:
+                perror_log(f"Error: invalid program name \n FIFO Data: {fifo_data}")
+                
+            with open(FILE_PATH_INFO.FIFO_PATH, "r") as fifo:
                 data = fifo.read()
                 if data:
                     print(data)
@@ -670,7 +270,7 @@ def main():
                     formatted_time_sec = get_current_time(format_seconds=True)
                     if data[0] == "read_ultralight.c":
                         if data[1][:-1] == "Failed":
-                            fail = True
+                            tap_success = False
                         else:
                             tagId = data[1][:-1].lower()
                             request_data = {
@@ -699,7 +299,7 @@ def main():
                             if order_dict:  # Order tag is registered
                                 if tagId != last_tags_and_ids["last_order_tag"]:
                                     if last_tags_and_ids["last_employee_record_id"] == "None":
-                                        fail = True
+                                        tap_success = False
                                     else:
                                         last_tags_and_ids["last_order_record_id"] = order_dict["record_id"]
                                         request_data = {
@@ -715,7 +315,7 @@ def main():
                                             last_tags_and_ids["order_id"] = "None" if order_dict[
                                                 "order_id"] == "None" else order_dict["order_id"][0]
                                         else:
-                                            fail = True
+                                            tap_success = False
                             else:  # Unregistered tag treated as employee tag or employee tag is registered
                                 if tagId != last_tags_and_ids["last_employee_tag"]:
                                     last_employee_record_id_temp = last_tags_and_ids[
@@ -750,7 +350,7 @@ def main():
                                     else:
                                         last_tags_and_ids["last_employee_record_id"] = last_employee_record_id_temp
                                         last_tags_and_ids["employee_name"] = employee_name_temp
-                                        fail = True
+                                        tap_success = False
                     else:  # Button tap increases unit count
                         if last_tags_and_ids["last_employee_tag"] != "None" and last_tags_and_ids["last_order_tag"] != "None":
                             print_log("Button Pressed")
@@ -760,25 +360,25 @@ def main():
                                 "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
                                 "timestamp": formatted_time_sec
                             }
-                            button_presses["Records"].append(request_data)
+                            operation_taps["Records"].append(request_data)
                             current_count += 1
                             # TODO: Create CSV file and send it to a) Google Drive (link notifications with Slack)
-                            if current_count >= batch_count:  # May have to partition into multiple batches of 10
-                                if push_item_db(dynamodb, "TapEvent", button_presses):
+                            if current_count >= BATCH_SIZE:  # May have to partition into multiple batches of 10
+                                if push_item_db(dynamodb, "TapEvent", operation_taps):
                                     current_count = 0
-                                    button_presses = {"Records": []}
+                                    operation_taps = {"Records": []}
                                 else:
-                                    fail = True
+                                    tap_success = False
                             last_tags_and_ids["units_order"] += 1
                             last_tags_and_ids["units_employee"] += 1
                         else:
-                            fail = True
-                        save_batch_to_file(button_presses)
+                            tap_success = False
+                        save_batch_to_file(operation_taps)
                     save_last_tags_and_ids_to_file(last_tags_and_ids)
                     temp_color = (0, 170, 0)
-                    if fail:
+                    if not tap_success:
                         temp_color = (0, 0, 255)
-                        fail = False
+                        tap_success = True
                     draw_display(last_tags_and_ids, bg_color=temp_color)
             time.sleep(0.25)
     except KeyboardInterrupt:
