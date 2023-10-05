@@ -79,8 +79,9 @@ int main(int argc, const char *argv[]) {
     // Sets the last release time
     clock_gettime(CLOCK_MONOTONIC, &last_release_time);
 
+    struct timespec current_time;
+
     while (!interrupted) {
-        struct timespec current_time;
         clock_gettime(CLOCK_MONOTONIC, &current_time);
 
         // Check for NFC tag presence
@@ -108,6 +109,7 @@ int main(int argc, const char *argv[]) {
         } else {
             tag_found = false;
         }
+        // TODO: Design choice of whether we should register the same tag in a row.
         // Process found tag
         if (tag_found) {
             char uid_str[2 * nt.nti.nai.szUidLen + 1];

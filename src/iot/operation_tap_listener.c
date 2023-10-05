@@ -90,10 +90,11 @@ int main(void) {
     // Sets the last release time
     clock_gettime(CLOCK_MONOTONIC, &last_release_time);
 
+    struct timespec current_time;
+
     // Main loop to monitor the touch sesnor state.
     while (!interrupted) {
         // Gets the current time
-        struct timespec current_time;
         clock_gettime(CLOCK_MONOTONIC, &current_time);
 
         // Get current voltage value on the sensor line

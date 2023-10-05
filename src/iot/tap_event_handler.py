@@ -68,6 +68,7 @@ def main():
         sys.exit(0)
 
     # Push the latest local ip to the database
+    # TODO: Figure out if we can make local ip static instead of dynamic
     is_push_success = db_handler.push_local_ip_to_db(last_tags_and_ids)
     if not is_push_success:
         perror_log("Failed to push local ip address to AWS database")
@@ -102,8 +103,9 @@ def main():
 
             # Handle operation taps
             if program_name == "operation_tap_listener.c":
+                # TODO: Save operation taps to a CSV file and push CSV file to Google Drive at x:xxpm every day (daily)
                 timestamp = fifo_data_split[1]
-                push_success, operation_taps, current_batch_count = db_handler. handle_operation_tap(
+                push_success, operation_taps, current_batch_count = db_handler.handle_operation_tap(
                     last_tags_and_ids,
                     operation_taps,
                     current_batch_count,
