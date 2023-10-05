@@ -7,3 +7,17 @@ libretech-dtoverlay
 autoconf 
 libtool
 python3-pil
+python3-boto3
+python3-requests
+python3-dotenv
+python3-numpy
+python3-PIL
+python3-netifaces
+python3-fabric
+C dependencies:
+curl: sudo apt-get install curl
+fcntl.h
+gpiod.h
+json-c/json.h
+nfc/nfc.h
+unistd.h
