@@ -4,7 +4,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 
 // TODO: Fix logging (program_name)
 // TODO: Find and remove libraries that are unnecessary

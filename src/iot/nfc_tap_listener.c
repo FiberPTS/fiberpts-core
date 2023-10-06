@@ -12,9 +12,9 @@
 #include <nfc/nfc.h>
 
 // Local project headers
-#include "log_utils.h"
-#include "signal_utils.h"
-#include "utils.h"
+#include "utility/log_utils.h"
+#include "utility/signal_utils.h"
+#include "utility/utils.h"
 
 // Constants
 #define DEBOUNCE_TIME 1000 // Debounce time in milliseconds

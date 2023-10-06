@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 
 // TODO: Find and remove libraries that are unnecessary
 

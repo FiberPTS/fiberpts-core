@@ -9,9 +9,9 @@
 #include <unistd.h>
 
 // Local project headers
-#include "log_utils.h"
-#include "signal_utils.h"
-#include "utils.h"
+#include "utility/log_utils.h"
+#include "utility/signal_utils.h"
+#include "utility/utils.h"
 
 // Unknown libraries
 // #include <fcntl.h>
