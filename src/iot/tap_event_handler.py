@@ -45,6 +45,7 @@ if not AIRTABLE_CONST.API_KEY:
 # Constants
 BATCH_SIZE = 10
 TABLE_NAME = "API_Requests"
+MACHINE_ID = get_machine_id()
 
 
 def main():
@@ -87,6 +88,9 @@ def main():
 
     try:
         while True:
+            if ready_to_upload():
+
+
             time.sleep(0.25)
             tap_success = True
 
