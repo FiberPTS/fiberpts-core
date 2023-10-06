@@ -124,7 +124,8 @@ class DisplayManager:
             None
         """
         bg_color_to_use = bg_color or self.bg_color
-
+        image = Image.new("RGB", self.res, bg_color_to_use)
+        
         sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
         if len(sorted_records) != 0:
             # Get the most recent timestamp
