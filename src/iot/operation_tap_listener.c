@@ -107,6 +107,7 @@ int main(void) {
                 last_release_time = current_time;
                 continue;
             }
+            print_log(PROGRAM_NAME, "Operation Tap Registered\n");
             // Register tap if sensor was not touched within the debounce time
             // Get current timestamp
             char timestamp[32];
@@ -116,7 +117,6 @@ int main(void) {
             snprintf(data_to_send, sizeof(data_to_send), "%s::%s", PROGRAM_NAME, timestamp);
             // Send tap data through pipe
             send_data_to_pipe(data_to_send, FIFO_PATH);
-            print_log(PROGRAM_NAME, "Button Pressed\n");
             last_release_time = current_time;
         }
     }
