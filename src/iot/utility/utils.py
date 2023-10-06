@@ -2,6 +2,7 @@ import datetime
 from zoneinfo import ZoneInfo
 import netifaces as ni
 
+
 # TODO: Fix logging (program_name)
 # TODO: Find and remove libraries that are unnecessary
 
@@ -37,7 +38,7 @@ def get_local_ip(interface='wlan0'):
     try:
         ip = ni.ifaddresses(interface)[ni.AF_INET][0]['addr']
     except (KeyError, ValueError):
-        ip = 'UNKNOWN'
+        ip = 'UNKNOWN'  # TODO: Is there a reason why 'UNKNOWN' is returned instead of None?
     return ip
 
 
@@ -53,8 +54,14 @@ def format_utc_to_est(date_str):
     """
     if not date_str or date_str == "None":
         return ""
+    
     date_str = date_str.replace('Z', '')
-    date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
+    
+    try:
+        date_utc = datetime.datetime.fromisoformat(date_str).astimezone(datetime.timezone.utc)
+    except ValueError:
+        return ""
+    
     date_est = date_utc.astimezone(ZoneInfo('America/New_York'))
     return date_est.strftime('%Y-%m-%d %l:%M %p')
 
