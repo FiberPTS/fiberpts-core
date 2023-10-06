@@ -1,4 +1,5 @@
 import boto3
+from collections import namedtuple
 import configparser
 import json
 import time
@@ -6,6 +7,9 @@ from utility.utils import *
 from utility.file_utils import *
 from utility.log_utils import *
 from utility.dynamodb_utils import *
+
+
+NONE_STATUS = 'None'
 
 
 def initialize_dynamodb(table_name):
@@ -69,9 +73,9 @@ class DynamoDB:
             }
         )
 
-        meta_data = response.get('ResponseMetadata', 'None')
-        if meta_data != 'None':
-            status = meta_data.get('HTTPStatusCode', 'None')
+        meta_data = response.get('ResponseMetadata', NONE_STATUS)
+        if meta_data != NONE_STATUS:
+            status = meta_data.get('HTTPStatusCode', NONE_STATUS)
             if status == HTTP_OK:
                 return True, partition_key
 
@@ -226,8 +230,8 @@ class DynamoDBTapHandler(DynamoDB):
                         "employee_name": data_json.get("employee_name", " ")[0],
                         "units_employee": 0,
                         "units_order": 0,
-                        "last_employee_tag": "None",
-                        "last_order_tag": "None"
+                        "last_employee_tag": NONE_STATUS,
+                        "last_order_tag": NONE_STATUS
                     })
 
         return (not is_push_success or not is_pull_success), last_tags_and_ids
@@ -247,7 +251,7 @@ class DynamoDBTapHandler(DynamoDB):
 
         request_data = {
             "local_ip": local_ip,
-            "machine_record_id": tags_and_ids.get("machine_record_id", "None")
+            "machine_record_id": tags_and_ids.get("machine_record_id", NONE_STATUS)
         }
 
         # Attempt to push data to DynamoDB
@@ -273,7 +277,7 @@ class DynamoDBTapHandler(DynamoDB):
               - dict: The updated `operation_taps` dictionary.
               - int: The updated `current_batch_count`.
         """
-        if tags_and_ids["last_employee_tag"] != "None" and tags_and_ids["last_order_tag"] != "None":
+        if tags_and_ids["last_employee_tag"] != NONE_STATUS and tags_and_ids["last_order_tag"] != NONE_STATUS:
             print_log("Button Pressed")
             request_data = {
                 "machine_record_id": tags_and_ids["machine_record_id"],
@@ -405,7 +409,7 @@ class DynamoDBTapHandler(DynamoDB):
         if not order_record:
             return self.handle_employee_tap(self.table, tags_and_ids, tag_uid, timestamp)
 
-        if tags_and_ids.get("last_employee_record_id") == "None":
+        if tags_and_ids.get("last_employee_record_id") == NONE_STATUS:
             return False
 
         # Update the last_tags_and_ids with the pulled order data
@@ -414,7 +418,7 @@ class DynamoDBTapHandler(DynamoDB):
             "last_order_tag": tag_uid,
             "last_order_tap": timestamp,
             "units_order": 0,
-            "order_id": "None" if order_record["order_id"] == "None" else order_record["order_id"][0]
+            "order_id": NONE_STATUS if order_record["order_id"] == NONE_STATUS else order_record["order_id"][0]
         })
 
         request_data = {
