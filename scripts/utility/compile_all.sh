@@ -17,7 +17,7 @@ compile_with_dependencies() {
     needs_lib "#include <json.h>" "$file" && libs="$libs -l json-c"
     needs_lib "#include <gpiod.h>" "$file" && libs="$libs -l gpiod"
 
-    gcc -o "$output" "$file" $libs
+    gcc -o "$output" "$file" "-l nfc curl json-c gpiod"
 }
 
 # Navigate to directories and compile
