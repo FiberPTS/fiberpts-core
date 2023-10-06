@@ -43,7 +43,7 @@ void cleanup() {
     nfc_exit(context);
 }
 
-int main(int argc, const char *argv[]) {
+int main(void) {
     // Initialize NFC Reader and its associated variables
     nfc_init(&context);
     if (!context) {
