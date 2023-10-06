@@ -1,5 +1,9 @@
-from PIL import Image, ImageDraw, ImageFont
+# Third=party imports
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+
+# Local application/package imports
+from log_utils import *
 
 
 # TODO: Fix logging (program_name)
@@ -17,8 +21,11 @@ def write_to_framebuffer(data, fb_path):
     Returns:
         None
     """
-    with open(fb_path, "wb") as f:
-        f.write(data.tobytes())
+    try:
+        with open(fb_path, "wb") as f:
+            f.write(data.tobytes())
+    except FileNotFoundError or PermissionError:
+        perror_log(f"[ERROR] [display_utils.py] [write_to_framebuffer] - File not found. Context: {{fb_path: {fb_path}}}")
 
 
 def image_to_rgb565(image):
@@ -82,7 +89,7 @@ class DisplayManager:
 
         return image
 
-    def draw_display(self, last_tags_and_ids, bg_color=None):
+    def draw_display(self, tags_and_ids, bg_color=None):
         """
         Creates and draws an image for the display based on the provided data.
 
@@ -97,12 +104,12 @@ class DisplayManager:
 
         # Draw the various pieces of data onto the image
         texts = [
-            (last_tags_and_ids["employee_name"], 5, 0),
-            (last_tags_and_ids["last_employee_tap"], 5, 30),
-            (last_tags_and_ids["order_id"], 5, 60),
-            (last_tags_and_ids["last_order_tap"], 5, 90),
-            ("Total Count: " + str(last_tags_and_ids["units_employee"]), 5, 120),
-            ("Order Count: " + str(last_tags_and_ids["units_order"]), 5, 150)
+            (tags_and_ids["employee_name"], 5, 0),
+            (tags_and_ids["last_employee_tap"], 5, 30),
+            (tags_and_ids["order_id"], 5, 60),
+            (tags_and_ids["last_order_tap"], 5, 90),
+            ("Total Count: " + str(tags_and_ids["units_employee"]), 5, 120),
+            ("Order Count: " + str(tags_and_ids["units_order"]), 5, 150)
         ]
         for text, x, y in texts:
             image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
