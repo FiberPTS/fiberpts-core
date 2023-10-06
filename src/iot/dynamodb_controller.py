@@ -6,7 +6,6 @@ import time
 from utility.utils import *
 from utility.file_utils import *
 from utility.log_utils import *
-from utility.dynamodb_utils import *
 
 
 NONE_STATUS = 'None'
