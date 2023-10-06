@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Define the base directory for the NFC tracking application.
-BASE_DIR="/home/potato/NFC_Tracking"
+BASE_DIR="/home/potato/FiberPTS/src/iot"
 
 # Define the names and paths of the programs to be monitored.
 PROGRAM_NAMES=(
     "nfc_tap_listener.c"
     "operation_tap_listener.c"
-    "display_and_data_handler.py"
+    "tap_event_handler.py"
 )
 for idx in ${!PROGRAM_NAMES[@]}; do
     PROGRAM_PATHS[$idx]=("{$BASE_DIR}/${PROGRAM_NAMES[$idx]}")
@@ -17,9 +17,9 @@ MACHINE_ID=$(cat /etc/machine-id)
 
 # Kill the monitored programs when the script receives a SIGTERM signal.
 on_sigterm() {
-    kill $(cat /var/run/read_ultralight.pid)
-    kill $(cat /var/run/button_listener.pid)
-    kill $(cat /var/run/screen.pid)
+    kill $(cat /var/run/nfc_tap_listener.pid)
+    kill $(cat /var/run/operation_tap_listener.pid)
+    kill $(cat /var/run/tap_event_handler.pid)
     exit 0
 }
 
@@ -31,8 +31,8 @@ check_wifi() {
     # Check if connected to "FERRARAMFG"
     if ! nmcli con show --active | grep -q "FERRARAMFG"; then
     	nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
-        # If not connected, try to reconnect
-        nmcli con up FERRARAMFG
+      # If not connected, try to reconnect
+      nmcli con up FERRARAMFG
     fi
     #if ! nmcli con show --active | grep -q "iPhone (202)"; then
     #    nmcli device wifi connect "iPhone (202)" password thehomiepass
@@ -57,7 +57,7 @@ while true; do
         # If not running, try to restart the program and log its output.
         $PROGRAM_PATHS[0] >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
-        echo $! > /var/run/read_ultralight.pid
+        echo $! > /var/run/nfc_tap_listener.pid
     fi
 
     # Check if the second program is running.
@@ -69,7 +69,7 @@ while true; do
         # If not running, try to restart the program and log its output.
         $PROGRAM_PATHS[1] >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
-        echo $! > /var/run/button_listener.pid
+        echo $! > /var/run/operation_tap_listener.pid
     fi
 
     # Check if the third program is running.
@@ -81,7 +81,7 @@ while true; do
         # If not running, try to restart the program and log its output.
         $PROGRAM_PATHS[2] >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
-        echo $! > /var/run/screen.pid
+        echo $! > /var/run/tap_event_handler.pid
     fi
 
     # Determine the overall status of all programs.
@@ -93,5 +93,5 @@ while true; do
     fi
 
     # Pause for 60 seconds before checking the programs again.
-    sleep 60
+    sleep 10
 done
