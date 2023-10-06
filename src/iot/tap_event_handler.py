@@ -62,7 +62,7 @@ def main():
     db_handler = DynamoDBTapHandler(TABLE_NAME, FILE_PATH_INFO, BATCH_SIZE)
 
     # Pull the last set of tags and IDs from the database
-    is_update_success, last_tags_and_ids = db_handler.pull_last_tags_and_ids()
+    is_update_success, last_tags_and_ids = db_handler.pull_latest_tags_and_ids()
     if not is_update_success:
         perror_log("Failed to update last_tags_and_ids from AWS database")
         sys.exit(0)

@@ -2,7 +2,7 @@ import datetime
 import sys
 from zoneinfo import ZoneInfo
 
-# TODO: Fix logging (program_name)
+# TODO: Fix logging (program_name) - make PROGRAM_NAME available to all functions
 # TODO: Find and remove libraries that are unnecessary
 
 PROGRAM_NAME = None

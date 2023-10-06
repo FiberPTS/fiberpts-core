@@ -8,6 +8,16 @@ import configparser
 
 
 def initialize_dynamodb(table_name):
+    """
+    Initializes a DynamoDB resource using AWS credentials and returns
+    a table object.
+    
+    Args:
+      table_name (str): The name of the DynamoDB table to be initialized.
+    
+    Returns:
+      A DynamoDB table object.
+    """
     # Load AWS credentials from the file
     aws_config = configparser.ConfigParser()
     aws_config.read("/home/potato/.aws/credentials.txt")
@@ -32,15 +42,15 @@ class DynamoDBTapHandler:
         self.file_path_info = file_path_info
         self.batch_size = batch_size
 
-    def pull_last_tags_and_ids(self):
+    def pull_latest_tags_and_ids(self):
         """
-        Update the `last_tags_and_ids` dictionary with data from the database.
+        Updates the `latest_tags_and_ids` dictionary with data from the database.
 
         Args:
             table (boto3.DynamoDB.Table): The boto3 DynamoDB table resource.
 
         Returns:
-            tuple: A tuple containing two elements:
+            tuple: A tuple containing:
                 - bool: True if the data was successfully retrieved and updated, False otherwise.
                 - dict: The updated `last_tags_and_ids` dictionary.
         """
@@ -110,15 +120,14 @@ class DynamoDBTapHandler:
         if push_item_db(self.table, "LocalIPAddress", request_data)[0]:
             print_log(f"Local IP Address pushed successfully: {local_ip}")
             return True
-        else:
-            return False
+        return False
 
-    def handle_operation_tap(self, last_tags_and_ids, operation_taps, current_batch_count, timestamp):
+    def handle_operation_tap(self, tags_and_ids, operation_taps, current_batch_count, timestamp):
         """
-        Handle a button tap event.
+        Handle a button tap event by updating the `operation_taps` dictionary with
+        relevant data and checking if the batch size has been reached.
 
         Args:
-            table (boto3.DynamoDB.Table): The boto3 DynamoDB table resource.
             last_tags_and_ids (dict): A dictionary containing the current tags and IDs.
             operation_taps (dict): A dictionary containing the operation taps.
             current_batch_count (int): The current batch count.
@@ -130,26 +139,27 @@ class DynamoDBTapHandler:
                 - dict: The updated `operation_taps` dictionary.
                 - int: The updated `current_batch_count`.
         """
-        if last_tags_and_ids["last_employee_tag"] != "None" and last_tags_and_ids["last_order_tag"] != "None":
+        if tags_and_ids["last_employee_tag"] != "None" and tags_and_ids["last_order_tag"] != "None":
             print_log("Button Pressed")
-            # TODO: Make sure timestamp is in correct format with seconds
             request_data = {
-                "machine_record_id": last_tags_and_ids["machine_record_id"],
-                "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"],
-                "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
+                "machine_record_id": tags_and_ids["machine_record_id"],
+                "employee_tag_record_id": tags_and_ids["last_employee_record_id"],
+                "order_tag_record_id": tags_and_ids["last_order_record_id"],
                 "timestamp": timestamp
             }
+            
             operation_taps["Records"].append(request_data)
             current_batch_count += 1
+            
             if current_batch_count >= self.batch_size:
                 if not push_item_db(self.table, "OperationTapEvent", operation_taps):
                     return False, operation_taps, current_batch_count
                 current_batch_count = 0
                 operation_taps = {"Records": []}
 
-            last_tags_and_ids.update({
-                "units_order": last_tags_and_ids["units_order"] + 1,
-                "units_employee": last_tags_and_ids["units_employee"] + 1
+            tags_and_ids.update({
+                "units_order": tags_and_ids["units_order"] + 1,
+                "units_employee": tags_and_ids["units_employee"] + 1
             })
         else:
             return False, operation_taps, current_batch_count
