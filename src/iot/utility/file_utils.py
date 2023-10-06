@@ -20,7 +20,7 @@ def read_from_file(file_path):
     try:    
         with open(file_path, "r") as f:
             return f.read()
-    except FileNotFoundError or PermissionError:
+    except (FileNotFoundError, PermissionError):
         perror_log(f"[ERROR] [file_utils.py] [read_from_file] - File not found. Context: {{file_path}}: {file_path}")
 
 

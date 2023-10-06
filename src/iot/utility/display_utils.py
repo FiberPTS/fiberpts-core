@@ -24,7 +24,7 @@ def write_to_framebuffer(data, fb_path):
     try:
         with open(fb_path, "wb") as f:
             f.write(data.tobytes())
-    except FileNotFoundError or PermissionError:
+    except (FileNotFoundError, PermissionError):
         perror_log(f"[ERROR] [display_utils.py] [write_to_framebuffer] - File not found. Context: {{fb_path: {fb_path}}}")
 
 
