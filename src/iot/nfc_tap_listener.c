@@ -62,7 +62,7 @@ int main(int argc, const char *argv[]) {
     print_log(PROGRAM_NAME, "NFC Reader: %s opened\n", nfc_device_get_name(pnd));
 
     // Signal handling initialization
-    if (initialize_signal_handlers(HANDLE_SIGINT | HANDLE_SIGUSR1 | HANDLE_SIGTERM, cleanup) == -1) {
+    if (init_signal_handlers(HANDLE_SIGINT | HANDLE_SIGUSR1 | HANDLE_SIGTERM, cleanup) == -1) {
         perror_log(PROGRAM_NAME, "Error initializing signal handlers: ");
         return 1;
     }

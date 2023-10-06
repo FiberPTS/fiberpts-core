@@ -69,7 +69,7 @@ void cleanup_gpio(void) {
 
 int main(void) {
     // Initialize SIGINT signal handler with the cleanup function
-    if (initialize_signal_handlers(HANDLE_SIGINT | HANDLE_SIGTERM, cleanup_gpio) == -1) {
+    if (init_signal_handlers(HANDLE_SIGINT | HANDLE_SIGTERM, cleanup_gpio) == -1) {
         perror_log(PROGRAM_NAME, "Error initializing signal handlers: ");
         return 1
     }
@@ -113,9 +113,11 @@ int main(void) {
             // Get current timestamp
             char timestamp[32];
             get_current_time_in_est(timestamp, "%Y-%m-%d %H:%M:%S");
+            
             // Data to send through pipe
             char data_to_send[strlen(PROGRAM_NAME) + strlen("::") + strlen(timestamp) + 1];
             snprintf(data_to_send, sizeof(data_to_send), "%s::%s", PROGRAM_NAME, timestamp);
+            
             // Send tap data through pipe
             send_data_to_pipe(data_to_send, FIFO_PATH);
             print_log(PROGRAM_NAME, "Button Pressed\n");

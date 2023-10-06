@@ -53,7 +53,7 @@ class TapHandler():
             raise ValueError("'AIRTABLE_API_KEY' is not set.")
 
         # Initialize signal handlers
-        initialize_signal_handlers(["SIGTERM"])
+        init_signal_handlers(["SIGTERM"])
 
         # Initialize database tap handler
         db_handler = DynamoDBTapHandler("API_Requests", self.FILE_PATH_INFO, self.BATCH_SIZE)
