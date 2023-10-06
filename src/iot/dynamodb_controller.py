@@ -130,37 +130,31 @@ class DynamoDBTapHandler:
                 - dict: The updated `operation_taps` dictionary.
                 - int: The updated `current_batch_count`.
         """
-        # if last_tags_and_ids["last_employee_tag"] != "None" and last_tags_and_ids["last_order_tag"] != "None":
-        #     print_log("Button Pressed")
-        #     # TODO: Make sure timestamp is in correct format with seconds
-        #     request_data = {
-        #         "machine_record_id": last_tags_and_ids["machine_record_id"],
-        #         "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"],
-        #         "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
-        #         "timestamp": timestamp
-        #     }
-        #     operation_taps["Records"].append(request_data)
-        #     current_batch_count += 1
-        #     if current_batch_count >= self.batch_size:
-        #         if not push_item_db(self.table, "OperationTapEvent", operation_taps):
-        #             return False, operation_taps, current_batch_count
-        #         current_batch_count = 0
-        #         operation_taps = {"Records": []}
-        #
-        #     last_tags_and_ids.update({
-        #         "units_order": last_tags_and_ids["units_order"] + 1,
-        #         "units_employee": last_tags_and_ids["units_employee"] + 1
-        #     })
-        # else:
-        #     return False, operation_taps, current_batch_count
-        #
-        # return True, operation_taps, current_batch_count
-        tap_record = {
-            "Machine ID": get_machine_id(),
-            "UoM": 1,
-            "Timestamp": timestamp
-        }
-        operation_taps["Records"].append(tap_record)
+        if last_tags_and_ids["last_employee_tag"] != "None" and last_tags_and_ids["last_order_tag"] != "None":
+            print_log("Button Pressed")
+            # TODO: Make sure timestamp is in correct format with seconds
+            request_data = {
+                "machine_record_id": last_tags_and_ids["machine_record_id"],
+                "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"],
+                "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
+                "timestamp": timestamp
+            }
+            operation_taps["Records"].append(request_data)
+            current_batch_count += 1
+            if current_batch_count >= self.batch_size:
+                if not push_item_db(self.table, "OperationTapEvent", operation_taps):
+                    return False, operation_taps, current_batch_count
+                current_batch_count = 0
+                operation_taps = {"Records": []}
+
+            last_tags_and_ids.update({
+                "units_order": last_tags_and_ids["units_order"] + 1,
+                "units_employee": last_tags_and_ids["units_employee"] + 1
+            })
+        else:
+            return False, operation_taps, current_batch_count
+
+        return True, operation_taps, current_batch_count
 
 
     def handle_employee_tap(self, last_tags_and_ids, tag_uid, timestamp):

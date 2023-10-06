@@ -13,61 +13,57 @@ FILE_PATH = "/Users/nxfer/Github Repositories/FiberPTS"
 SERVICE_ACCOUNT_JSON_PATH = "/Users/nxfer/Github Repositories/FiberPTS/indigo-history-397015-bf31ea2c51a7.json"
 
 
-def json_to_csv(json_data, filename):
-    with open(filename, 'w', newline='') as csvfile:
+def json_to_csv(json_data, file_path):
+    with open(file_path, 'w', newline='') as csvfile:
         fieldnames = ["Machine ID", "UoM", "Timestamp"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for record in json_data["Records"]:
             writer.writerow(record)
 
-def upload_file_to_drive(filenames, parent_folder_id="1xonItT9hqD0goUq2qfldvfFTOWyhRLcz"):
+
+def upload_file_to_drive(file_paths, parent_folder_id="1xonItT9hqD0goUq2qfldvfFTOWyhRLcz"):
     # Load the service account credentials
     drive = Drive(creds=ServiceCredentials.from_service_account_file(SERVICE_ACCOUNT_JSON_PATH))
 
     # Check if today's folder exists
-    today = datetime.now().strftime('%m/%d/%y')
+    name = datetime.datetime.now().strftime('%m-%d-%y')
     folders = drive.list(
-        query=f"name='{today}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
+        query=f"name='{name}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
     folder = next(folders, None)
+    print(list(folders))
 
     # If the folder does not exist, create it
     if not folder:
-        folder_metadata = {
-            'name': today,
-            'parents': [parent_folder_id],
-            'mimeType': GoogleMimeTypes.folder.value
-        }
-        folder = drive.create(
-            name=today,
-            mime_type=GoogleMimeTypes.folder.value,
-            parents=[parent_folder_id],
-            fields="id"
-        )
+        folder = drive.create(name=name, parents=[parent_folder_id], mime_type=GoogleMimeTypes.folder)
 
-    for filename in filenames:
-        # TODO: fix syntax
+    for file_path in file_paths:
+        file_name = file_path.split('/')[-1]
+
         # Check if the file already exists in the folder
-        files = drive.list(query=f"name='{filename.split('/')[-1]}' and '{folder["id"]}' in parents")
-        file = next(files, None)
-
-        # If found, delete the file
-        if file:
-            drive.delete(file["id"])
+        files = drive.list(query=f"name='{file_name}' and '{folder['id']}' in parents")
+        existing_file = next(files, None)
 
         # Metadata for the file
         file_metadata = {
-            'name': filename.split("/")[-1],
+            'name': file_name,
             'parents': [folder["id"]]
         }
 
-        # Upload the file to the specified folder in Drive
+        # Get appropriate mime type
+        mime_map = {
+            'csv': GoogleMimeTypes.csv,
+            'pdf': GoogleMimeTypes.pdf
+        }
+        mime_type = mime_map.get(file_name.split('.')[-1], GoogleMimeTypes.file)
+
         uploaded_file = drive.upload_file(
-            filepath=filename,
+            filepath=file_path,
             name=file_metadata['name'],
             parents=[folder["id"]],
             body=file_metadata,
-            update=False
+            update=False,
+            mime_type=mime_type
         )
 
         print(f'File uploaded with ID: {uploaded_file["id"]}')
@@ -187,28 +183,26 @@ def ready_to_upload():
     return current_time.hour >= 18
 
 
-def upload_csv():
-    if not ready_to_upload():
-        return
-    csv_file = generate_sample_data("data.csv")
-    # csv_file = f"{FILE_PATH}/data.csv"
-    # json_to_csv(data, csv_file)
-    graph_image = f"{FILE_PATH}/graph.png"
-    pdf_report = f"{FILE_PATH}/report.pdf"
+def upload_report(data, folder_path):
+    # if not ready_to_upload():
+    #     return
+    # csv_file = generate_sample_data("data.csv", num_records=100)
+    csv_file_path = f"{folder_path}/data.csv"
+    graph_file_path = f"{folder_path}/graph.png"
+    report_file_path = f"{folder_path}/report.pdf"
+
+    # Generate CSV file
+    json_to_csv(data, csv_file_path)
 
     # Generate graph
-    generate_graph_from_csv(csv_file, graph_image)
+    generate_graph_from_csv(csv_file_path, graph_file_path)
 
     # Compute analytics
-    analytics = compute_analytics(csv_file)
+    analytics = compute_analytics(csv_file_path)
 
     # Generate PDF report
-    generate_pdf_report(analytics, graph_image, pdf_report)
+    generate_pdf_report(analytics, graph_file_path, report_file_path)
 
-    files_to_upload = [csv_file, pdf_report]
+    # Upload files
+    files_to_upload = [csv_file_path, report_file_path]
     upload_file_to_drive(files_to_upload)
-
-# Use the provided functionality to generate analytics, graph, and report
-upload_csv()
-
-print("Process completed!")

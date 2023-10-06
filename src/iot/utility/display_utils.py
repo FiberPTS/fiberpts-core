@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
+from utils import *
 
 
 # TODO: Fix logging (program_name)
@@ -82,7 +83,36 @@ class DisplayManager:
 
         return image
 
-    def draw_display(self, last_tags_and_ids, bg_color=None):
+    # def draw_display(self, last_tags_and_ids, bg_color=None):
+    #     """
+    #     Creates and draws an image for the display based on the provided data.
+    #
+    #     Args:
+    #         last_tags_and_ids: dict, Data to display.
+    #         bg_color: tuple, optional, The background color. Default is set in constructor.
+    #
+    #     Returns:
+    #         None
+    #     """
+    #     bg_color_to_use = bg_color or self.bg_color
+    #
+    #     # Draw the various pieces of data onto the image
+    #     texts = [
+    #         (last_tags_and_ids["employee_name"], 5, 0),
+    #         (last_tags_and_ids["last_employee_tap"], 5, 30),
+    #         (last_tags_and_ids["order_id"], 5, 60),
+    #         (last_tags_and_ids["last_order_tap"], 5, 90),
+    #         ("Total Count: " + str(last_tags_and_ids["units_employee"]), 5, 120),
+    #         ("Order Count: " + str(last_tags_and_ids["units_order"]), 5, 150)
+    #     ]
+    #     for text, x, y in texts:
+    #         image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
+    #
+    #     # Convert the image to RGB565 format and write to framebuffer
+    #     raw_data = image_to_rgb565(image)
+    #     write_to_framebuffer(raw_data, self.fb_path)
+
+    def draw_display(self, operation_taps, bg_color=None):
         """
         Creates and draws an image for the display based on the provided data.
 
@@ -95,14 +125,15 @@ class DisplayManager:
         """
         bg_color_to_use = bg_color or self.bg_color
 
+        sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
+        # Get the most recent timestamp
+        most_recent_timestamp = sorted_records[0]["Timestamp"]
         # Draw the various pieces of data onto the image
         texts = [
-            (last_tags_and_ids["employee_name"], 5, 0),
-            (last_tags_and_ids["last_employee_tap"], 5, 30),
-            (last_tags_and_ids["order_id"], 5, 60),
-            (last_tags_and_ids["last_order_tap"], 5, 90),
-            ("Total Count: " + str(last_tags_and_ids["units_employee"]), 5, 120),
-            ("Order Count: " + str(last_tags_and_ids["units_order"]), 5, 150)
+            (get_current_time(), 5, 0),
+            (f"Last Tap: {most_recent_timestamp}", 5, 30),
+            (f"Total Operations: {len(operation_taps['Records'])}", 5, 60),
+            (f"Total Units: {sum([unit_of_measure for unit_of_measure in operation_taps['Records']['UoM']])}", 5, 90),
         ]
         for text, x, y in texts:
             image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
