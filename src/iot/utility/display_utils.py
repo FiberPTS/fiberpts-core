@@ -67,7 +67,7 @@ class DisplayManager:
         """
         # Draw text onto a separate image
         draw = ImageDraw.Draw(image)
-        text_width, text_height = draw.textsize(text, font=self.font)
+        text_width, text_height = self.font.getsize(text)
         text_image = Image.new("RGB", (text_width, text_height), bg_color)
         text_draw = ImageDraw.Draw(text_image)
         text_draw.text((0, 0), text, font=self.font, fill=self.text_color)
@@ -125,7 +125,7 @@ class DisplayManager:
         """
         bg_color_to_use = bg_color or self.bg_color
         image = Image.new("RGB", self.res, bg_color_to_use)
-        
+
         sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
         if len(sorted_records) != 0:
             # Get the most recent timestamp
