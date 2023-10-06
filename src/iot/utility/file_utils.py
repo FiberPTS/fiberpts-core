@@ -17,8 +17,11 @@ def read_from_file(file_path):
     Returns:
         str: The content of the file.
     """
-    with open(file_path, "r") as f:
-        return f.read()
+    try:    
+        with open(file_path, "r") as f:
+            return f.read()
+    except FileNotFoundError or PermissionError:
+        perror_log(f"[ERROR] [file_utils.py] [read_from_file] - File not found. Context: {{file_path}}: {file_path}")
 
 
 def save_json_to_file(file_path, data):
