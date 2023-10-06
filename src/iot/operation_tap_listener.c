@@ -1,6 +1,7 @@
 // Standard library headers
 // TODO: Find and remove libraries that are unnecessary
 // TODO: Fix logging (program_name)
+#include <errno.h>
 #include <gpiod.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,7 +24,7 @@
 #define VOLTAGE_VALUE 1 // Voltage value corresponding to button press
 
 // File paths and names
-const char *FIFO_PATH = "/tmp/screenPipe"; // File path for FIFO pipe
+const char *FIFO_PATH = "/tmp/tap_event_handler"; // File path for FIFO pipe
 const char *PROGRAM_NAME = "operation_tap_listener.c";
 
 // GPIO Configuration
@@ -71,7 +72,7 @@ int main(void) {
     // Initialize SIGINT signal handler with the cleanup function
     if (initialize_signal_handlers(HANDLE_SIGINT | HANDLE_SIGTERM, cleanup_gpio) == -1) {
         perror_log(PROGRAM_NAME, "Error initializing signal handlers: ");
-        return 1
+        return 1;
     }
 
     // Initialize GPIO.
@@ -79,12 +80,10 @@ int main(void) {
         return 1;
     }
 
-    // Create a named pipe for inter-process communication.
-    if (mkfifo(FIFO_PATH, 0666) == -1) {
-        if (errno != EEXIST) {  // EEXIST means the file already exists, which might be okay
-            perror_log(PROGRAM_NAME, "Error creating named pipe: ");
-            return 1;
-        }
+    // Initialize the named pipe for IPC
+    if (mkfifo(FIFO_PATH, 0666) == -1 && errno != EEXIST) {
+        perror_log(PROGRAM_NAME, "Error creating named pipe: ");
+        return 1;
     }
 
     // Sets the last release time

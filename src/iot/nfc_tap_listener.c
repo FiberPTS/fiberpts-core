@@ -20,7 +20,7 @@
 #define DEBOUNCE_TIME 1000 // Debounce time in milliseconds
 
 // File paths and names
-const char *FIFO_PATH = "/tmp/screenPipe";
+const char *FIFO_PATH = "/tmp/tap_event_handler";
 const char *PROGRAM_NAME = "nfc_tap_listener.c";
 
 // NFC Configurations
