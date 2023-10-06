@@ -34,7 +34,6 @@ struct gpiod_line *sensor_line;
 
 // State variables
 static struct timespec last_release_time; // Time of the last sensor tap
-static int sensor_touched = 0; // Flag for whether the sensor registered a tap
 
 /**
  * @brief Initializes GPIO for button input.
