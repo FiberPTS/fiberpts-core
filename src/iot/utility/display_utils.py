@@ -126,8 +126,11 @@ class DisplayManager:
         bg_color_to_use = bg_color or self.bg_color
 
         sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
-        # Get the most recent timestamp
-        most_recent_timestamp = sorted_records[0]["Timestamp"]
+        if len(sorted_records) != 0:
+            # Get the most recent timestamp
+            most_recent_timestamp = sorted_records[0]["Timestamp"]
+        else:
+            most_recent_timestamp = None
         # Draw the various pieces of data onto the image
         texts = [
             (get_current_time(), 5, 0),
