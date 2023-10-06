@@ -1,11 +1,11 @@
 # Import necessary modules
-from fabric import Connection
+import argparse
 from collections import namedtuple
 from dotenv import load_dotenv
-import os
-import argparse
-import requests
+from fabric import Connection
 import json
+import os
+import requests
 import sys
 import time
 

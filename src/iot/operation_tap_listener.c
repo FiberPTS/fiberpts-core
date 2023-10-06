@@ -1,230 +1,129 @@
-#include <fcntl.h>
+// Standard library headers
+// TODO: Find and remove libraries that are unnecessary
+// TODO: Fix logging (program_name)
 #include <gpiod.h>
-#include <signal.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#define BUTTON_LINE_NUMBER 80  // Black on GND and Red on GPIO
-#define DEBOUNCE_TIME 1000     // debounce time in milliseconds
-#define VOLTAGE_VALUE 1        // Voltage value corresponding to button press
+// Local project headers
+#include "log_utils.h"
+#include "signal_utils.h"
+#include "utils.h"
 
-static struct timespec last_release_time;  // Time of the last button press
-static int button_pressed = 0;             // Flag for whether button is pressed
+// Unknown libraries
+// #include <fcntl.h>
+// #include <signal.h>
 
-const char *fifo_path = "/tmp/screenPipe";  // Pipe file path
+// Constants
+#define SENSOR_LINE_NUMBER 80 // GPIO Line number
+#define DEBOUNCE_TIME 1000 // Debounce time in milliseconds
+#define VOLTAGE_VALUE 1 // Voltage value corresponding to button press
 
-struct gpiod_chip *chip;         // GPIO chip struct
-struct gpiod_line *button_line;  // GPIO line struct
+// File paths and names
+const char *FIFO_PATH = "/tmp/screenPipe"; // File path for FIFO pipe
+const char *PROGRAM_NAME = "operation_tap_listener.c";
 
-// Flag checking for whether the program was interrupted
-volatile sig_atomic_t interrupted = 0;
+// GPIO Configuration
+const char *CHIP_NAME = "gpiochip1"; // Name of the GPIO chip
+struct gpiod_chip *chip;
+struct gpiod_line *sensor_line;
 
-void cleanup_gpio(void);
-
-/**
- * @brief Signal handler for SIGINT (For instance, when Ctrl+C occurs).
- * @param sig The signal number
- */
-void handle_sigint(int sig) {
-  interrupted = 1;
-  cleanup_gpio();
-  exit(0);
-}
-
-/**
- * @brief Logs messages with a timestamp.
- * @param format The format string for the log message.
- * @param ... Variable arguments for the format string.
- */
-void print_log(const char *format, ...) {
-  va_list argptr;
-  va_start(argptr, format);
-  // Set timezone to EST
-  setenv("TZ", "EST5EDT", 1);
-  tzset();
-
-  time_t rawtime;
-  struct tm *timeinfo;
-
-  time(&rawtime);
-  timeinfo = localtime(&rawtime);
-
-  char buffer[80];
-  strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-
-  if (format[0] == '\n') {
-    printf("\n%s::button_listener::", buffer);
-    format++;
-  } else {
-    printf("%s::button_listener::", buffer);
-  }
-  vprintf(format, argptr);
-
-  va_end(argptr);
-}
-
-/**
- * @brief Logs error messages with a timestamp.
- * @param format The format string for the error message.
- * @param ... Variable arguments for the format string.
- */
-void perror_log(const char *format, ...) {
-  va_list argptr;
-  va_start(argptr, format);
-
-  // Set timezone to EST
-  setenv("TZ", "EST5EDT", 1);
-  tzset();
-
-  time_t rawtime;
-  struct tm *timeinfo;
-
-  time(&rawtime);
-  timeinfo = localtime(&rawtime);
-
-  char buffer[80];
-  strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-  fprintf(stderr, "%s::button_listener::", buffer);
-  vfprintf(stderr, format, argptr);
-
-  perror("");
-
-  va_end(argptr);
-}
+// State variables
+static struct timespec last_release_time; // Time of the last sensor tap
+static int sensor_touched = 0; // Flag for whether the sensor registered a tap
 
 /**
  * @brief Initializes GPIO for button input.
  * @return 0 on success, 1 on failure.
  */
 int initialize_gpio(void) {
-  chip = gpiod_chip_open_by_name("gpiochip1");
-  if (!chip) {
-    perror_log("Open chip failed");
-    return 1;
-  }
-
-  button_line = gpiod_chip_get_line(chip, BUTTON_LINE_NUMBER);
-  if (!button_line) {
-    perror_log("Get line failed");
-    gpiod_chip_close(chip);
-    return 1;
-  }
-
-  int ret = gpiod_line_request_input(button_line, "button");
-  if (ret < 0) {
-    perror_log("Request line as input failed");
-    gpiod_chip_close(chip);
-    return 1;
-  }
-
-  return 0;
+    chip = gpiod_chip_open_by_name(CHIP_NAME);
+    if (!chip) {
+        perror_log(PROGRAM_NAME, "Open chip failed: ");
+        return -1;
+    }
+    sensor_line = gpiod_chip_get_line(chip, SENSOR_LINE_NUMBER);
+    if (!sensor_line) {
+        perror_log(PROGRAM_NAME, "Get line failed: ");
+        gpiod_chip_close(chip);
+        return -1;
+    }
+    if (gpiod_line_request_input(sensor_line, "button") < 0) {
+        perror_log(PROGRAM_NAME, "Request line as input failed: ");
+        gpiod_chip_close(chip);
+        return -1;
+    }
+    return 0;
 }
 
 /**
  * @brief Releases the GPIO resources.
  */
 void cleanup_gpio(void) {
-  gpiod_line_release(button_line);
-  gpiod_chip_close(chip);
-}
-
-/**
- * @brief Retrieves the machine's unique ID.
- * @return A string containing the machine's ID or NULL on failure.
- */
-char *get_machine_id() {
-  FILE *file = fopen("/etc/machine-id", "r");
-  if (file == NULL) {
-    perror_log("Unable to open /etc/machine-id");
-    return NULL;
-  }
-
-  char *machine_id = malloc(33);
-  if (fgets(machine_id, 33, file) == NULL) {
-    perror_log("Unable to read /etc/machine-id");
-    fclose(file);
-    return NULL;
-  }
-
-  fclose(file);
-
-  return machine_id;
-}
-
-/**
- * @brief Sends data to a program using a named pipe.
- * @param data The data to send.
- */
-void send_data_to_pipe(const char *data) {
-  int fd;
-  fd = open(fifo_path, O_WRONLY);
-  write(fd, data, strlen(data) + 1);
-  close(fd);
+    gpiod_line_release(sensor_line);
+    gpiod_chip_close(chip);
 }
 
 int main(void) {
-  // Register the function to call on SIGINT
-  signal(SIGINT, handle_sigint);
-
-  // Initialize GPIO.
-  if (initialize_gpio() != 0) {
-    return 1;
-  }
-
-  // Create a named pipe for inter-process communication.
-  mkfifo(fifo_path, 0666);
-
-  // Main loop to monitor the button state.
-  while (!interrupted) {
-    struct timespec current_time;
-    clock_gettime(CLOCK_MONOTONIC, &current_time);
-    int value = gpiod_line_get_value(button_line);
-    // Check the button state and handle press/release events.
-    // Implement debounce logic to avoid false triggers.
-    if (value < 0) {
-      perror_log("Read line value failed");
-    } else if (value == VOLTAGE_VALUE) {
-      // Button is currently pressed
-      if (!button_pressed) {
-        // Convert DEBOUNCE_TIME to seconds and nanoseconds components
-        long debounce_sec = DEBOUNCE_TIME / 1000;
-        long debounce_nsec = (DEBOUNCE_TIME % 1000) * 1000000;
-
-        // Check if the difference in seconds exceeds the debounce
-        // seconds
-        bool sec_condition =
-            current_time.tv_sec > last_release_time.tv_sec + debounce_sec;
-
-        // Check if the seconds are equal and the difference in
-        // nanoseconds exceeds the debounce nanoseconds
-        bool nsec_condition =
-            (current_time.tv_sec == last_release_time.tv_sec) &&
-            (current_time.tv_nsec > last_release_time.tv_nsec + debounce_nsec);
-
-        // Check if enough time has passed since the last release
-        if (sec_condition || nsec_condition) {
-          button_pressed = 1;
-          const char *data_to_send = "button_listener.c-program-Button Pressed";
-          send_data_to_pipe(data_to_send);
-          print_log("Button Pressed\n");
-        } else {
-          button_pressed = 1;
-          last_release_time = current_time;
-        }
-      }
-    } else {
-      // Button is not currently pressed
-      if (button_pressed) {
-        // Button was just released
-        button_pressed = 0;
-        last_release_time = current_time;
-      }
+    // Initialize SIGINT signal handler with the cleanup function
+    if (init_signal_handlers(HANDLE_SIGINT | HANDLE_SIGTERM, cleanup_gpio) == -1) {
+        perror_log(PROGRAM_NAME, "Error initializing signal handlers: ");
+        return 1
     }
-  }
-  cleanup_gpio();
-  return 0;
+
+    // Initialize GPIO.
+    if (initialize_gpio() == -1) {
+        return 1;
+    }
+
+    // Create a named pipe for inter-process communication.
+    if (mkfifo(FIFO_PATH, 0666) == -1) {
+        if (errno != EEXIST) {  // EEXIST means the file already exists, which might be okay
+            perror_log(PROGRAM_NAME, "Error creating named pipe: ");
+            return 1;
+        }
+    }
+
+    // Sets the last release time
+    clock_gettime(CLOCK_MONOTONIC, &last_release_time);
+
+    struct timespec current_time;
+
+    // Main loop to monitor the touch sesnor state.
+    while (!interrupted) {
+        // Gets the current time
+        clock_gettime(CLOCK_MONOTONIC, &current_time);
+
+        // Get current voltage value on the sensor line
+        int value = gpiod_line_get_value(sensor_line);
+
+        // Checks the touch sensor state while handling tap & release events.
+        // Implements debounce logic to avoid false triggers.
+        if (value < 0) {
+            perror_log(PROGRAM_NAME, "Read line value failed");
+        } else if (value == VOLTAGE_VALUE) {
+            if (!is_debounce_time_passed(current_time, last_release_time, DEBOUNCE_TIME)) {
+                last_release_time = current_time;
+                continue;
+            }
+            // Register tap if sensor was not touched within the debounce time
+            // Get current timestamp
+            char timestamp[32];
+            get_current_time_in_est(timestamp, "%Y-%m-%d %H:%M:%S");
+            
+            // Data to send through pipe
+            char data_to_send[strlen(PROGRAM_NAME) + strlen("::") + strlen(timestamp) + 1];
+            snprintf(data_to_send, sizeof(data_to_send), "%s::%s", PROGRAM_NAME, timestamp);
+            
+            // Send tap data through pipe
+            send_data_to_pipe(data_to_send, FIFO_PATH);
+            print_log(PROGRAM_NAME, "Button Pressed\n");
+            last_release_time = current_time;
+        }
+    }
+    cleanup_gpio();
+    return 0;
 }
