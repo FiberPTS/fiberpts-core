@@ -1,12 +1,12 @@
 # Import necessary modules
-from fabric import Connection
-from dotenv import load_dotenv
-from collections import namedtuple
 import argparse
-import requests
+from collections import namedtuple
+from dotenv import load_dotenv
+from fabric import Connection
 import json
-import sys
 import os
+import requests
+import sys
 
 # Create an argument parser
 parser = argparse.ArgumentParser(

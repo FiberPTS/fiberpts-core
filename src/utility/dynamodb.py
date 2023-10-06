@@ -1,10 +1,10 @@
 #!/usr/bin/python3.9
-import boto3
-import json
-import configparser
-import time
-import os
 import argparse
+import boto3
+import configparser
+import json
+import os
+import time
 
 def delete_all_items(table):
     """
