@@ -14,8 +14,12 @@ def push_item_db(table, request_type, request_data):
         request_data: The data for the request.
 
     Returns:
-        tuple: A tuple containing a boolean indicating success and the partition key.
+        tuple: A tuple containing:
+         - bool: True to indicate successful push, False otherwise.
+         - str: DynamoDB's partition key.
     """
+    HTTP_OK = 200
+    
     partition_key = f'{get_machine_id()}-{request_type}-{get_current_time()}'
     response = table.put_item(
         Item={
@@ -28,7 +32,7 @@ def push_item_db(table, request_type, request_data):
     meta_data = response.get('ResponseMetadata', 'None')
     if meta_data != 'None':
         status = meta_data.get('HTTPStatusCode', 'None')
-        if status == 200:
+        if status == HTTP_OK:
             return True, partition_key
     perror_log(f"An error occurred while pushing the item: \n Data: {request_data} \n MetaData: {meta_data}")
     return False, None
