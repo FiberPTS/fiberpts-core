@@ -5,13 +5,13 @@ import time
 # TODO: Fix logging (program_name)
 # TODO: Find and remove libraries that are unnecessary
 
-
 # Global variable to track if a signal interruption has occurred
 interrupted = False
+
 # Global variable to store the cleanup function
 cleanup_fn = None
 
-def initialize_signal_handlers(options, fn=None):
+def init_signal_handlers(options, fn=None):
     """
     Initialize specific signal handlers based on the provided options.
 
@@ -25,12 +25,16 @@ def initialize_signal_handlers(options, fn=None):
     global cleanup_fn
     cleanup_fn = fn
 
-    if 'SIGINT' in options:
-        signal.signal(signal.SIGINT, handle_sigint)
-    if 'SIGUSR1' in options:
-        signal.signal(signal.SIGUSR1, handle_sigusr1)
-    if 'SIGTERM' in options:
-        signal.signal(signal.SIGTERM, handle_sigint)  # Using the same handler for SIGTERM as for SIGINT
+    signal_mapping = {
+        'SIGINT': handle_sigint,
+        'SIGUSR1': handle_sigusr1,
+        'SIGTERM': handle_sigint
+    }
+
+    for opt, handler in signal_mapping.items():
+        if opt in options:
+            signal.signal(getattr(signal, opt), handler)
+            
 
 def handle_sigint(sig, frame):
     """

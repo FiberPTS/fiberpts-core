@@ -20,6 +20,6 @@ typedef enum {
 void handle_sigint(int sig);
 void sleep_interruptible(int ms);
 void handle_sigusr1(int sig);
-int initialize_signal_handlers(int options, cleanup_function_t fn);
+int init_signal_handlers(int options, cleanup_function_t fn);
 
 #endif // SIGNAL_UTILS_H
