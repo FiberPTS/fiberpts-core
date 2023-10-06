@@ -6,8 +6,36 @@
 
 // Global variable to track if a signal interruption has occurred
 volatile sig_atomic_t interrupted = 0;
+
 // Global variable to store the cleanup function
 static cleanup_function_t cleanup_fn = NULL;
+
+/**
+ * The function sets a signal handler for a specified signal type.
+ * 
+ * @param signal_type Type of signal for which the handler is being set.
+ * @param handler Function pointer to the signal handler function.
+ * 
+ * @return 0 if the signal handler is successfully set, -1 otherwise.
+ */
+static int set_signal_handler(int signal_type, void (*handler)(int)) {
+    struct sigaction sa;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+
+    if (sigaction(signal_type, &sa, NULL) == -1) {
+        perror("Failed to set SIGINT handler");
+        return -1;
+    }
+
+    return 0;
+}
+
+typedef struct {
+    int opt_flag;
+    int signal_type;
+    void (*handler)(int);
+} SignalHandlerConfig;
 
 /**
  * @brief Initialize specific signal handlers based on the provided options.
@@ -15,33 +43,20 @@ static cleanup_function_t cleanup_fn = NULL;
  * @param fn The cleanup function to register to be called when signals are caught.
  * @return 0 on success, -1 on error.
  */
-int initialize_signal_handlers(int options, cleanup_function_t fn) {
+int init_signal_handlers(int options, cleanup_function_t fn) {
     cleanup_fn = fn;
-    struct sigaction sa;
-    sa.sa_flags = 0;  // or SA_RESTART;
-    sigemptyset(&sa.sa_mask);
 
-    if (options & HANDLE_SIGINT) {
-        sa.sa_handler = handle_sigint;
-        if (sigaction(SIGINT, &sa, NULL) == -1) {
-            perror("Failed to set SIGINT handler");
-            return -1;
-        }
-    }
+    SignalHandlerConfig handlers[] = {
+        {HANDLE_SIGINT, SIGINT, handle_sigint},
+        {HANDLE_SIGUSR1, SIGUSR1, handle_sigusr1},
+        {HANDLE_SIGTERM, SIGTERM, handle_sigint}
+    };
 
-    if (options & HANDLE_SIGUSR1) {
-        sa.sa_handler = handle_sigusr1;
-        if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-            perror("Failed to set SIGUSR1 handler");
-            return -1;
-        }
-    }
-
-    if (options & HANDLE_SIGTERM) {
-        sa.sa_handler = handle_sigint;  // Assuming you want the same handler for SIGTERM as for SIGINT
-        if (sigaction(SIGTERM, &sa, NULL) == -1) {
-            perror("Failed to set SIGTERM handler");
-            return -1;
+    for (size_t i = 0; sizeof(handlers) / sizeof(handlers[0]); i++) {
+        if (options & handlers[i].opt_flag) {
+            if (set_signal_handler(handlers[i].signal_type, handlers[i].handler) == -1) {
+                return -1;
+            }
         }
     }
 
