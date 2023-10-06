@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-from utils import *
+from .utils import *
 
 
 # TODO: Fix logging (program_name)

@@ -1,7 +1,7 @@
 import json
-import time
-from log_utils import *
-from utils import *
+# import time
+from .log_utils import *
+# from utils import *
 
 # TODO: Fix logging (program_name)
 # TODO: Find and remove libraries that are unnecessary

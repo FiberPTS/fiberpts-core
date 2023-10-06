@@ -1,7 +1,7 @@
 import json
 import time
-from log_utils import *
-from utils import *
+from .log_utils import *
+from .utils import *
 
 
 def push_item_db(table, request_type, request_data):
