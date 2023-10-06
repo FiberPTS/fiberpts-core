@@ -136,7 +136,7 @@ class DisplayManager:
             (get_current_time(), 5, 0),
             (f"Last Tap: {most_recent_timestamp}", 5, 30),
             (f"Total Operations: {len(operation_taps['Records'])}", 5, 60),
-            (f"Total Units: {sum([unit_of_measure for unit_of_measure in operation_taps['Records']['UoM']])}", 5, 90),
+            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 90),
         ]
         for text, x, y in texts:
             image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
