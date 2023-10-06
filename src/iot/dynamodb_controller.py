@@ -232,7 +232,7 @@ class DynamoDBTapHandler(DynamoDB):
 
         return (not is_push_success or not is_pull_success), last_tags_and_ids
 
-    def push_local_ip_to_db(self, last_tags_and_ids):
+    def push_local_ip_to_db(self, tags_and_ids):
         """
         Pushes the local IP address of the machine to the DynamoDB.
 
@@ -247,7 +247,7 @@ class DynamoDBTapHandler(DynamoDB):
 
         request_data = {
             "local_ip": local_ip,
-            "machine_record_id": last_tags_and_ids.get("machine_record_id", "None")
+            "machine_record_id": tags_and_ids.get("machine_record_id", "None")
         }
 
         # Attempt to push data to DynamoDB
@@ -300,7 +300,7 @@ class DynamoDBTapHandler(DynamoDB):
 
         return True, operation_taps, current_batch_count
 
-    def handle_employee_tap(self, last_tags_and_ids, tag_uid, timestamp):
+    def handle_employee_tap(self, tags_and_ids, tag_uid, timestamp):
         """
         Handle an NFC tap event for an employee.
 
@@ -313,8 +313,8 @@ class DynamoDBTapHandler(DynamoDB):
         Returns:
             bool: True if the employee tap was handled successfully, False otherwise.
         """
-        last_employee_record_id_temp = last_tags_and_ids["last_employee_record_id"]
-        employee_name_temp = last_tags_and_ids["employee_name"]
+        last_employee_record_id_temp = tags_and_ids.get("last_employee_record_id")
+        employee_name_temp = tags_and_ids.get("employee_name")
 
         request_data = {
             'table_name': 'tblbRYLt6rr4nTbP6',
@@ -339,13 +339,13 @@ class DynamoDBTapHandler(DynamoDB):
                     "iot_device_field_id": "iot_device_record_id"
                 }
             }
-            last_tags_and_ids["employee_name"] = "NO NAME"
+            tags_and_ids["employee_name"] = "NO NAME"
             employee_record = self.create_record(self.table, request_data)
-            last_tags_and_ids["last_employee_record_id"] = employee_record["records"][0]["fields"]["Record ID"]
+            tags_and_ids["last_employee_record_id"] = employee_record["records"][0]["fields"]["Record ID"]
         else:
             # TODO: Confirm format of timestamp
             # Update the last_tags_and_ids with the pulled employee data
-            last_tags_and_ids.update({
+            tags_and_ids.update({
                 "employee_name": employee_record["employee_name"][0],
                 "last_employee_record_id": employee_record["record_id"],
                 "last_employee_tap": timestamp,
@@ -354,21 +354,21 @@ class DynamoDBTapHandler(DynamoDB):
             })
 
         request_data = {
-            "machine_record_id": [last_tags_and_ids["machine_record_id"]],
-            "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
+            "machine_record_id": [tags_and_ids.get("machine_record_id")],
+            "employee_tag_record_id": [tags_and_ids.get("last_employee_record_id")]
         }
 
         push_success = self.push_item_db(
             self.table, "EmployeeNFC", request_data)
 
         if not push_success:
-            last_tags_and_ids.update({
+            tags_and_ids.update({
                 "last_employee_record_id": last_employee_record_id_temp,
                 "employee_name": employee_name_temp
             })
             return False
 
-        last_tags_and_ids.update({
+        tags_and_ids.update({
             "last_employee_tag": tag_uid,
             "last_employee_tap": timestamp,
             "units_order": 0,
@@ -377,7 +377,7 @@ class DynamoDBTapHandler(DynamoDB):
 
         return True
 
-    def handle_nfc_tap(self, last_tags_and_ids, tag_uid, timestamp):
+    def handle_nfc_tap(self, tags_and_ids, tag_uid, timestamp):
         """
         Handle an NFC tap event, distinguishing between employee and order tags.
 
@@ -403,13 +403,13 @@ class DynamoDBTapHandler(DynamoDB):
         pull_success, order_record = self.get_record(self.table, request_data)
 
         if not order_record:
-            return self.handle_employee_tap(self.table, last_tags_and_ids, tag_uid, timestamp)
+            return self.handle_employee_tap(self.table, tags_and_ids, tag_uid, timestamp)
 
-        if last_tags_and_ids["last_employee_record_id"] == "None":
+        if tags_and_ids.get("last_employee_record_id") == "None":
             return False
 
         # Update the last_tags_and_ids with the pulled order data
-        last_tags_and_ids.update({
+        tags_and_ids.update({
             "last_order_record_id": order_record["record_id"],
             "last_order_tag": tag_uid,
             "last_order_tap": timestamp,
@@ -418,9 +418,9 @@ class DynamoDBTapHandler(DynamoDB):
         })
 
         request_data = {
-            "machine_record_id": [last_tags_and_ids["machine_record_id"]],
-            "order_tag_record_id": [last_tags_and_ids["last_order_record_id"]],
-            "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
+            "machine_record_id": [tags_and_ids.get("machine_record_id")],
+            "order_tag_record_id": [tags_and_ids.get("last_order_record_id")],
+            "employee_tag_record_id": [tags_and_ids.get("last_employee_record_id")]
         }
 
         if not self.push_item_db(self.table, "OrderNFC", request_data):
