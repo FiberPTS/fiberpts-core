@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3.10
 
 # TODO: Fix logging (program_name)
 # TODO: Find and remove libraries that are unnecessary
