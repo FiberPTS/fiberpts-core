@@ -1,3 +1,4 @@
+import PIL
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from .utils import *
