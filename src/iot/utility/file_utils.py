@@ -17,9 +17,12 @@ def read_from_file(file_path):
     Returns:
         str: The content of the file.
     """
-    with open(file_path, "r") as f:
-        return f.read()
-
+    try:
+        with open(file_path, "r") as f:
+            return f.read()
+    except FileNotFoundError as e:
+        perror_log(f"File not found: {file_path}")
+        return None
 
 def save_json_to_file(file_path, data):
     """
