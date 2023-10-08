@@ -67,7 +67,7 @@ class DisplayManager:
         """
         # Draw text onto a separate image
         draw = ImageDraw.Draw(image)
-        text_width, text_height = self.font.textsize(text)
+        text_width, text_height = self.font.getlength(text)
         text_image = Image.new("RGB", (text_width, text_height), bg_color)
         text_draw = ImageDraw.Draw(text_image)
         text_draw.text((0, 0), text, font=self.font, fill=self.text_color)
