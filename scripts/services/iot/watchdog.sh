@@ -5,16 +5,15 @@ BASE_DIR="/home/potato/FiberPTS/src/iot"
 
 # Define the names and paths of the programs to be monitored.
 PROGRAM_NAMES=(
-    "nfc_tap_listener.c"
-    "operation_tap_listener.c"
+    "nfc_tap_listener"
+    "operation_tap_listener"
     "tap_event_handler.py"
 )
 
-declare -A PROGRAM_PIDS=(
-    ["nfc_tap_listener.c"]="/var/run/nfc_tap_listener.pid"
-    ["operation_tap_listener.c"]="/var/run/operation_tap_listener.pid"
-    ["tap_event_handler.py"]="/var/run/tap_event_handler.pid"
-)
+declare -A PROGRAM_PIDS
+
+for program in "${PROGRAM_NAMES[@]}"; do
+    PROGRAM_PIDS["$program"]="/var/run/${program%.py}.pid"
 
 update_permissions() {
     for program in "${PROGRAM_NAMES[@]}"; do
@@ -62,7 +61,7 @@ check_wifi() {
 }
 
 # Extend the Python path to include a custom directory.
-export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.9/site-packages
+export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.10/site-packages
 
 # Update the program file permissions to be executable
 update_permissions
