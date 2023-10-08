@@ -51,6 +51,7 @@ class DisplayManager:
         self.font = ImageFont.truetype(font_path, font_size)
         self.bg_color = bg_color
         self.text_color = text_color
+        print(PIL.__version__)
 
     def draw_rotated_text(self, image, text, position, bg_color):
         """
