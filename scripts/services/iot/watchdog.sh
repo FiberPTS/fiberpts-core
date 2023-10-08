@@ -14,6 +14,7 @@ declare -A PROGRAM_PIDS
 
 for program in "${PROGRAM_NAMES[@]}"; do
     PROGRAM_PIDS["$program"]="/var/run/${program%.py}.pid"
+done
 
 update_permissions() {
     for program in "${PROGRAM_NAMES[@]}"; do
