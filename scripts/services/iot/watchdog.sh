@@ -9,17 +9,15 @@ PROGRAM_NAMES=(
     "operation_tap_listener.c"
     "tap_event_handler.py"
 )
-for idx in ${!PROGRAM_NAMES[@]}; do
-    PROGRAM_PATHS[$idx]=("{$BASE_DIR}/${PROGRAM_NAMES[$idx]}")
-
-# Retrieve the unique identifier for the machine.
-MACHINE_ID=$(cat /etc/machine-id)
+for idx in "${!PROGRAM_NAMES[@]}"; do
+    PROGRAM_PATHS[$idx]="{$BASE_DIR}/${PROGRAM_NAMES[$idx]}"
+done
 
 # Kill the monitored programs when the script receives a SIGTERM signal.
 on_sigterm() {
-    kill $(cat /var/run/nfc_tap_listener.pid)
-    kill $(cat /var/run/operation_tap_listener.pid)
-    kill $(cat /var/run/tap_event_handler.pid)
+    kill "$(cat /var/run/nfc_tap_listener.pid)"
+    kill "$(cat /var/run/operation_tap_listener.pid)"
+    kill "$(cat /var/run/tap_event_handler.pid)"
     exit 0
 }
 
@@ -49,37 +47,37 @@ while true; do
     check_wifi
 
     # Check if the first program is running.
-    if pgrep -f $PROGRAM_NAMES[0] > /dev/null
+    if pgrep -f "${PROGRAM_NAMES[0]}" > /dev/null
     then
         STATUS_1="Online"
     else
         STATUS_1="Offline"
         # If not running, try to restart the program and log its output.
-        $PROGRAM_PATHS[0] >> /var/log/programs.log 2>&1 &
+        "${PROGRAM_PATHS[0]}" >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
         echo $! > /var/run/nfc_tap_listener.pid
     fi
 
     # Check if the second program is running.
-    if pgrep -f $PROGRAM_NAMES[1] > /dev/null
+    if pgrep -f "${PROGRAM_NAMES[1]}" > /dev/null
     then
         STATUS_2="Online"
     else
         STATUS_2="Offline"
         # If not running, try to restart the program and log its output.
-        $PROGRAM_PATHS[1] >> /var/log/programs.log 2>&1 &
+        "${PROGRAM_PATHS[1]}" >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
         echo $! > /var/run/operation_tap_listener.pid
     fi
 
     # Check if the third program is running.
-    if pgrep -f $PROGRAM_NAMES[2] > /dev/null
+    if pgrep -f "${PROGRAM_PATHS[2]}" > /dev/null
     then
         STATUS_3="Online"
     else
         STATUS_3="Offline"
         # If not running, try to restart the program and log its output.
-        $PROGRAM_PATHS[2] >> /var/log/programs.log 2>&1 &
+        "${PROGRAM_PATHS[2]}" >> /var/log/programs.log 2>&1 &
         # Store the PID of the restarted program.
         echo $! > /var/run/tap_event_handler.pid
     fi
