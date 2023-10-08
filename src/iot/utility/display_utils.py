@@ -1,4 +1,3 @@
-import PIL
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from .utils import *
@@ -52,7 +51,6 @@ class DisplayManager:
         self.font = ImageFont.truetype(font_path, font_size)
         self.bg_color = bg_color
         self.text_color = text_color
-        print(PIL.__version__)
 
     def draw_rotated_text(self, image, text, position, bg_color):
         """
@@ -69,7 +67,7 @@ class DisplayManager:
         """
         # Draw text onto a separate image
         draw = ImageDraw.Draw(image)
-        text_width, text_height = self.font.getsize_singleline(text)
+        text_width, text_height = self.font.textsize(text)
         text_image = Image.new("RGB", (text_width, text_height), bg_color)
         text_draw = ImageDraw.Draw(text_image)
         text_draw.text((0, 0), text, font=self.font, fill=self.text_color)
