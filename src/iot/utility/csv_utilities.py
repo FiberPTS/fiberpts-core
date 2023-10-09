@@ -98,7 +98,10 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     data = pd.read_csv(csv_path)
     
     if data.empty:
+        print("Data is empty!")
         return False
+    
+    print("Data is not empty!")
         
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
@@ -108,6 +111,8 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     # Calculate the time deltas and store them in a new column
     data['Time Delta'] = data['Timestamp'].diff().dt.total_seconds()
 
+    print("Time deltas calculated!")
+
     # For each record, compute the average time delta from the past hour
     avg_time_deltas = []
     for i, row in data.iterrows():
@@ -116,6 +121,8 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
         avg_time_deltas.append(data.loc[mask, 'Time Delta'].mean())
 
     data['Avg Time Delta (Last Hour)'] = avg_time_deltas
+
+    print("Average time deltas computed!")
 
     # Create the plot
     plt.figure(figsize=(10, 5))
@@ -142,11 +149,16 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     plt.grid(True, which='both', axis='x', linestyle='--')
     plt.legend()
 
+    print("Plot created!")
+
     plt.tight_layout()
 
     # Save the plot as an image
     plt.savefig(image_path)
     plt.close()
+
+    print(f"Image saved to {image_path}!")
+    return True
 
 
 def generate_graph_from_csv(csv_path, image_path):
