@@ -94,7 +94,7 @@ def main():
             if ready_to_upload():
                 if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
                     operation_taps["Records"] = []
-                    print_log(program_name, "Successfully created and uploaded data report")
+                    print_log("Successfully created and uploaded data report")
 
             time.sleep(0.25)
             tap_success = True
