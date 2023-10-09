@@ -130,7 +130,6 @@ def main():
                     "Timestamp": timestamp
                 }
                 operation_taps["Records"].append(tap_record)
-                save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
 
             # Handle NFC taps
             elif program_name == "nfc_tap_listener.c":
@@ -143,6 +142,10 @@ def main():
             # Handle invalid program names
             else:
                 perror_log(f"Error: invalid program name \n FIFO Data: {fifo_data}")
+
+
+            # Save current action tap data to file
+            save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
 
             # Save the last tags and IDs to a file
             # save_json_to_file(FILE_PATH_INFO.LAST_TAGS_AND_IDS, last_tags_and_ids)
