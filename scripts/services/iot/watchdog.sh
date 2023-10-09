@@ -45,7 +45,7 @@ on_sigterm() {
 }
 
 # Register the function to be called on SIGTERM
-trap on_sigterm SIGTERM
+trap on_sigterm SIGTERM SIGINT
 
 # Function to check WiFi connection and reconnect if disconnected
 check_wifi() {
