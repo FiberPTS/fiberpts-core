@@ -128,25 +128,37 @@ class DisplayManager:
         Returns:
             None
         """
-        bg_color_to_use = bg_color or self.bg_color
-        image = Image.new("RGB", self.res, bg_color_to_use)
+    bg_color_to_use = bg_color or self.bg_color
+    image = Image.new("RGB", self.res, bg_color_to_use)
 
-        sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
-        if len(sorted_records) != 0:
-            # Get the most recent timestamp
-            most_recent_timestamp = sorted_records[0]["Timestamp"]
-        else:
-            most_recent_timestamp = None
-        # Draw the various pieces of data onto the image
-        texts = [
-            (get_current_time(), 5, 0),
-            (f"Last Tap: {most_recent_timestamp}", 5, 30),
-            (f"Total Operations: {len(operation_taps['Records'])}", 5, 60),
-            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 90),
-        ]
-        for text, x, y in texts:
-            image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
+    sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
+    if len(sorted_records) != 0:
+        # Get the most recent timestamp
+        most_recent_timestamp = sorted_records[0]["Timestamp"]
+        most_recent_datetime = datetime.datetime.strptime(most_recent_timestamp, '%Y-%m-%d %H:%M:%S')  # Assuming the timestamp is in this format
+        current_time = datetime.datetime.now()
+        time_difference = current_time - most_recent_datetime
 
-        # Convert the image to RGB565 format and write to framebuffer
-        raw_data = image_to_rgb565(image)
-        write_to_framebuffer(raw_data, self.fb_path)
+        # Extract minutes and seconds from the time difference
+        total_seconds = int(time_difference.total_seconds())
+        minutes, seconds = divmod(total_seconds, 60)
+
+        stopwatch_text = f"Stopwatch: {minutes} min {seconds} sec"
+    else:
+        most_recent_timestamp = None
+        stopwatch_text = "Stopwatch: 0 min 0 sec"
+
+    # Draw the various pieces of data onto the image
+    texts = [
+        (f"Last Tap: {most_recent_timestamp}", 5, 0),
+        (stopwatch_text, 5, 60),  # Add the stopwatch text
+        (f"Total Operations: {len(operation_taps['Records'])}", 5, 100),
+        (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 140),
+
+    ]
+    for text, x, y in texts:
+        image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
+
+    # Convert the image to RGB565 format and write to framebuffer
+    raw_data = image_to_rgb565(image)
+    write_to_framebuffer(raw_data, self.fb_path)
