@@ -1,7 +1,6 @@
 import json
 # import time
-import fcntl
-import os
+import select
 from .log_utils import *
 # from utils import *
 
@@ -29,17 +28,12 @@ def read_from_file(file_path):
 # TODO: Review and write comments
 def read_from_file_non_blocking(file_path):
     with open(file_path, 'r') as f:
-        # Set file descriptor to non-blocking
-        fd = f.fileno()
-        flag = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, flag | os.O_NONBLOCK)
-
-        try:
+        rlist, _, _ = select.select([f], [], [], 0.1)
+        if rlist:
             data = f.read()
             return data
-        except BlockingIOError:
-            return None  # or some other indicator that there was no data
-
+        else:
+            return None
 
 def save_json_to_file(file_path, data):
     """
