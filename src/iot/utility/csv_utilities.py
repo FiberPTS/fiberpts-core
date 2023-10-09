@@ -118,7 +118,13 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     for i, row in data.iterrows():
         last_hour = row['Timestamp'] - pd.Timedelta(hours=1)
         mask = (data['Timestamp'] <= row['Timestamp']) & (data['Timestamp'] > last_hour)
-        avg_time_deltas.append(data.loc[mask, 'Time Delta'].mean())
+        avg_delta = data.loc[mask, 'Time Delta'].mean()
+
+        # Handle NaN values
+        if pd.isna(avg_delta):
+            avg_delta = 0  # or any other default value
+
+        avg_time_deltas.append(avg_delta)
 
     data['Avg Time Delta (Last Hour)'] = avg_time_deltas
 
