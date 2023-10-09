@@ -104,7 +104,7 @@ def main():
             display_manager.draw_display(operation_taps)
 
             # Read data from the FIFO Pipe
-            fifo_data = read_from_file(FILE_PATH_INFO.FIFO_PATH)
+            fifo_data = read_from_file_non_blocking(FILE_PATH_INFO.FIFO_PATH)
             if not fifo_data:
                 continue
             print(repr(fifo_data))

@@ -1,5 +1,7 @@
 import json
 # import time
+import fcntl
+import os
 from .log_utils import *
 # from utils import *
 
@@ -23,6 +25,19 @@ def read_from_file(file_path):
     except FileNotFoundError as e:
         perror_log(f"File not found: {file_path}")
         return None
+
+# TODO: Review and write comments
+def read_from_file_non_blocking(file_path):
+    with open(file_path, 'r') as fifo:
+        # Set the file to non-blocking mode
+        fd = fifo.fileno()
+        flag = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, flag | os.O_NONBLOCK)
+
+        # Read data
+        data = fifo.read()
+
+    return data
 
 def save_json_to_file(file_path, data):
     """
