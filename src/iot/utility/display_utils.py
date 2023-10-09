@@ -127,8 +127,8 @@ class DisplayManager:
             # Get the most recent timestamp
             most_recent_timestamp = sorted_records[0]["Timestamp"]
             # Convert the timestamp to a datetime object and set its timezone to UTC
-            most_recent_datetime = datetime.strptime(most_recent_timestamp, '%Y-%m-%d %H:%M:%S')
-            most_recent_datetime = most_recent_datetime.replace(tzinfo=timezone.utc)  # Assuming the timestamp is in UTC
+            most_recent_datetime = datetime.datetime.strptime(most_recent_timestamp, '%Y-%m-%d %H:%M:%S')
+            most_recent_datetime = most_recent_datetime.replace(tzinfo=datetime.timezone.utc)  # Assuming the timestamp is in UTC
             print(f"Debug: Most Recent Datetime (UTC): {most_recent_datetime}")
 
             # Convert to Eastern Time
@@ -140,7 +140,7 @@ class DisplayManager:
             current_time_str = get_current_time(True)
             print(f"Debug: Current Time String (Eastern): {current_time_str}")
 
-            current_time = datetime.strptime(current_time_str, '%Y-%m-%d %H:%M:%S')
+            current_time = datetime.datetime.strptime(current_time_str, '%Y-%m-%d %H:%M:%S')
             current_time = current_time.replace(tzinfo=eastern)
             print(f"Debug: Current Time (Eastern): {current_time}")
 
