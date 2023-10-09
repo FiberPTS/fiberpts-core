@@ -96,6 +96,11 @@ def generate_sample_data(filename, num_records=50):
 def generate_graph_from_csv(csv_path, image_path):
     # Read the CSV data
     data = pd.read_csv(csv_path)
+
+    if data.empty:
+        print("######## CSV IS EMPTY #########")
+        return False
+
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
     # Sort by timestamp
@@ -128,6 +133,7 @@ def generate_graph_from_csv(csv_path, image_path):
     # Save the plot as an image
     plt.savefig(image_path)
     plt.close()
+    return True
 
 
 def format_timedelta(td):
@@ -195,7 +201,8 @@ def upload_report(data, folder_path):
     json_to_csv(data, csv_file_path)
 
     # Generate graph
-    generate_graph_from_csv(csv_file_path, graph_file_path)
+    if not generate_graph_from_csv(csv_file_path, graph_file_path):
+        return False
 
     # Compute analytics
     analytics = compute_analytics(csv_file_path)
@@ -206,3 +213,4 @@ def upload_report(data, folder_path):
     # Upload files
     files_to_upload = [csv_file_path, report_file_path]
     upload_file_to_drive(files_to_upload)
+    return True
