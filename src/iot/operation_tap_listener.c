@@ -20,7 +20,7 @@
 
 // Constants
 #define SENSOR_LINE_NUMBER 80 // GPIO Line number
-#define DEBOUNCE_TIME 1000 // Debounce time in milliseconds
+#define DEBOUNCE_TIME 10000 // Debounce time in milliseconds
 #define VOLTAGE_VALUE 1 // Voltage value corresponding to button press
 
 // File paths and names
