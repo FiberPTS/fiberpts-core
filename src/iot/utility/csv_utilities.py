@@ -99,7 +99,7 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     
     if data.empty:
         return False
-    
+        
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
     # Sort by timestamp
@@ -249,7 +249,7 @@ def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
 
     # Add average delta graph
     pdf.ln(100)
-    pdf.image(graph1_path, x=10, y=None, w=190)
+    pdf.image(graph2_path, x=10, y=None, w=190)
 
     pdf.output(pdf_path)
 
@@ -274,16 +274,19 @@ def upload_report(data, folder_path):
     json_to_csv(data, csv_file_path)
 
     # Generate graph
-    if not generate_graph_from_csv(csv_file_path, graph1_file_path):
-        return False
-    if not generate_average_delta_graph_from_csv(csv_file_path, graph2_file_path):
+    if (not generate_graph_from_csv(csv_file_path, graph1_file_path) or 
+        not generate_average_delta_graph_from_csv(csv_file_path, graph2_file_path)):
         return False
 
     # Compute analytics
     analytics = compute_analytics(csv_file_path)
 
+    print("Analytics Computed!")
+
     # Generate PDF report
     generate_pdf_report(analytics, graph1_file_path, graph2_file_path, report_file_path)
+
+    print("PDF Report Generated!")
 
     # Upload files
     files_to_upload = [csv_file_path, report_file_path]
