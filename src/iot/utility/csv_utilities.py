@@ -115,13 +115,13 @@ def generate_graph_from_csv(csv_path, image_path):
 
     # Set the x-axis to represent every hour from 6am to 6pm
     # Get the current date
-    today = datetime.now().date()
+    today = datetime.datetime.now().date()
 
     # Set the start time to 6 am
-    start_time = datetime(today.year, today.month, today.day, 6, 0, 0)
+    start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
 
     # Set the end time to 6 pm
-    end_time = datetime(today.year, today.month, today.day, 18, 0, 0)
+    end_time = datetime.datetime(today.year, today.month, today.day, 18, 0, 0)
     hours = pd.date_range(start=start_time, end=end_time, freq='H')
 
     plt.gca().set_xticks(hours)
