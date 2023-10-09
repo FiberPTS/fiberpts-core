@@ -44,8 +44,8 @@ def image_to_rgb565(image):
 
 class DisplayManager:
     def __init__(self, fb_path="/dev/fb1", res=(240, 320),
-                 font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size=18, bg_color=(255, 0, 0),
-                 text_color=(255, 255, 255), text_padding=5):
+                 font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size=22, bg_color=(255, 0, 0),
+                 text_color=(255, 255, 255), text_padding=10):
         self.fb_path = fb_path
         self.res = res
         self.font = ImageFont.truetype(font_path, font_size)
@@ -142,11 +142,11 @@ class DisplayManager:
         # Draw the various pieces of data onto the image
         texts = [
             (f"Last Tap:", 5, 0),
-            (most_recent_timestamp, 5, 40),
-            (f"Stopwatch:", 5, 80),
-            (stopwatch_text, 5, 120),  # Add the stopwatch text
-            (f"Total Operations: {len(operation_taps['Records'])}", 5, 160),
-            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 200),
+            (most_recent_timestamp, 5, 25),
+            (f"Stopwatch:", 5, 75),
+            (stopwatch_text, 5, 105),  # Add the stopwatch text
+            (f"Total Operations: {len(operation_taps['Records'])}", 5, 135),
+            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 165),
 
         ]
         for text, x, y in texts:
