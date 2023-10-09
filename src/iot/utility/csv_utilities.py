@@ -114,18 +114,24 @@ def generate_graph_from_csv(csv_path, image_path):
     plt.plot(data['Timestamp'], data['Cumulative UoM'], marker='o')
 
     # Set the x-axis to represent every hour from 6am to 6pm
-    start_time = data['Timestamp'].iloc[0].replace(hour=6, minute=0, second=0)
-    end_time = data['Timestamp'].iloc[0].replace(hour=18, minute=0, second=0)
+    # Get the current date
+    today = datetime.now().date()
+
+    # Set the start time to 6 am
+    start_time = datetime(today.year, today.month, today.day, 6, 0, 0)
+
+    # Set the end time to 6 pm
+    end_time = datetime(today.year, today.month, today.day, 18, 0, 0)
     hours = pd.date_range(start=start_time, end=end_time, freq='H')
 
     plt.gca().set_xticks(hours)
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%I%p'))
-    plt.gca().xaxis.set_minor_locator(mdates.HourLocator())
 
     plt.title('Cumulative UoM over Time')
     plt.xlabel('Timestamp')
     plt.ylabel('Cumulative UoM')
     plt.xticks(rotation=45)
+    plt.xlim(start_time, end_time)
     plt.grid(True, which='both', axis='x', linestyle='--')
 
     plt.tight_layout()
