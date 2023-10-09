@@ -1,6 +1,7 @@
 import json
 # import time
 import select
+import os
 from .log_utils import *
 # from utils import *
 
@@ -27,13 +28,16 @@ def read_from_file(file_path):
 
 # TODO: Review and write comments
 def read_from_file_non_blocking(file_path):
-    with open(file_path, 'r') as f:
-        rlist, _, _ = select.select([f], [], [], 0.1)
-        if rlist:
-            data = f.read()
-            return data
-        else:
-            return None
+    fd = os.open(file_path, os.O_RDONLY | os.O_NONBLOCK)
+    f = os.fdopen(fd, 'r')
+    rlist, _, _ = select.select([f], [], [], 0.1)
+    if rlist:
+        data = f.read()
+        f.close()
+        return data
+    else:
+        f.close()
+        return None
 
 def save_json_to_file(file_path, data):
     """
