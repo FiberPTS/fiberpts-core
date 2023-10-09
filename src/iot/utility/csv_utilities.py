@@ -244,11 +244,11 @@ def compute_analytics(csv_path):
     total_ops = len(data)
 
     return {
-        'Average Operation Time': avg_op_time,
-        'Minimum Operation Time': min_op_time,
-        'Maximum Operation Time': max_op_time,
+        'Average Action Tap Time': avg_op_time,
+        'Minimum Action Tap Time': min_op_time,
+        'Maximum Action Tap Time': max_op_time,
         'Total Units': total_units,
-        'Total Operations': total_ops
+        'Total Action Taps': total_ops
     }
 
 
