@@ -44,40 +44,28 @@ def image_to_rgb565(image):
 
 class DisplayManager:
     def __init__(self, fb_path="/dev/fb1", res=(240, 320),
-                 font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size=24, bg_color=(255, 0, 0),
-                 text_color=(255, 255, 255)):
+                 font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size=18, bg_color=(255, 0, 0),
+                 text_color=(255, 255, 255), text_padding=5):
         self.fb_path = fb_path
         self.res = res
         self.font = ImageFont.truetype(font_path, font_size)
         self.bg_color = bg_color
         self.text_color = text_color
+        self.text_padding = text_padding
 
     def draw_rotated_text(self, image, text, position, bg_color):
-        """
-        Draws rotated text onto an image.
-
-        Args:
-            image: PIL Image, The image object to draw on.
-            text: str, The text to draw.
-            position: tuple, The (x, y) position to draw the text.
-            bg_color: tuple, The background color.
-
-        Returns:
-            PIL Image: The modified image with the rotated text.
-        """
         # Draw text onto a separate image
         draw = ImageDraw.Draw(image)
 
         # Get the bounding box of the text
         bbox = draw.textbbox(position, text, font=self.font)
 
-        draw.rectangle(bbox, outline ="red")
         text_width = int(bbox[2] - bbox[0])
         text_height = int(bbox[3] - bbox[1])
 
-        text_image = Image.new("RGB", (text_width, text_height), bg_color)
+        text_image = Image.new("RGB", (text_width + self.text_padding, text_height + self.text_padding), bg_color)
         text_draw = ImageDraw.Draw(text_image)
-        text_draw.text((0, 0), text, font=self.font, fill=self.text_color)
+        text_draw.text((0, self.text_padding // 2), text, font=self.font, fill=self.text_color)  # Start drawing a bit lower
 
         # Rotate the text image by 90 degrees
         rotated_text = text_image.rotate(90, expand=True)
@@ -89,6 +77,7 @@ class DisplayManager:
         )
 
         return image
+
 
     # def draw_display(self, last_tags_and_ids, bg_color=None):
     #     """
