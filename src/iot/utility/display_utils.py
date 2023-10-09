@@ -142,11 +142,11 @@ class DisplayManager:
         # Draw the various pieces of data onto the image
         texts = [
             (f"Last Tap:", 5, 0),
-            (most_recent_timestamp, 5, 25),
+            (most_recent_timestamp, 5, 30),
             (f"Stopwatch:", 5, 75),
             (stopwatch_text, 5, 105),  # Add the stopwatch text
-            (f"Total Operations: {len(operation_taps['Records'])}", 5, 135),
-            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 165),
+            (f"Total Operations: {len(operation_taps['Records'])}", 5, 150),
+            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 180),
 
         ]
         for text, x, y in texts:
