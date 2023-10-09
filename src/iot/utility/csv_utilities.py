@@ -92,13 +92,68 @@ def generate_sample_data(filename, num_records=50):
 
     return f"{FILE_PATH}/{filename}"
 
+# TOOD: Review this and comment
+def generate_average_delta_graph_from_csv(csv_path, image_path):
+    # Read the CSV data
+    data = pd.read_csv(csv_path)
+    
+    if data.empty:
+        return False
+    
+    data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+
+    # Sort by timestamp
+    data = data.sort_values(by='Timestamp')
+
+    # Calculate the time deltas and store them in a new column
+    data['Time Delta'] = data['Timestamp'].diff().dt.total_seconds()
+
+    # For each record, compute the average time delta from the past hour
+    avg_time_deltas = []
+    for i, row in data.iterrows():
+        last_hour = row['Timestamp'] - pd.Timedelta(hours=1)
+        mask = (data['Timestamp'] <= row['Timestamp']) & (data['Timestamp'] > last_hour)
+        avg_time_deltas.append(data.loc[mask, 'Time Delta'].mean())
+
+    data['Avg Time Delta (Last Hour)'] = avg_time_deltas
+
+    # Create the plot
+    plt.figure(figsize=(10, 5))
+    plt.plot(data['Timestamp'], data['Avg Time Delta (Last Hour)'], marker='o', label='Avg Time Delta (Last Hour)')
+
+    # Get the current date
+    today = datetime.datetime.now().date()
+
+    # Set the start time to 6 am
+    start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
+
+    # Set the end time to 6 pm
+    end_time = datetime.datetime(today.year, today.month, today.day, 18, 0, 0)
+    hours = pd.date_range(start=start_time, end=end_time, freq='H')
+
+    plt.gca().set_xticks(hours)
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%I%p'))
+
+    plt.title('Average Time Delta from the Past Hour over Time')
+    plt.xlabel('Timestamp')
+    plt.ylabel('Average Time Delta (seconds)')
+    plt.xticks(rotation=45)
+    plt.xlim(start_time, end_time)
+    plt.grid(True, which='both', axis='x', linestyle='--')
+    plt.legend()
+
+    plt.tight_layout()
+
+    # Save the plot as an image
+    plt.savefig(image_path)
+    plt.close()
+
 
 def generate_graph_from_csv(csv_path, image_path):
     # Read the CSV data
     data = pd.read_csv(csv_path)
 
     if data.empty:
-        print("######## CSV IS EMPTY #########")
         return False
 
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
@@ -179,7 +234,7 @@ def compute_analytics(csv_path):
     }
 
 
-def generate_pdf_report(analytics, graph_path, pdf_path):
+def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
@@ -190,7 +245,11 @@ def generate_pdf_report(analytics, graph_path, pdf_path):
 
     # Add graph
     pdf.ln(10)
-    pdf.image(graph_path, x=10, y=None, w=190)
+    pdf.image(graph1_path, x=10, y=None, w=190)
+
+    # Add average delta graph
+    pdf.ln(100)
+    pdf.image(graph1_path, x=10, y=None, w=190)
 
     pdf.output(pdf_path)
 
@@ -207,21 +266,24 @@ def upload_report(data, folder_path):
     #     return
     # csv_file = generate_sample_data("data.csv", num_records=100)
     csv_file_path = f"{folder_path}/data.csv"
-    graph_file_path = f"{folder_path}/graph.png"
+    graph1_file_path = f"{folder_path}/graph-delta.png"
+    graph2_file_path = f"{folder_path}/graph-avg-delta.png"
     report_file_path = f"{folder_path}/report.pdf"
 
     # Generate CSV file
     json_to_csv(data, csv_file_path)
 
     # Generate graph
-    if not generate_graph_from_csv(csv_file_path, graph_file_path):
+    if not generate_graph_from_csv(csv_file_path, graph1_file_path):
+        return False
+    if not generate_average_delta_graph_from_csv(csv_file_path, graph2_file_path):
         return False
 
     # Compute analytics
     analytics = compute_analytics(csv_file_path)
 
     # Generate PDF report
-    generate_pdf_report(analytics, graph_file_path, report_file_path)
+    generate_pdf_report(analytics, graph1_file_path, graph2_file_path, report_file_path)
 
     # Upload files
     files_to_upload = [csv_file_path, report_file_path]
