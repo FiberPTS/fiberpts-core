@@ -260,7 +260,7 @@ def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
     pdf.image(graph1_path, x=10, y=None, w=190)
 
     # Add average delta graph
-    pdf.ln(100)
+    pdf.ln(10)
     pdf.image(graph2_path, x=10, y=None, w=190)
 
     pdf.output(pdf_path)
