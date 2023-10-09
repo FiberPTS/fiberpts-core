@@ -157,10 +157,16 @@ def compute_analytics(csv_path):
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
     # Compute metrics
-    time_diffs = data['Timestamp'].diff().dropna()  # Time difference between consecutive rows
-    avg_op_time = format_timedelta(time_diffs.mean())
-    min_op_time = format_timedelta(time_diffs.min())
-    max_op_time = format_timedelta(time_diffs.max())
+    time_diffs = data['Timestamp'].diff().dropna()
+    if time_diffs.empty:
+        avg_op_time = "N/A"
+        min_op_time = "N/A"
+        max_op_time = "N/A"
+    else:
+        avg_op_time = format_timedelta(time_diffs.mean())
+        min_op_time = format_timedelta(time_diffs.min())
+        max_op_time = format_timedelta(time_diffs.max())
+    
     total_units = data['UoM'].sum()
     total_ops = len(data)
 
