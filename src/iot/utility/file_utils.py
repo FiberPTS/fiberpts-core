@@ -28,16 +28,18 @@ def read_from_file(file_path):
 
 # TODO: Review and write comments
 def read_from_file_non_blocking(file_path):
-    with open(file_path, 'r') as fifo:
-        # Set the file to non-blocking mode
-        fd = fifo.fileno()
+    with open(file_path, 'r') as f:
+        # Set file descriptor to non-blocking
+        fd = f.fileno()
         flag = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, flag | os.O_NONBLOCK)
 
-        # Read data
-        data = fifo.read()
+        try:
+            data = f.read()
+            return data
+        except BlockingIOError:
+            return None  # or some other indicator that there was no data
 
-    return data
 
 def save_json_to_file(file_path, data):
     """
