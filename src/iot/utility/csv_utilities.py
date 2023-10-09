@@ -10,7 +10,7 @@ import numpy as np
 
 # FILE_PATH = '/var/FiberPTS/data.csv'
 FILE_PATH = "/Users/nxfer/Github Repositories/FiberPTS"
-SERVICE_ACCOUNT_JSON_PATH = "/Users/nxfer/Github Repositories/FiberPTS/indigo-history-397015-bf31ea2c51a7.json"
+SERVICE_ACCOUNT_JSON_PATH = "/home/potato/FiberPTS/gdrive-api-key.json"
 
 
 def json_to_csv(json_data, file_path):

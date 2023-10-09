@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "indigo-history-397015",
+  "private_key_id": "bf31ea2c51a74e50e59c583e14046235566f0698",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC6bgz7I9/kRzmW\n1d0T7UyPOCb8/+lNMXMClFyHKE7psbGXyHdhnON3gKwQRr02Hv38uhNdIaIdHgLA\nOEvPTtRKcIyL0xbXEA81mQWNYVK2fTA4JLgmRvFzeXwzqaaHMi4kbMlws5VNRLq+\nw+tvlPfsqk5DdqvhT70MKVrITE5NPR7Z5Dm13SdiS6nPQnIP8yKem/o2QzuL5Bhi\nDdrpE6Wh6KM6nWHXMydmGT+g6FyoaAQy6q3eDeDtNgEGT7onYv7+9WxJ4zdia8fg\nIkjTsyMp4gudkxupHh4CY/s6RK4fTL4y5uoqcpAbvW37IaUmxwfaSsA4Du9GfdNo\nB1sYjJ8xAgMBAAECggEACSmCbXnttXAuAN8208AMTKzuTEMeyffoVpPzA4N0HrZo\na3S4hULAHRiPnDyAbQn94oSZ51r79swJnOfHYK4CRJGec/q7pcsjbDdpLJxqrmRI\nUTdgw3omFfjo+o2tDPo8MUxquVAMwjTiq/XApYW1NNuJKCCgwYcj29amda87rpOr\nnTWeu9oWf5lR5XV+EqANlc3nLc6KrE2LZEygZ25IpgblH98zq/4lgLwx1YcxC/Bb\nzs/5OH9Ig3RCFGQdjSFnzF5SvzO+Epn7ZY8HAZnFhOwoDSPBQIQ+T/RmEXN074Ee\nDIE3NPjLwYowBPiSeuKT+5BqydvNu0QwVD1HWQaSiQKBgQD10hqd+GaLWr/2+vqT\nwD+Fum41E8+yTPMlp+EUvG3yUhr+H08TtoFTMKcnINh53frXaRwwkuafuSXBQzv+\n71mCuNreqWBRXGsgddv1y4MkyHPyPCCNyZkUbkTN2AZVeVOxqrGQoB+0Zsl6cV86\nPDcztgjMpuzQsXwo5dg4BhHjxQKBgQDCJltAWcRDOCnortcNvWQIu+U0LnZObYpY\n41GjSk5KMqf/eGgvv/qVEb4JJ9j/TSSdQXjAazzLKosxT5LNTuDjhsDLh1RW9Dve\nXF8NLuL6k5U05ddOkfi5f1jJfHUhy5O+hgPNVNuyH8FlTgVitNp/8fCc3oq84RPf\nitbTMc1IfQKBgQDnb6aLsACrlwdA+s7MKKYlu35jDoHvNq99dm9dXIKPMGolc0i6\nIIvlzNqy5iOpqSqvgFCAEu561pALQsfLn4FAp9W46PK75y0c5Jnw8mhIS0mOeLmV\nhIZRS/gPbSGZe58mmLSQm5D+AgAS/YZQh7zZPLtQIqC3Y0KoJq3JIT3amQKBgD+U\nfBGo1AMHY4IVr8uKGDZcAgWCqa+pY8MUPmnxLY5S5H1fGw94GUG0G7231PJWewUc\nqcSp2bDW79poKrUdfbxFJuIAIXiQZwK80Uvp7N8OcbBvDIFogEGPGK5zGZDFsE6W\naKxXe9LrX1QjptPaUivQOXHF1z1foDh2qT9kccupAoGBAN/gXUZMAtpVuJk4nJp2\nmno2t8d6jHBVm0f+eDqk/FzTt+7j1ooP8dtER7g3KKB2vtjCUvTFqFFzoOn1b2Pq\nmuIKYQLBgbT3u0JbBxSSZb/UxDu0XFvRNdgQmyQEOesOpwDuoL67GUICA/vCTDIH\n7EPuZxHeQ11RxHX0/wokWRLn\n-----END PRIVATE KEY-----\n",
+  "client_email": "iot-device-phase-1@indigo-history-397015.iam.gserviceaccount.com",
+  "client_id": "117526690793018665341",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/iot-device-phase-1%40indigo-history-397015.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
