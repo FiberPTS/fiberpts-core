@@ -92,18 +92,12 @@ void uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
  * @return 1 if debounce time has passed, 0 otherwise.
  */
 int is_debounce_time_passed(struct timespec current_time, struct timespec last_release, int debounce_time) {
-    // Convert DEBOUNCE_TIME to seconds and nanoseconds components
-    long debounce_sec = debounce_time / 1000;
-    long debounce_nsec = (debounce_time % 1000) * 1000000;
+    long total_diff_nsec = (current_time.tv_sec - last_release.tv_sec) * 1000000000L 
+                        + (current_time.tv_nsec - last_release.tv_nsec);
 
-    // Check if the difference in seconds exceeds the debounce seconds
-    if (current_time.tv_sec > last_release.tv_sec + debounce_sec) {
-        return 1;
-    }
+    long total_debounce_nsec = debounce_time * 1000000L;
 
-    // Check if the seconds are equal and the difference in nanoseconds exceeds the debounce nanoseconds
-    if ((current_time.tv_sec == last_release.tv_sec + debounce_sec) &&
-        (current_time.tv_nsec > last_release.tv_nsec + debounce_nsec)) {
+    if (total_diff_nsec > total_debounce_nsec) {
         return 1;
     }
 
