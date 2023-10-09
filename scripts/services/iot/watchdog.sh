@@ -39,7 +39,7 @@ check_program() {
     else
         echo "$program is Offline."
         echo "Starting ${program}."
-        "${BASE_DIR}/${program}" >> /var/log/programs.log 2>&1 &
+        sudo "${BASE_DIR}/${program}" >> /var/log/programs.log 2>&1 &
         echo $! > "${PROGRAM_PIDS[${program}]}"
         echo "$program started with PID: $!"
     fi
