@@ -70,6 +70,8 @@ class DisplayManager:
 
         # Get the bounding box of the text
         bbox = draw.textbbox(position, text, font=self.font)
+
+        draw.rectangle(bbox, outline ="red")
         text_width = int(bbox[2] - bbox[0])
         text_height = int(bbox[3] - bbox[1])
 
@@ -143,17 +145,19 @@ class DisplayManager:
             total_seconds = int(time_difference.total_seconds())
             minutes, seconds = divmod(total_seconds, 60)
 
-            stopwatch_text = f"Stopwatch: {minutes} min {seconds} sec"
+            stopwatch_text = f"{minutes} min {seconds} sec"
         else:
             most_recent_timestamp = None
-            stopwatch_text = "Stopwatch: 0 min 0 sec"
+            stopwatch_text = "0 min 0 sec"
 
         # Draw the various pieces of data onto the image
         texts = [
-            (f"Last Tap: {most_recent_timestamp}", 5, 0),
-            (stopwatch_text, 5, 60),  # Add the stopwatch text
-            (f"Total Operations: {len(operation_taps['Records'])}", 5, 100),
-            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 140),
+            (f"Last Tap:", 5, 0),
+            (most_recent_timestamp, 5, 40),
+            (f"Stopwatch:", 5, 80),
+            (stopwatch_text, 5, 120),  # Add the stopwatch text
+            (f"Total Operations: {len(operation_taps['Records'])}", 5, 160),
+            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 200),
 
         ]
         for text, x, y in texts:
