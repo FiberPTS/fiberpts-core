@@ -126,8 +126,7 @@ class DisplayManager:
         if len(sorted_records) != 0:
             # Get the most recent timestamp
             most_recent_timestamp = sorted_records[0]["Timestamp"]
-            most_recent_datetime = datetime.datetime.strptime(most_recent_timestamp, '%Y-%m-%d %H:%M:%S')  # Assuming the timestamp is in this format
-            
+            eastern = ZoneInfo('America/New_York')
             current_time = datetime.datetime.strptime(get_current_time(True), '%Y-%m-%d %I:%M:%S %p').replace(tzinfo=eastern)
 
             time_difference = current_time - most_recent_datetime
