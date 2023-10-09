@@ -129,9 +129,9 @@ class DisplayManager:
             eastern = ZoneInfo('America/New_York')
             current_time = datetime.datetime.strptime(get_current_time(True), '%Y-%m-%d %I:%M:%S %p').replace(tzinfo=eastern)
 
-            time_difference = current_time - most_recent_datetime
+            time_difference = current_time - most_recent_timestamp
 
-            print(f"Most Recent: {most_recent_datetime}")  # Debugging
+            print(f"Most Recent: {most_recent_timestamp}")  # Debugging
             print(f"Current Time: {current_time}")  # Debugging
             print(f"Time Difference: {time_difference}")  # Debugging
 
