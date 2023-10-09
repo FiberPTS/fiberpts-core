@@ -86,14 +86,14 @@ int main(void) {
     }
 
     // Sets the last release time
-    clock_gettime(CLOCK_MONOTONIC, &last_release_time);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &last_release_time);
 
     struct timespec current_time;
 
     // Main loop to monitor the touch sesnor state.
     while (!interrupted) {
         // Gets the current time
-        clock_gettime(CLOCK_MONOTONIC, &current_time);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &current_time);
 
         // Get current voltage value on the sensor line
         int value = gpiod_line_get_value(sensor_line);
@@ -104,7 +104,7 @@ int main(void) {
             perror_log(PROGRAM_NAME, "Read line value failed");
         } else if (value == VOLTAGE_VALUE) {
             if (!is_debounce_time_passed(current_time, last_release_time, DEBOUNCE_TIME)) {
-                last_release_time = current_time;
+                clock_gettime(CLOCK_MONOTONIC_RAW, &last_release_time);
                 continue;
             }
             print_log(PROGRAM_NAME, "Operation Tap Registered\n");
