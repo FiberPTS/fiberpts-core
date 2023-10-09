@@ -114,7 +114,7 @@ def main():
             # Handle operation taps
             if program_name == "operation_tap_listener.c":
                 # TODO: Save operation taps to a CSV file and push CSV file to Google Drive at x:xxpm every day (daily)
-                timestamp = fifo_data_split[1]
+                timestamp = fifo_data_split[1].rstrip("\x00") 
                 # push_success, operation_taps, current_batch_count = db_handler.handle_operation_tap(
                 #     last_tags_and_ids,
                 #     operation_taps,
