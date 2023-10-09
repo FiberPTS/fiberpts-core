@@ -102,7 +102,7 @@ int is_debounce_time_passed(struct timespec current_time, struct timespec last_r
     }
 
     // Check if the seconds are equal and the difference in nanoseconds exceeds the debounce nanoseconds
-    if ((current_time.tv_sec == last_release.tv_sec) &&
+    if ((current_time.tv_sec == last_release.tv_sec + debounce_sec) &&
         (current_time.tv_nsec > last_release.tv_nsec + debounce_nsec)) {
         return 1;
     }

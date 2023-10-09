@@ -107,7 +107,7 @@ def main():
             fifo_data = read_from_file(FILE_PATH_INFO.FIFO_PATH)
             if not fifo_data:
                 continue
-
+            print(repr(fifo_data))
             fifo_data_split = fifo_data.split("::")
             program_name = fifo_data_split[0]
 
