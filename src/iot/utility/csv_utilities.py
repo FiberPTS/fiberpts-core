@@ -113,49 +113,32 @@ def generate_sample_data(filename, num_records=50):
 def generate_average_delta_graph_from_csv(csv_path, image_path):
     # Read the CSV data
     data = pd.read_csv(csv_path)
-    
+
     if data.empty:
         print("Data is empty!")
         return False
-    
-    print("Data is not empty!")
-        
-    data['Timestamp'] = pd.to_datetime(data['Timestamp'])
 
-    # Sort by timestamp
-    data = data.sort_values(by='Timestamp')
+    print("Data is not empty!")
+
+    data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+    data = data.set_index('Timestamp')  # Set Timestamp as index for resampling
 
     # Calculate the time deltas and store them in a new column
-    data['Time Delta'] = data['Timestamp'].diff().dt.total_seconds()
+    data['Time Delta'] = data.index.to_series().diff().dt.total_seconds() / 60  # Convert to minutes
 
     print("Time deltas calculated!")
 
-    # For each record, compute the average time delta from the past hour
-    avg_time_deltas = []
-    for i, row in data.iterrows():
-        last_hour = row['Timestamp'] - pd.Timedelta(hours=1)
-        mask = (data['Timestamp'] <= row['Timestamp']) & (data['Timestamp'] > last_hour)
-        avg_delta = data.loc[mask, 'Time Delta'].mean()
-
-        # Handle NaN values
-        if pd.isna(avg_delta):
-            avg_delta = 0  # or any other default value
-
-        avg_time_deltas.append(avg_delta)
-
-    data['Avg Time Delta (Last Hour)'] = avg_time_deltas
+    # Resample by hour and calculate the mean
+    hourly_avg = data['Time Delta'].resample('H').mean()
 
     print("Average time deltas computed!")
 
     # Create the plot
     plt.figure(figsize=(10, 5))
-    plt.plot(data['Timestamp'], data['Avg Time Delta (Last Hour)'], marker='o', label='Avg Time Delta (Last Hour)')
+    plt.plot(hourly_avg.index, hourly_avg.values, marker='o', label='Avg Time Delta (Last Hour)')
 
     # Get the current time in UTC
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
-
-    # Convert to Eastern Time
-    today = now_utc.astimezone(ZoneInfo('America/New_York')).date()
+    today = datetime.datetime.now(datetime.timezone.utc).astimezone(ZoneInfo('America/New_York')).date()
 
     # Set the start time to 6 am
     start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
@@ -169,7 +152,7 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
 
     plt.title('Average Time Delta from the Past Hour over Time')
     plt.xlabel('Timestamp')
-    plt.ylabel('Average Time Delta (seconds)')
+    plt.ylabel('Average Time Delta (minutes)')
     plt.xticks(rotation=45)
     plt.xlim(start_time, end_time)
     plt.grid(True, which='both', axis='x', linestyle='--')
@@ -207,10 +190,7 @@ def generate_graph_from_csv(csv_path, image_path):
     plt.plot(data['Timestamp'], data['Cumulative UoM'], marker='o')
 
     # Get the current time in UTC
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
-
-    # Convert to Eastern Time
-    today = now_utc.astimezone(ZoneInfo('America/New_York')).date()
+    today = datetime.datetime.now(datetime.timezone.utc).astimezone(ZoneInfo('America/New_York')).date()
 
     # Set the start time to 6 am
     start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
