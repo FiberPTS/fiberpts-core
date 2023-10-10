@@ -121,21 +121,32 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     print("Data is not empty!")
 
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
-    data = data.set_index('Timestamp')  # Set Timestamp as index for resampling
+    data = data.sort_values(by='Timestamp')
 
     # Calculate the time deltas and store them in a new column
-    data['Time Delta'] = data.index.to_series().diff().dt.total_seconds() / 60  # Convert to minutes
+    data['Time Delta'] = data['Timestamp'].diff().dt.total_seconds() / 60  # Convert to minutes
 
     print("Time deltas calculated!")
 
-    # Resample by hour and calculate the mean
-    hourly_avg = data['Time Delta'].resample('H').mean()
+    # Initialize an empty DataFrame to store the hourly averages
+    hourly_avg = pd.DataFrame(columns=['Timestamp', 'Hourly Avg Time Delta'])
+
+    # Loop through each unique hour in the data
+    for hour in pd.date_range(start=data['Timestamp'].min().replace(minute=0, second=0), end=data['Timestamp'].max(), freq='H'):
+        mask = (data['Timestamp'] > (hour - pd.Timedelta(hours=1))) & (data['Timestamp'] <= hour)
+        avg_delta = data.loc[mask, 'Time Delta'].mean()
+
+        # Handle NaN values
+        if pd.isna(avg_delta):
+            avg_delta = 0  # or any other default value
+
+        hourly_avg = hourly_avg.append({'Timestamp': hour, 'Hourly Avg Time Delta': avg_delta}, ignore_index=True)
 
     print("Average time deltas computed!")
 
     # Create the plot
     plt.figure(figsize=(10, 5))
-    plt.plot(hourly_avg.index, hourly_avg.values, marker='o', label='Avg Time Delta (Last Hour)')
+    plt.plot(hourly_avg['Timestamp'], hourly_avg['Hourly Avg Time Delta'], marker='o', label='Hourly Avg Time Delta')
 
     # Get the current time in UTC
     today = datetime.datetime.now(datetime.timezone.utc).astimezone(ZoneInfo('America/New_York')).date()
@@ -150,7 +161,7 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     plt.gca().set_xticks(hours)
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%I%p'))
 
-    plt.title('Average Time Delta from the Past Hour over Time')
+    plt.title('Hourly Average Time Delta')
     plt.xlabel('Timestamp')
     plt.ylabel('Average Time Delta (minutes)')
     plt.xticks(rotation=45)
@@ -168,7 +179,6 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
 
     print(f"Image saved to {image_path}!")
     return True
-
 
 def generate_graph_from_csv(csv_path, image_path):
     # Read the CSV data
