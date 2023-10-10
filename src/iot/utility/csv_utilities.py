@@ -128,8 +128,8 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
 
     print("Time deltas calculated!")
 
-    # Initialize an empty DataFrame to store the hourly averages
-    hourly_avg = pd.DataFrame(columns=['Timestamp', 'Hourly Avg Time Delta'])
+        # Initialize an empty list to store the hourly averages
+    hourly_avg_list = []
 
     # Loop through each unique hour in the data
     for hour in pd.date_range(start=data['Timestamp'].min().replace(minute=0, second=0), end=data['Timestamp'].max(), freq='H'):
@@ -140,7 +140,11 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
         if pd.isna(avg_delta):
             avg_delta = 0  # or any other default value
 
-        hourly_avg = hourly_avg.append({'Timestamp': hour, 'Hourly Avg Time Delta': avg_delta}, ignore_index=True)
+        hourly_avg_list.append({'Timestamp': hour, 'Hourly Avg Time Delta': avg_delta})
+
+    # Convert the list of dictionaries to a DataFrame
+    hourly_avg = pd.DataFrame(hourly_avg_list)
+
 
     print("Average time deltas computed!")
 
