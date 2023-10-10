@@ -182,7 +182,7 @@ class DisplayManager:
         # text_width = int(bbox[2] - bbox[0])
         # text_height = int(bbox[3] - bbox[1])
         # position = ((self.res[0] - text_width)//2, (self.res[1] - text_height)//2)
-        image = self.draw_rotated_text(image, text, (50,75), bg_color, text_color=text_color)
+        image = self.draw_rotated_text(image, text, (55,85), bg_color, text_color=text_color)
 
         # Convert the image to RGB565 format and write to framebuffer
         raw_data = image_to_rgb565(image)
