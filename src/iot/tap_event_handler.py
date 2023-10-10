@@ -91,7 +91,7 @@ def main():
 
     try:
         while True:
-            display_manager.display_centered_text("Uploading File", bg_color=(30, 250, 250))
+            display_manager.display_centered_text("Uploading File", text_color=(0,0,0), bg_color=(30, 250, 250))
             time.sleep(1)
             display_manager.display_centered_text("Upload Complete", bg_color=(0, 170, 0))
             time.sleep(1)
