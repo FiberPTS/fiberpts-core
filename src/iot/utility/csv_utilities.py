@@ -123,31 +123,26 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
     data = data.sort_values(by='Timestamp')
 
-    # Calculate the time deltas and store them in a new column
-    data['Time Delta'] = data['Timestamp'].diff().dt.total_seconds() / 60  # Convert to minutes
+    # Calculate the time deltas in seconds
+    data['Time Delta'] = data['Timestamp'].diff().dt.total_seconds()
 
-    print("Time deltas calculated!")
+    # Shift the 'Time Delta' column up so that each time delta is associated with the first timestamp in each pair
+    data['Time Delta'] = data['Time Delta'].shift(-1)
 
     # Initialize an empty list to store the hourly averages
     hourly_avg_list = []
 
     # Loop through each unique hour in the data
     for hour in pd.date_range(start=data['Timestamp'].min().replace(minute=0, second=0), end=data['Timestamp'].max(), freq='H'):
-        start_time = hour
         end_time = hour + pd.Timedelta(hours=1)
-
-        mask = (data['Timestamp'] >= start_time) & (
-                (data['Timestamp'].dt.hour < end_time.hour) |
-                ((data['Timestamp'].dt.hour == end_time.hour) & (data['Timestamp'].dt.minute == 0) & (data['Timestamp'].dt.second == 0))
-        )
-
+        mask = (data['Timestamp'] >= hour) & (data['Timestamp'] < end_time)
         avg_delta = data.loc[mask, 'Time Delta'].mean()
 
         # Handle NaN values
         if pd.isna(avg_delta):
             avg_delta = 0  # or any other default value
 
-        hourly_avg_list.append({'Timestamp': end_time, 'Hourly Avg Time Delta': avg_delta})
+        hourly_avg_list.append({'Timestamp': end_time, 'Hourly Avg Time Delta': avg_delta / 60})  # Convert to minutes
 
     # Convert the list of dictionaries to a DataFrame
     hourly_avg = pd.DataFrame(hourly_avg_list)
