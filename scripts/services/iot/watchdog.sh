@@ -34,7 +34,7 @@ update_permissions() {
 check_program() {
     local program=$1
     echo "Checking program: $program"
-    local pid=$(pgrep -f "${program}")
+    local pid=$(pidof -x "${program}" > /dev/null)
     if [[ $pid ]]; then
         echo "$program is Online."
         echo $pid > "${PROGRAM_PIDS[${program}]}"
