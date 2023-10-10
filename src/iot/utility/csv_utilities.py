@@ -23,50 +23,60 @@ def json_to_csv(json_data, file_path):
 
 
 def upload_file_to_drive(file_paths, parent_folder_id="1xonItT9hqD0goUq2qfldvfFTOWyhRLcz"):
-    # Load the service account credentials
-    drive = Drive(creds=ServiceCredentials.from_service_account_file(SERVICE_ACCOUNT_JSON_PATH))
+    try:
+        # Load the service account credentials
+        drive = Drive(creds=ServiceCredentials.from_service_account_file(SERVICE_ACCOUNT_JSON_PATH))
 
-    # Check if today's folder exists
-    name = datetime.datetime.now().strftime('%m-%d-%y')
-    folders = drive.list(
-        query=f"name='{name}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
-    folder = next(folders, None)
-    print(list(folders))
+        # Check if today's folder exists
+        name = datetime.datetime.now().strftime('%m-%d-%y')
+        folders = drive.list(
+            query=f"name='{name}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
+        folder = next(folders, None)
 
-    # If the folder does not exist, create it
-    if not folder:
-        folder = drive.create(name=name, parents=[parent_folder_id], mime_type=GoogleMimeTypes.folder)
+        # If the folder does not exist, create it
+        if not folder:
+            folder = drive.create(name=name, parents=[parent_folder_id], mime_type=GoogleMimeTypes.folder)
 
-    for file_path in file_paths:
-        file_name = file_path.split('/')[-1]
+        for file_path in file_paths:
+            file_name = file_path.split('/')[-1]
 
-        # Check if the file already exists in the folder
-        files = drive.list(query=f"name='{file_name}' and '{folder['id']}' in parents")
-        existing_file = next(files, None)
+            # Check if the file already exists in the folder
+            files = drive.list(query=f"name='{file_name}' and '{folder['id']}' in parents")
+            existing_file = next(files, None)
 
-        # Metadata for the file
-        file_metadata = {
-            'name': file_name,
-            'parents': [folder["id"]]
-        }
+            # Metadata for the file
+            file_metadata = {
+                'name': file_name,
+                'parents': [folder["id"]]
+            }
 
-        # Get appropriate mime type
-        mime_map = {
-            'csv': GoogleMimeTypes.csv,
-            'pdf': GoogleMimeTypes.pdf
-        }
-        mime_type = mime_map.get(file_name.split('.')[-1], GoogleMimeTypes.file)
+            # Get appropriate mime type
+            mime_map = {
+                'csv': GoogleMimeTypes.csv,
+                'pdf': GoogleMimeTypes.pdf
+            }
+            mime_type = mime_map.get(file_name.split('.')[-1], GoogleMimeTypes.file)
 
-        uploaded_file = drive.upload_file(
-            filepath=file_path,
-            name=file_metadata['name'],
-            parents=[folder["id"]],
-            body=file_metadata,
-            update=False,
-            mime_type=mime_type
-        )
+            uploaded_file = drive.upload_file(
+                filepath=file_path,
+                name=file_metadata['name'],
+                parents=[folder["id"]],
+                body=file_metadata,
+                update=False,
+                mime_type=mime_type
+            )
 
-        print(f'File uploaded with ID: {uploaded_file["id"]}')
+            if 'id' not in uploaded_file:
+                print(f"Failed to upload file: {file_name}")
+                return False
+
+            print(f'File uploaded with ID: {uploaded_file["id"]}')
+
+        return True
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
 
 
 def generate_sample_data(filename, num_records=50):
