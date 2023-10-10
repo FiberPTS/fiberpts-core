@@ -59,7 +59,7 @@ class DisplayManager:
         text_color_to_use = text_color or self.text_color
         # Draw text onto a separate image
         draw = ImageDraw.Draw(image)
-
+        # TODO: Make function for text width and height
         # Get the bounding box of the text
         bbox = draw.textbbox(position, text, font=self.font)
 
@@ -167,7 +167,7 @@ class DisplayManager:
         raw_data = image_to_rgb565(image)
         write_to_framebuffer(raw_data, self.fb_path)
 
-    def display_centered_text(self, text, position=(40,60), bg_color=(255,0,0)):
+    def display_centered_text(self, text, bg_color=(255,0,0)):
         """
         Displays the file upload status.
 
@@ -175,7 +175,13 @@ class DisplayManager:
             None
         """
         image = Image.new("RGB", self.res, bg_color)
+        draw = ImageDraw.Draw(image)
+        # Get the bounding box of the text
+        bbox = draw.textbbox((0,0), text, font=self.font)
 
+        text_width = int(bbox[2] - bbox[0])
+        text_height = int(bbox[3] - bbox[1])
+        position = ((self.res[0] - text_width)/2, (self.res[1] - text_height)/2)
         image = self.draw_rotated_text(image, text, position, bg_color)
 
         # Convert the image to RGB565 format and write to framebuffer
