@@ -147,7 +147,8 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
 
     # Convert the list of dictionaries to a DataFrame
     hourly_avg = pd.DataFrame(hourly_avg_list)
-
+    if hourly_avg.count() == 0:
+        return True
 
     print("Average time deltas computed!")
 
@@ -297,7 +298,7 @@ def ready_to_upload(action_taps):
     
     current_time = datetime.datetime.now(tz=datetime.timezone.utc).astimezone(
         datetime.timezone(datetime.timedelta(hours=-5)))  # Convert to EST
-    return current_time.hour >= 18
+    return current_time.hour >= 20
 
 def upload_report(data, folder_path):
     # if not ready_to_upload():
