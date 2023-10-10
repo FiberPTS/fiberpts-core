@@ -126,23 +126,9 @@ class DisplayManager:
         if len(sorted_records) != 0:
             # Get the most recent timestamp
             most_recent_timestamp = sorted_records[0]["Timestamp"]
-            # Convert the timestamp to a datetime object and set its timezone to UTC
-            most_recent_datetime = datetime.datetime.strptime(most_recent_timestamp, '%Y-%m-%d %H:%M:%S')
-            most_recent_datetime = most_recent_datetime.replace(tzinfo=datetime.timezone.utc)  # Assuming the timestamp is in UTC
-            print(f"Debug: Most Recent Datetime (UTC): {most_recent_datetime}")
-
-            # Convert to Eastern Time
             eastern = ZoneInfo('America/New_York')
-            most_recent_datetime = most_recent_datetime.astimezone(eastern)
-            print(f"Debug: Most Recent Datetime (Eastern): {most_recent_datetime}")
-
-            # Get the current time in Eastern Time
-            current_time_str = get_current_time(True)
-            print(f"Debug: Current Time String (Eastern): {current_time_str}")
-
-            current_time = datetime.datetime.strptime(current_time_str, '%Y-%m-%d %H:%M:%S')
-            current_time = current_time.replace(tzinfo=eastern)
-            print(f"Debug: Current Time (Eastern): {current_time}")
+            most_recent_datetime = datetime.datetime.strptime(most_recent_timestamp, '%Y-%m-%d %I:%M:%S %p').replace(tzinfo=eastern)  # Assuming the timestamp is in this format
+            current_time = datetime.datetime.strptime(get_current_time(True), '%Y-%m-%d %I:%M:%S %p').replace(tzinfo=eastern)
 
             # Calculate the time difference
             time_difference = current_time - most_recent_datetime
