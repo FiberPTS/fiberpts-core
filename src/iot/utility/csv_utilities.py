@@ -151,8 +151,11 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     plt.figure(figsize=(10, 5))
     plt.plot(data['Timestamp'], data['Avg Time Delta (Last Hour)'], marker='o', label='Avg Time Delta (Last Hour)')
 
-    # Get the current date
-    today = datetime.datetime.now().date()
+    # Get the current time in UTC
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+
+    # Convert to Eastern Time
+    today = now_utc.astimezone(ZoneInfo('America/New_York')).date()
 
     # Set the start time to 6 am
     start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
@@ -203,9 +206,11 @@ def generate_graph_from_csv(csv_path, image_path):
     plt.figure(figsize=(10, 5))
     plt.plot(data['Timestamp'], data['Cumulative UoM'], marker='o')
 
-    # Set the x-axis to represent every hour from 6am to 6pm
-    # Get the current date
-    today = datetime.datetime.now().date()
+    # Get the current time in UTC
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+
+    # Convert to Eastern Time
+    today = now_utc.astimezone(ZoneInfo('America/New_York')).date()
 
     # Set the start time to 6 am
     start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
