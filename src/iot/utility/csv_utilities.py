@@ -140,7 +140,7 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
 
         # Handle NaN values
         if pd.isna(avg_delta):
-            avg_delta = 0  # or any other default value
+            continue
 
         hourly_avg_list.append({'Timestamp': end_time, 'Hourly Avg Time Delta': avg_delta / 60})  # Convert to minutes
 
