@@ -91,6 +91,12 @@ def main():
 
     try:
         while True:
+            display_manager.display_centered_text("Uploading File", bg_color=(30, 250, 250))
+            time.sleep(1)
+            display_manager.display_centered_text("Upload Complete", bg_color=(0, 170, 0))
+            time.sleep(1)
+            display_manager.display_centered_text("Upload Failed", bg_color=(0, 0, 255))
+            time.sleep(1)
             if len(operation_taps["Records"]) > BATCH_SIZE + 10:
                 display_manager.display_centered_text("Uploading File", bg_color=(30, 250, 250))
                 if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
@@ -100,7 +106,8 @@ def main():
                     print_log("Successfully created and uploaded data report")
                 else:
                     display_manager.display_centered_text("Upload Failed", bg_color=(0, 0, 255))
-            time.sleep(0.1)
+                time.sleep(1)
+            time.sleep(0.2)
             tap_success = True
 
             # Display the relevant data on the screen

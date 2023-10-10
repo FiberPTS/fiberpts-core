@@ -55,7 +55,8 @@ class DisplayManager:
         self.text_color = text_color
         self.text_padding = text_padding
 
-    def draw_rotated_text(self, image, text, position, bg_color):
+    def draw_rotated_text(self, image, text, position, bg_color, text_color=None):
+        text_color_to_use = text_color or self.text_color
         # Draw text onto a separate image
         draw = ImageDraw.Draw(image)
 
@@ -67,7 +68,7 @@ class DisplayManager:
 
         text_image = Image.new("RGB", (text_width + self.text_padding, text_height + self.text_padding), bg_color)
         text_draw = ImageDraw.Draw(text_image)
-        text_draw.text((0, self.text_padding // 2), text, font=self.font, fill=self.text_color)  # Start drawing a bit lower
+        text_draw.text((0, self.text_padding // 2), text, font=self.font, fill=text_color_to_use)  # Start drawing a bit lower
 
         # Rotate the text image by 90 degrees
         rotated_text = text_image.rotate(90, expand=True)
@@ -166,14 +167,14 @@ class DisplayManager:
         raw_data = image_to_rgb565(image)
         write_to_framebuffer(raw_data, self.fb_path)
 
-    def display_centered_text(self, text, position=(20,60), bg_color=(255,0,0)):
+    def display_centered_text(self, text, position=(40,60), bg_color=(255,0,0)):
         """
         Displays the file upload status.
 
         Returns:
             None
         """
-        image = Image.new("RGB", self.res, self.bg_color)
+        image = Image.new("RGB", self.res, bg_color)
 
         image = self.draw_rotated_text(image, text, position, bg_color)
 
