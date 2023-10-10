@@ -144,7 +144,7 @@ class DisplayManager:
 
             stopwatch_text = f"{minutes} min {seconds} sec"
         else:
-            most_recent_timestamp = None
+            most_recent_timestamp = "N/A"
             stopwatch_text = "0 min 0 sec"
 
         # Draw the various pieces of data onto the image
