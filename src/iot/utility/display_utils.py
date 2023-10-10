@@ -6,6 +6,8 @@ from .utils import *
 # TODO: Fix logging (program_name)
 # TODO: Find and remove libraries that are unnecessary
 
+# TODO: Fix RGB order since it is in BGR order (or something weird) image_to_rgb565(Image)
+
 
 def write_to_framebuffer(data, fb_path):
     """
@@ -159,6 +161,21 @@ class DisplayManager:
         ]
         for text, x, y in texts:
             image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
+
+        # Convert the image to RGB565 format and write to framebuffer
+        raw_data = image_to_rgb565(image)
+        write_to_framebuffer(raw_data, self.fb_path)
+
+    def display_centered_text(self, text, position=(20,60), bg_color=(255,0,0)):
+        """
+        Displays the file upload status.
+
+        Returns:
+            None
+        """
+        image = Image.new("RGB", self.res, self.bg_color)
+
+        image = self.draw_rotated_text(image, text, position, bg_color)
 
         # Convert the image to RGB565 format and write to framebuffer
         raw_data = image_to_rgb565(image)
