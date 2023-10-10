@@ -91,14 +91,8 @@ def main():
 
     try:
         while True:
-            display_manager.display_centered_text("Uploading File", text_color=(0,0,0), bg_color=(30, 250, 250))
-            time.sleep(1)
-            display_manager.display_centered_text("Upload Complete", bg_color=(0, 170, 0))
-            time.sleep(1)
-            display_manager.display_centered_text("Upload Failed", bg_color=(0, 0, 255))
-            time.sleep(1)
-            if len(operation_taps["Records"]) > BATCH_SIZE + 10:
-                display_manager.display_centered_text("Uploading File", bg_color=(30, 250, 250))
+            if ready_to_upload(operation_taps) > 0:
+                display_manager.display_centered_text("Uploading File", text_color=(0,0,0), bg_color=(30, 250, 250))
                 if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
                     display_manager.display_centered_text("Upload Complete", bg_color=(0, 170, 0))
                     operation_taps["Records"] = []
@@ -107,7 +101,6 @@ def main():
                 else:
                     display_manager.display_centered_text("Upload Failed", bg_color=(0, 0, 255))
                 time.sleep(1)
-            time.sleep(0.2)
             tap_success = True
 
             # Display the relevant data on the screen
@@ -162,6 +155,7 @@ def main():
             bg_color = (0, 170, 0) if tap_success else (0, 0, 255)
             # display_manager.draw_display(last_tags_and_ids, bg_color=bg_color)
             display_manager.draw_display(operation_taps, bg_color=bg_color)
+            time.sleep(0.5)
     except KeyboardInterrupt:
         print_log("Program Interrupted")
 
