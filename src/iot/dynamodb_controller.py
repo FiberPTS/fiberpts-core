@@ -45,14 +45,14 @@ class DynamoDBTapHandler:
                 - dict: The updated `last_tags_and_ids` dictionary.
         """
         last_tags_and_ids = load_json_from_file(self.file_path_info.LAST_TAGS_AND_IDS)
-        machine_id = get_machine_id()
+        device_id = get_device_id()
 
-        if not last_tags_and_ids.get("machine_record_id"):
-            # Define request data for retrieving machine record
+        if not last_tags_and_ids.get("device_record_id"):
+            # Define request data for retrieving device record
             request_data = {
                 'table_name': 'tblFOfDowcZNlPRDL',
                 'filter_id': 'fldbh9aMmA6qAoNKq',
-                'filter_value': machine_id,
+                'filter_value': device_id,
                 'field_mappings': [
                     ("fldZsM3YEVQqpJMFF", "record_id"),
                     ("fldfXLG8xbM9S3Evx", "order_tag_record_id"),
@@ -73,7 +73,7 @@ class DynamoDBTapHandler:
                     # Convert data to JSON and extract relevant details
                     data_json = json.loads(data['Data'])['Records'][0]
                     last_tags_and_ids.update({
-                        "machine_record_id": data_json.get('record_id', ' '),
+                        "device_record_id": data_json.get('record_id', ' '),
                         "last_order_record_id": data_json.get("order_tag_record_id", " ")[0],
                         "last_employee_record_id": data_json.get("employee_tag_record_id", " ")[0],
                         "last_order_tap": format_utc_to_est(data_json.get("last_order_tap", "")),
@@ -90,7 +90,7 @@ class DynamoDBTapHandler:
 
     def push_local_ip_to_db(self, last_tags_and_ids):
         """
-        Pushes the local IP address of the machine to the DynamoDB.
+        Pushes the local IP address of the device to the DynamoDB.
 
         Args:
             table (boto3.DynamoDB.Table): The boto3 DynamoDB table resource.
@@ -99,11 +99,11 @@ class DynamoDBTapHandler:
         Returns:
             bool: True if the IP address was pushed successfully, False otherwise.
         """
-        local_ip = get_local_ip()  # Obtain local IP address of the Linux machine on wlan0
+        local_ip = get_local_ip()  # Obtain local IP address of the Linux device on wlan0
 
         request_data = {
             "local_ip": local_ip,
-            "machine_record_id": last_tags_and_ids.get("machine_record_id", "None")
+            "device_record_id": last_tags_and_ids.get("device_record_id", "None")
         }
 
         # Attempt to push data to DynamoDB
@@ -113,48 +113,48 @@ class DynamoDBTapHandler:
         else:
             return False
 
-    def handle_operation_tap(self, last_tags_and_ids, operation_taps, current_batch_count, timestamp):
+    def handle_action_tap(self, last_tags_and_ids, action_taps, current_batch_count, timestamp):
         """
         Handle a button tap event.
 
         Args:
             table (boto3.DynamoDB.Table): The boto3 DynamoDB table resource.
             last_tags_and_ids (dict): A dictionary containing the current tags and IDs.
-            operation_taps (dict): A dictionary containing the operation taps.
+            action_taps (dict): A dictionary containing the action taps.
             current_batch_count (int): The current batch count.
             timestamp (str): The timestamp of the button tap.
 
         Returns:
             tuple: A tuple containing three elements:
                 - bool: True if the button tap was handled successfully, False otherwise.
-                - dict: The updated `operation_taps` dictionary.
+                - dict: The updated `action_taps` dictionary.
                 - int: The updated `current_batch_count`.
         """
         if last_tags_and_ids["last_employee_tag"] != "None" and last_tags_and_ids["last_order_tag"] != "None":
             print_log("Button Pressed")
             # TODO: Make sure timestamp is in correct format with seconds
             request_data = {
-                "machine_record_id": last_tags_and_ids["machine_record_id"],
+                "device_record_id": last_tags_and_ids["device_record_id"],
                 "employee_tag_record_id": last_tags_and_ids["last_employee_record_id"],
                 "order_tag_record_id": last_tags_and_ids["last_order_record_id"],
                 "timestamp": timestamp
             }
-            operation_taps["Records"].append(request_data)
+            action_taps["Records"].append(request_data)
             current_batch_count += 1
             if current_batch_count >= self.batch_size:
-                if not push_item_db(self.table, "OperationTapEvent", operation_taps):
-                    return False, operation_taps, current_batch_count
+                if not push_item_db(self.table, "ActionTapEvent", action_taps):
+                    return False, action_taps, current_batch_count
                 current_batch_count = 0
-                operation_taps = {"Records": []}
+                action_taps = {"Records": []}
 
             last_tags_and_ids.update({
                 "units_order": last_tags_and_ids["units_order"] + 1,
                 "units_employee": last_tags_and_ids["units_employee"] + 1
             })
         else:
-            return False, operation_taps, current_batch_count
+            return False, action_taps, current_batch_count
 
-        return True, operation_taps, current_batch_count
+        return True, action_taps, current_batch_count
 
 
     def handle_employee_tap(self, last_tags_and_ids, tag_uid, timestamp):
@@ -210,7 +210,7 @@ class DynamoDBTapHandler:
             })
 
         request_data = {
-            "machine_record_id": [last_tags_and_ids["machine_record_id"]],
+            "device_record_id": [last_tags_and_ids["device_record_id"]],
             "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
         }
 
@@ -273,7 +273,7 @@ class DynamoDBTapHandler:
         })
 
         request_data = {
-            "machine_record_id": [last_tags_and_ids["machine_record_id"]],
+            "device_record_id": [last_tags_and_ids["device_record_id"]],
             "order_tag_record_id": [last_tags_and_ids["last_order_record_id"]],
             "employee_tag_record_id": [last_tags_and_ids["last_employee_record_id"]]
         }

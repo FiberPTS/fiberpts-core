@@ -25,10 +25,10 @@ from utility.csv_utilities import *
 
 
 # File Paths
-FilePathConstants = namedtuple("FilePathConstants", ["DATA_FOLDER", "OPERATION_TAPS", "LAST_TAGS_AND_IDS", "FIFO_PATH"])
+FilePathConstants = namedtuple("FilePathConstants", ["DATA_FOLDER", "ACTION_TAPS", "LAST_TAGS_AND_IDS", "FIFO_PATH"])
 FILE_PATH_INFO = FilePathConstants(
     DATA_FOLDER="/var/lib/tap_event_handler",
-    OPERATION_TAPS="/var/lib/tap_event_handler/operation_taps.json",
+    ACTION_TAPS="/var/lib/tap_event_handler/action_taps.json",
     LAST_TAGS_AND_IDS="/var/lib/tap_event_handler/last_tags_and_ids.json",
     FIFO_PATH="/tmp/tap_event_handler"
 )
@@ -47,7 +47,7 @@ FILE_PATH_INFO = FilePathConstants(
 # Constants
 BATCH_SIZE = 10
 # TABLE_NAME = "API_Requests"
-MACHINE_ID = get_machine_id()
+DEVICE_ID = get_device_id()
 
 
 def main():
@@ -79,10 +79,10 @@ def main():
     #     sys.exit(0)
 
     # Load batched button presses from a file
-    operation_taps = load_json_from_file(FILE_PATH_INFO.OPERATION_TAPS, default_value={"Records": []})
+    action_taps = load_json_from_file(FILE_PATH_INFO.ACTION_TAPS, default_value={"Records": []})
 
     # # Update the current batch count based on the loaded tap data
-    # current_batch_count = len(operation_taps["Records"])
+    # current_batch_count = len(action_taps["Records"])
 
     print_log("Starting Display")
 
@@ -91,12 +91,12 @@ def main():
 
     try:
         while True:
-            if ready_to_upload(operation_taps) > 0:
+            if ready_to_upload(action_taps) > 0:
                 display_manager.display_centered_text("Uploading File", text_color=(0,0,0), bg_color=(30, 250, 250))
-                if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
+                if upload_report(action_taps, FILE_PATH_INFO.DATA_FOLDER):
                     display_manager.display_centered_text("Upload Complete", bg_color=(0, 170, 0))
-                    operation_taps["Records"] = []
-                    save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
+                    action_taps["Records"] = []
+                    save_json_to_file(FILE_PATH_INFO.ACTION_TAPS, action_taps)
                     print_log("Successfully created and uploaded data report")
                 else:
                     display_manager.display_centered_text("Upload Failed", bg_color=(0, 0, 255))
@@ -105,7 +105,7 @@ def main():
 
             # Display the relevant data on the screen
             # display_manager.draw_display(last_tags_and_ids)
-            display_manager.draw_display(operation_taps)
+            display_manager.draw_display(action_taps)
 
             # Read data from the FIFO Pipe
             fifo_data = read_from_file_non_blocking(FILE_PATH_INFO.FIFO_PATH)
@@ -115,26 +115,26 @@ def main():
             fifo_data_split = fifo_data.split("::")
             program_name = fifo_data_split[0]
 
-            # Handle operation taps
-            if program_name == "operation_tap_listener.c":
-                # TODO: Save operation taps to a CSV file and push CSV file to Google Drive at x:xxpm every day (daily)
+            # Handle action taps
+            if program_name == "action_tap_listener.c":
+                # TODO: Save action taps to a CSV file and push CSV file to Google Drive at x:xxpm every day (daily)
                 timestamp = fifo_data_split[1].rstrip("\x00") 
-                # push_success, operation_taps, current_batch_count = db_handler.handle_operation_tap(
+                # push_success, action_taps, current_batch_count = db_handler.handle_action_tap(
                 #     last_tags_and_ids,
-                #     operation_taps,
+                #     action_taps,
                 #     current_batch_count,
                 #     timestamp
                 # )
                 # if not push_success:
-                #     perror_log(f"Error: Operation taps not registered \n FIFO Data: {fifo_data}")
+                #     perror_log(f"Error: Action taps not registered \n FIFO Data: {fifo_data}")
                 #     tap_success = False
                 tap_record = {
-                    "Machine ID": get_machine_id(),
+                    "Device ID": get_device_id(),
                     "UoM": 1,
                     "Timestamp": timestamp
                 }
-                operation_taps["Records"].append(tap_record)
-                save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
+                action_taps["Records"].append(tap_record)
+                save_json_to_file(FILE_PATH_INFO.ACTION_TAPS, action_taps)
 
             # Handle NFC taps
             elif program_name == "nfc_tap_listener.c":
@@ -154,7 +154,7 @@ def main():
             # Update the display with the background color indicating success or failure
             bg_color = (0, 170, 0) if tap_success else (0, 0, 255)
             # display_manager.draw_display(last_tags_and_ids, bg_color=bg_color)
-            display_manager.draw_display(operation_taps, bg_color=bg_color)
+            display_manager.draw_display(action_taps, bg_color=bg_color)
             time.sleep(0.5)
     except KeyboardInterrupt:
         print_log("Program Interrupted")

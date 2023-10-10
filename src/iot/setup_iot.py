@@ -11,9 +11,9 @@ import time
 
 # Create an argument parser
 parser = argparse.ArgumentParser(
-    description='Run setup on a Linux machine via SSH.')
+    description='Run setup on a Linux device via SSH.')
 parser.add_argument(
-    '--ip', help='The IP address of the machine.', required=True)
+    '--ip', help='The IP address of the device.', required=True)
 parser.add_argument('--usr', help='The username for SSH.', required=True)
 parser.add_argument('--pw', help='The password for SSH.', required=True)
 parser.add_argument(

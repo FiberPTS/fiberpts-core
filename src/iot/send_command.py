@@ -10,11 +10,11 @@ import os
 
 # Create an argument parser
 parser = argparse.ArgumentParser(
-    description='Run a command on a Linux machine via SSH.')
+    description='Run a command on a Linux device via SSH.')
 parser.add_argument('--command', help='The command to run.', required=True)
-parser.add_argument('--ip', help='The IP address of the machine.')
+parser.add_argument('--ip', help='The IP address of the device.')
 parser.add_argument('--all', action='store_true',
-                    help='Run the command on all machines.')
+                    help='Run the command on all devices.')
 parser.add_argument('--usr', default='potato', help='The username for SSH.')
 parser.add_argument('--pw', default='carmine1981',
                     help='The password for SSH.')
@@ -25,7 +25,7 @@ args = parser.parse_args()
 # Extract values from the parsed arguments
 command = args.command
 ip = args.ip
-all_machines = args.all
+all_devices = args.all
 username = args.usr
 password = args.pw
 
@@ -51,7 +51,7 @@ ips = []
 offset = None
 
 # Fetch IP addresses from Airtable if the --all flag is set
-while all_machines:
+while all_devices:
     headers = {'Authorization': 'Bearer ' + AIRTABLE_INFO.KEY}
     params = {'pageSize': 100}
     if offset:
@@ -73,7 +73,7 @@ while all_machines:
 if ip:
     ips = [ip]
 # If neither --ip nor --all are used, print an error message and exit
-elif not all_machines:
+elif not all_devices:
     print("Please provide either --ip or --all.")
     sys.exit(1)
 

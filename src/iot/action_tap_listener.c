@@ -25,7 +25,7 @@
 
 // File paths and names
 const char *FIFO_PATH = "/tmp/tap_event_handler"; // File path for FIFO pipe
-const char *PROGRAM_NAME = "operation_tap_listener.c";
+const char *PROGRAM_NAME = "action_tap_listener.c";
 
 // GPIO Configuration
 const char *CHIP_NAME = "gpiochip1"; // Name of the GPIO chip
@@ -107,7 +107,7 @@ int main(void) {
                 clock_gettime(CLOCK_MONOTONIC_RAW, &last_release_time);
                 continue;
             }
-            print_log(PROGRAM_NAME, "Operation Tap Registered\n");
+            print_log(PROGRAM_NAME, "Action Tap Registered\n");
             // Register tap if sensor was not touched within the debounce time
             // Get current timestamp
             char timestamp[32];

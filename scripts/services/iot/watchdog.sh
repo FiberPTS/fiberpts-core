@@ -9,7 +9,7 @@ echo "BASE_DIR set to: $BASE_DIR"
 # Define the names and paths of the programs to be monitored.
 PROGRAM_NAMES=(
     "nfc_tap_listener"
-    "operation_tap_listener"
+    "action_tap_listener"
     "tap_event_handler.py"
 )
 echo "PROGRAM_NAMES defined as: ${PROGRAM_NAMES[*]}"
@@ -34,8 +34,10 @@ update_permissions() {
 check_program() {
     local program=$1
     echo "Checking program: $program"
-    if pgrep -f "${program}" > /dev/null; then
+    local pid=$(pgrep -f "${program}")
+    if [[ $pid ]]; then
         echo "$program is Online."
+        echo $pid > "${PROGRAM_PIDS[${program}]}"
     else
         echo "$program is Offline."
         echo "Starting ${program}."
@@ -45,12 +47,13 @@ check_program() {
     fi
 }
 
-# Kill the monitored programs when the script receives a SIGTERM signal.
+
+# Kill the monitored programs when the script receives a SIGTERM or SIGINT (control+c) signal.
 on_sigterm() {
     echo "Received SIGTERM or SIGINT. Shutting down monitored programs."
     for pid_file in "${PROGRAM_PIDS[@]}"; do
         if [[ -f "${pid_file}" ]]; then
-            kill "$(cat "${pid_file}")"
+            sudo kill "$(cat "${pid_file}")"
             echo "Killed program with PID from file: ${pid_file}"
         fi
     done

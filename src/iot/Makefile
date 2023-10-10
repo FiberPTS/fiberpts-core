@@ -15,7 +15,7 @@ SOURCES = $(BASEDIR)/utility/log_utils.c \
           $(BASEDIR)/utility/signal_utils.c \
           $(BASEDIR)/utility/utils.c \
           $(BASEDIR)/nfc_tap_listener.c \
-          $(BASEDIR)/operation_tap_listener.c
+          $(BASEDIR)/action_tap_listener.c
 
 # Libraries
 LIBS = -lnfc -lgpiod
@@ -24,15 +24,15 @@ LIBS = -lnfc -lgpiod
 OBJECTS = $(SOURCES:.c=.o)
 
 # Build all targets
-all: nfc_tap_listener operation_tap_listener
+all: nfc_tap_listener action_tap_listener
 
 # Linking rule for nfc_tap_listener
 nfc_tap_listener: $(OBJECTS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o nfc_tap_listener $(BASEDIR)/nfc_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
 
-# Linking rule for operation_tap_listener
-operation_tap_listener: $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o operation_tap_listener $(BASEDIR)/operation_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
+# Linking rule for action_tap_listener
+action_tap_listener: $(OBJECTS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o action_tap_listener $(BASEDIR)/action_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
 
 # Compilation rule to build .o from .c
 %.o: %.c
@@ -40,4 +40,4 @@ operation_tap_listener: $(OBJECTS)
 
 # Clean up the build
 clean:
-	rm -f $(BASEDIR)/*.o $(BASEDIR)/utility/*.o nfc_tap_listener operation_tap_listener
+	rm -f $(BASEDIR)/*.o $(BASEDIR)/utility/*.o nfc_tap_listener action_tap_listener

@@ -6,16 +6,16 @@ import netifaces as ni
 # TODO: Find and remove libraries that are unnecessary
 
 
-def get_machine_id():
+def get_device_id():
     """
-    Retrieves the machine ID from the system.
+    Retrieves the device ID from the system.
 
     Returns:
-        str: The machine ID or None if not found.
+        str: The device ID or None if not found.
     """
-    machine_id_paths = ["/etc/machine-id", "/var/lib/dbus/machine-id"]
+    device_id_paths = ["/etc/device-id", "/var/lib/dbus/device-id"]
 
-    for path in machine_id_paths:
+    for path in device_id_paths:
         try:
             with open(path, "r") as f:
                 return f.read().strip()

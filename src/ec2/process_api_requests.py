@@ -163,7 +163,7 @@ def handle_get_record(req, dynamodb):
 
 def handle_ip_request(req):
     """
-    Handles updating the IP address of a machine in Airtable.
+    Handles updating the IP address of a device in Airtable.
 
     Args:
         req: The request object containing all necessary information to process the request.
@@ -174,7 +174,7 @@ def handle_ip_request(req):
     # Extract required data from the request
     data_str = req.get('Data', '')
     data_json = json.loads(data_str)
-    url_update = f"{AIRTABLE_CONST.API_URL}tblFOfDowcZNlPRDL/{data_json.get('machine_record_id', ' ')}"
+    url_update = f"{AIRTABLE_CONST.API_URL}tblFOfDowcZNlPRDL/{data_json.get('device_record_id', ' ')}"
 
     # Prepare payload for Airtable API to update IP address
     airtable_update_payload = {
@@ -225,7 +225,7 @@ def handle_tap_request(req):
         for record in records:
             airtable_record = {
                 "fields": {
-                    "fldVQGXQ9CVW6KJkJ": [record.get("machine_record_id")],
+                    "fldVQGXQ9CVW6KJkJ": [record.get("device_record_id")],
                     "fldGx0sQJknx4CDFR": [record.get("employee_tag_record_id")],
                     "fld6jiNTUPVRKdf5d": [record.get("order_tag_record_id")],
                     "fldGYKh5CAUcqesbt": record.get("timestamp"),
@@ -256,7 +256,7 @@ def handle_tap_request(req):
 
 def handle_order_request(req):
     """
-    Handles the 'OrderNFC' request type. It creates or updates order-related records in Airtable.
+    Handles the 'OrderTap' request type. It creates or updates order-related records in Airtable.
 
     Args:
         req: The request object containing all necessary information to process the request.
@@ -282,7 +282,7 @@ def handle_order_request(req):
             # Prepare payload for Airtable API to create a new record
             airtable_create_payload = {
                 "fields": {
-                    "fldoBxDoBfeizCwmT": data_json.get("machine_record_id"),
+                    "fldoBxDoBfeizCwmT": data_json.get("device_record_id"),
                     "fldNHVn5USJIgTPB6": data_json.get("employee_tag_record_id"),
                     "fldkG7dswfsYUx8ff": data_json.get("order_tag_record_id"),
                 }
@@ -305,8 +305,8 @@ def handle_order_request(req):
             }
         }
 
-        # Update the specific record based on machine_record_id
-        url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
+        # Update the specific record based on device_record_id
+        url_update = f"{url_update}/{data_json.get('device_record_id')[0]}"
         response_update = requests.patch(
             url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
@@ -322,7 +322,7 @@ def handle_order_request(req):
 
 def handle_employee_request(req):
     """
-    Handles the 'EmployeeNFC' request type. It creates or updates employee-related records in Airtable.
+    Handles the 'EmployeeTap' request type. It creates or updates employee-related records in Airtable.
 
     Args:
         req: The request object containing all necessary information to process the request.
@@ -348,7 +348,7 @@ def handle_employee_request(req):
             # Prepare payload for Airtable API to create a new record
             airtable_create_payload = {
                 "fields": {
-                    "fldX6JBtp55h7kXeU": data_json.get("machine_record_id"),
+                    "fldX6JBtp55h7kXeU": data_json.get("device_record_id"),
                     "fld9mWGyROaCXDVqP": data_json.get("employee_tag_record_id"),
                 }
             }
@@ -371,8 +371,8 @@ def handle_employee_request(req):
             }
         }
 
-        # Update the specific record based on machine_record_id
-        url_update = f"{url_update}/{data_json.get('machine_record_id')[0]}"
+        # Update the specific record based on device_record_id
+        url_update = f"{url_update}/{data_json.get('device_record_id')[0]}"
         response_update = requests.patch(
             url_update, headers=headers, json=airtable_update_payload)
         response_update.raise_for_status()
@@ -400,14 +400,16 @@ def handle_request(req, dynamodb):
     request_type = req.get('Request_Type', '')
     if request_type == 'TapEvent':
         return handle_tap_request(req)
-    elif request_type == 'EmployeeNFC':
+    elif request_type == 'EmployeeTap':
         return handle_employee_request(req)
-    elif request_type == 'OrderNFC':
+    elif request_type == 'OrderTap':
         return handle_order_request(req)
     elif request_type == 'LocalIPAddress':
         return handle_ip_request(req)
     elif request_type == 'GetRecord':
         return handle_get_record(req, dynamodb)
+    elif request_type == 'CreateRecord':
+        return handle_create_record(req, dynamodb)
     else:
         return False, f"Unknown request type: {request_type}"
 
@@ -448,7 +450,7 @@ def main():
     # Dict to keep track of number of attempts and error messages for ea. request
     request_attempts = {}
     empty_runs = 0
-
+    # TODO: Add rate limit algorithm
     # Continuously poll the DynamoDB table for pending requests
     while True:
         current_time = time.time()
@@ -469,7 +471,7 @@ def main():
         for req in pending_requests:
             request_type = req.get('Request_Type')
             # Check the rate limit for certain request types
-            if request_type in ['OrderNFC', 'EmployeeNFC']:
+            if request_type in ['OrderTap', 'EmployeeTap']:
                 expected_increment = 2
             else:
                 expected_increment = 1

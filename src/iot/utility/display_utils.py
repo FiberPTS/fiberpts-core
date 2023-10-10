@@ -111,7 +111,7 @@ class DisplayManager:
     #     raw_data = image_to_rgb565(image)
     #     write_to_framebuffer(raw_data, self.fb_path)
 
-    def draw_display(self, operation_taps, bg_color=None):
+    def draw_display(self, action_taps, bg_color=None):
         """
         Creates and draws an image for the display based on the provided data.
 
@@ -125,7 +125,7 @@ class DisplayManager:
         bg_color_to_use = bg_color or self.bg_color
         image = Image.new("RGB", self.res, bg_color_to_use)
 
-        sorted_records = sorted(operation_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
+        sorted_records = sorted(action_taps["Records"], key=lambda x: x["Timestamp"], reverse=True)
         if len(sorted_records) != 0:
             # Get the most recent timestamp
             most_recent_timestamp = sorted_records[0]["Timestamp"]
@@ -156,8 +156,8 @@ class DisplayManager:
             (most_recent_timestamp, 5, 30),
             (f"Stopwatch:", 5, 75),
             (stopwatch_text, 5, 105),  # Add the stopwatch text
-            (f"Total Operations: {len(operation_taps['Records'])}", 5, 150),
-            (f"Total Units: {sum([record['UoM'] for record in operation_taps.get('Records')])}", 5, 180),
+            (f"Total Actions: {len(action_taps['Records'])}", 5, 150),
+            (f"Total Units: {sum([record['UoM'] for record in action_taps.get('Records')])}", 5, 180),
 
         ]
         for text, x, y in texts:

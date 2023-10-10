@@ -9,26 +9,26 @@
 // TODO: Find and remove libraries that are unnecessary
 
 /**
- * @brief Retrieves the machine's unique ID.
- * @return A string containing the machine's ID or NULL on failure.
+ * @brief Retrieves the device's unique ID.
+ * @return A string containing the device's ID or NULL on failure.
  */
-char *get_machine_id() {
-    FILE *file = fopen("/etc/machine-id", "r");
+char *get_device_id() {
+    FILE *file = fopen("/etc/device-id", "r");
     if (file == NULL) {
-        perror("Unable to open /etc/machine-id");
+        perror("Unable to open /etc/device-id");
         return NULL;
     }
 
-    char *machine_id = malloc(33);
-    if (fgets(machine_id, 33, file) == NULL) {
-        perror("Unable to read /etc/machine-id");
+    char *device_id = malloc(33);
+    if (fgets(device_id, 33, file) == NULL) {
+        perror("Unable to read /etc/device-id");
         fclose(file);
-        free(machine_id);
+        free(device_id);
         return NULL;
     }
 
     fclose(file);
-    return machine_id;
+    return device_id;
 }
 
 /**

@@ -16,7 +16,7 @@ SERVICE_ACCOUNT_JSON_PATH = "/home/potato/FiberPTS/gdrive-api-key.json"
 
 def json_to_csv(json_data, file_path):
     with open(file_path, 'w', newline='') as csvfile:
-        fieldnames = ["Machine ID", "UoM", "Timestamp"]
+        fieldnames = ["Device ID", "UoM", "Timestamp"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for record in json_data["Records"]:
@@ -99,7 +99,7 @@ def generate_sample_data(filename, num_records=50):
 
     # Create a DataFrame
     df = pd.DataFrame({
-        'Machine ID': ['Machine1'] * num_records,
+        'Device ID': ['Device1'] * num_records,
         'UoM': [1] * num_records,
         'Timestamp': timestamps
     })
@@ -291,8 +291,8 @@ def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
     pdf.output(pdf_path)
 
 
-def ready_to_upload(operation_taps):
-    if len(operation_taps["Records"]) == 0:
+def ready_to_upload(action_taps):
+    if len(action_taps["Records"]) == 0:
         return False
     
     current_time = datetime.datetime.now(tz=datetime.timezone.utc).astimezone(

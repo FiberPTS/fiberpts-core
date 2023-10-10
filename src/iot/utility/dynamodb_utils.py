@@ -16,7 +16,7 @@ def push_item_db(table, request_type, request_data):
     Returns:
         tuple: A tuple containing a boolean indicating success and the partition key.
     """
-    partition_key = f'{get_machine_id()}-{request_type}-{get_current_time()}'
+    partition_key = f'{get_device_id()}-{request_type}-{get_current_time()}'
     response = table.put_item(
         Item={
             'partitionKey': partition_key,
