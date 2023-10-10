@@ -91,12 +91,11 @@ def main():
 
     try:
         while True:
-            print(operation_taps)
-            if ready_to_upload():
+            if len(operation_taps) > BATCH_SIZE + 10:
                 if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
                     operation_taps["Records"] = []
+                    save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
                     print_log("Successfully created and uploaded data report")
-            print(operation_taps)
             time.sleep(0.25)
             tap_success = True
 
@@ -131,6 +130,7 @@ def main():
                     "Timestamp": timestamp
                 }
                 operation_taps["Records"].append(tap_record)
+                save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
 
             # Handle NFC taps
             elif program_name == "nfc_tap_listener.c":
@@ -143,10 +143,6 @@ def main():
             # Handle invalid program names
             else:
                 perror_log(f"Error: invalid program name \n FIFO Data: {fifo_data}")
-
-
-            # Save current action tap data to file
-            save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
 
             # Save the last tags and IDs to a file
             # save_json_to_file(FILE_PATH_INFO.LAST_TAGS_AND_IDS, last_tags_and_ids)
