@@ -147,8 +147,8 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
 
     # Convert the list of dictionaries to a DataFrame
     hourly_avg = pd.DataFrame(hourly_avg_list)
-    if hourly_avg.count() == 0:
-        return True
+    if hourly_avg.empty:
+        return False
 
     print("Average time deltas computed!")
 
