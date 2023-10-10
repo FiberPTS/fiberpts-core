@@ -7,6 +7,7 @@ from fpdf import FPDF
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+from zoneinfo import ZoneInfo
 
 # FILE_PATH = '/var/FiberPTS/data.csv'
 FILE_PATH = "/Users/nxfer/Github Repositories/FiberPTS"
@@ -27,8 +28,14 @@ def upload_file_to_drive(file_paths, parent_folder_id="1xonItT9hqD0goUq2qfldvfFT
         # Load the service account credentials
         drive = Drive(creds=ServiceCredentials.from_service_account_file(SERVICE_ACCOUNT_JSON_PATH))
 
-        # Check if today's folder exists
-        name = datetime.datetime.now().strftime('%m-%d-%y')
+        # Get the current time in UTC
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
+
+        # Convert to Eastern Time
+        now_est = now_utc.astimezone(ZoneInfo('America/New_York'))
+
+        # Format the datetime
+        name = now_est.strftime('%m-%d-%y')
         folders = drive.list(
             query=f"name='{name}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
         folder = next(folders, None)
@@ -148,10 +155,10 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     today = datetime.datetime.now().date()
 
     # Set the start time to 6 am
-    start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
+    start_time = datetime.datetime(today.year, today.month, today.day, 12, 0, 0)
 
     # Set the end time to 6 pm
-    end_time = datetime.datetime(today.year, today.month, today.day, 18, 0, 0)
+    end_time = datetime.datetime(today.year, today.month, today.day, 24, 0, 0)
     hours = pd.date_range(start=start_time, end=end_time, freq='H')
 
     plt.gca().set_xticks(hours)
@@ -201,10 +208,10 @@ def generate_graph_from_csv(csv_path, image_path):
     today = datetime.datetime.now().date()
 
     # Set the start time to 6 am
-    start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
+    start_time = datetime.datetime(today.year, today.month, today.day, 12, 0, 0)
 
     # Set the end time to 6 pm
-    end_time = datetime.datetime(today.year, today.month, today.day, 18, 0, 0)
+    end_time = datetime.datetime(today.year, today.month, today.day, 24, 0, 0)
     hours = pd.date_range(start=start_time, end=end_time, freq='H')
 
     plt.gca().set_xticks(hours)
