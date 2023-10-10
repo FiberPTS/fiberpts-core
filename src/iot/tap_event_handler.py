@@ -91,12 +91,12 @@ def main():
 
     try:
         while True:
-            if len(operation_taps) > BATCH_SIZE + 10:
+            if len(operation_taps["Records"]) > BATCH_SIZE + 10:
                 if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
                     operation_taps["Records"] = []
                     save_json_to_file(FILE_PATH_INFO.OPERATION_TAPS, operation_taps)
                     print_log("Successfully created and uploaded data report")
-            time.sleep(0.25)
+            time.sleep(0.1)
             tap_success = True
 
             # Display the relevant data on the screen
