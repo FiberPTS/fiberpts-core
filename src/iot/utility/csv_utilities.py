@@ -155,7 +155,7 @@ def generate_average_delta_graph_from_csv(csv_path, image_path):
     today = datetime.datetime.now().date()
 
     # Set the start time to 6 am
-    start_time = datetime.datetime(today.year, today.month, today.day, 12, 0, 0)
+    start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
 
     # Set the end time to 6 pm
     end_time = datetime.datetime(today.year, today.month, today.day, 23, 0, 0)
@@ -208,7 +208,7 @@ def generate_graph_from_csv(csv_path, image_path):
     today = datetime.datetime.now().date()
 
     # Set the start time to 6 am
-    start_time = datetime.datetime(today.year, today.month, today.day, 12, 0, 0)
+    start_time = datetime.datetime(today.year, today.month, today.day, 6, 0, 0)
 
     # Set the end time to 6 pm
     end_time = datetime.datetime(today.year, today.month, today.day, 23, 0, 0)
