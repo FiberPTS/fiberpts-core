@@ -285,10 +285,9 @@ def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
 
 
 def ready_to_upload():
-    # current_time = datetime.datetime.now(tz=datetime.timezone.utc).astimezone(
-    #     datetime.timezone(datetime.timedelta(hours=-5)))  # Convert to EST
-    # return current_time.hour >= 18
-    return True
+    current_time = datetime.datetime.now(tz=datetime.timezone.utc).astimezone(
+        datetime.timezone(datetime.timedelta(hours=-5)))  # Convert to EST
+    return current_time.hour >= 18
 
 
 def upload_report(data, folder_path):

@@ -92,7 +92,7 @@ def main():
     try:
         while True:
             print(operation_taps)
-            if len(operation_taps["Records"]) > BATCH_SIZE:
+            if ready_to_upload():
                 if upload_report(operation_taps, FILE_PATH_INFO.DATA_FOLDER):
                     operation_taps["Records"] = []
                     print_log("Successfully created and uploaded data report")
