@@ -20,7 +20,7 @@
 
 // Constants
 #define SENSOR_LINE_NUMBER 80 // GPIO Line number
-#define DEBOUNCE_TIME 10000 // Debounce time in milliseconds
+#define DEBOUNCE_TIME 5000 // Debounce time in milliseconds
 #define VOLTAGE_VALUE 1 // Voltage value corresponding to button press
 
 // File paths and names
@@ -117,7 +117,7 @@ int main(void) {
             snprintf(data_to_send, sizeof(data_to_send), "%s::%s", PROGRAM_NAME, timestamp);
             // Send tap data through pipe
             send_data_to_pipe(data_to_send, FIFO_PATH);
-            last_release_time = current_time;
+            clock_gettime(CLOCK_MONOTONIC_RAW, &last_release_time);
         }
     }
     cleanup_gpio();

@@ -47,19 +47,19 @@ int main(void) {
     // Initialize NFC Reader and its associated variables
     nfc_init(&context);
     if (!context) {
-        print_log(PROGRAM_NAME, "Unable to init libnfc (malloc)\n");
+        // print_log(PROGRAM_NAME, "Unable to init libnfc (malloc)\n");
         exit(EXIT_FAILURE);
     }
     pnd = nfc_open(context, NULL);
     if (!pnd) {
-        print_log(PROGRAM_NAME, "Unable to open NFC device.");
+        // print_log(PROGRAM_NAME, "Unable to open NFC device.");
         exit(EXIT_FAILURE);
     }
     if (nfc_initiator_init(pnd) < 0) {
         nfc_perror(pnd, "nfc_initiator_init");
         exit(EXIT_FAILURE);
     }
-    print_log(PROGRAM_NAME, "NFC Reader: %s opened\n", nfc_device_get_name(pnd));
+    // print_log(PROGRAM_NAME, "NFC Reader: %s opened\n", nfc_device_get_name(pnd));
 
     // Signal handling initialization
     if (initialize_signal_handlers(HANDLE_SIGINT | HANDLE_SIGUSR1 | HANDLE_SIGTERM, cleanup) == -1) {
@@ -89,9 +89,9 @@ int main(void) {
             tag_found = true;
 
             // Display tag information
-            print_log(PROGRAM_NAME, "The following (NFC) ISO14443A tag was found:\n");
-            print_log(PROGRAM_NAME, "UID (NFCID%c): \n", (nt.nti.nai.abtUid[0] == 0x08 ? '3' : '1'));
-            print_hex(PROGRAM_NAME, nt.nti.nai.abtUid, nt.nti.nai.szUidLen);
+            // print_log(PROGRAM_NAME, "The following (NFC) ISO14443A tag was found:\n");
+            // print_log(PROGRAM_NAME, "UID (NFCID%c): \n", (nt.nti.nai.abtUid[0] == 0x08 ? '3' : '1'));
+            // print_hex(PROGRAM_NAME, nt.nti.nai.abtUid, nt.nti.nai.szUidLen);
 
             // Handle debounce time and check for the same tag
             if (!is_debounce_time_passed(current_time, last_release_time, DEBOUNCE_TIME)) {
@@ -100,7 +100,7 @@ int main(void) {
             }
             if (memcmp(nt.nti.nai.abtUid, last_uid, nt.nti.nai.szUidLen) == 0) {
                 same_tag = true;
-                print_log(PROGRAM_NAME, "Same card found!\n");
+                // print_log(PROGRAM_NAME, "Same card found!\n");
                 continue;
             } else {
                 same_tag = false;
@@ -119,12 +119,12 @@ int main(void) {
             get_current_time_in_est(timestamp, "%Y-%m-%d %H:%M:%S");
 
             char data_to_send[strlen(PROGRAM_NAME) + strlen(uid_str) + strlen(timestamp) + 5];  // 5 for "::" and null-terminator
-            snprintf(data_to_send, sizeof(data_to_send), "%s::%s::%s", PROGRAM_NAME, uid_str, timestamp);
+            sn// printf(data_to_send, sizeof(data_to_send), "%s::%s::%s", PROGRAM_NAME, uid_str, timestamp);
 
             send_data_to_pipe(data_to_send, FIFO_PATH);
-            print_log(PROGRAM_NAME, "Registered NFC Tap");
+            // print_log(PROGRAM_NAME, "Registered NFC Tap");
         } else if (!same_tag) {
-            print_log(PROGRAM_NAME, "No tag detected");
+            // print_log(PROGRAM_NAME, "No tag detected");
         }
         sleep_interruptible(100);
     }
