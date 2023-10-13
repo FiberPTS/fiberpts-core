@@ -44,9 +44,15 @@ check_program() {
   local lock_file="/var/run/${program%.py}.lock"
   echo "Checking program ${program}..."
 
+  # Debugging: Log the pidof output
+  pidof -x "${program}" > /tmp/pidof_output.log
+
   if (set -o noclobber; echo "$$" > "${lock_file}") 2>/dev/null; then
     local pid=$(pidof -x "${program}")
     echo "Lock acquired for ${program}."
+
+    # Debugging: Log the PID
+    echo "Detected PID: $pid" > /tmp/detected_pid.log
 
     if [[ $pid ]]; then
       echo "Program ${program} is already running."
@@ -69,9 +75,16 @@ on_sigterm() {
   echo "Received termination signal. Cleaning up..."
   for pid_file in "${PROGRAM_PIDS[@]}"; do
     if [[ -f "${pid_file}" ]]; then
-      sudo kill "$(cat "${pid_file}")"
+      for pid in $(cat "${pid_file}"); do
+        if ps -p $pid > /dev/null; then
+          sudo kill $pid
+          echo "Killed process with PID: $pid"
+        else
+          echo "No such process with PID: $pid"
+        fi
+      done
       sudo rm -f "${pid_file}"
-      echo "Killed and removed PID file for program associated with ${pid_file}."
+      echo "Removed PID file for program associated with ${pid_file}."
     fi
   done
 
