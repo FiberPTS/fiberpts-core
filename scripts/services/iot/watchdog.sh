@@ -57,6 +57,18 @@ on_sigterm() {
       sudo rm -f "${pid_file}"
     fi
   done
+
+  # Remove individual process lock files
+  for program in "${PROGRAM_NAMES[@]}"; do
+    local lock_file="/var/run/${program%.py}.lock"
+    if [[ -f "${lock_file}" ]]; then
+      sudo rm -f "${lock_file}"
+    fi
+  done
+
+  # Remove the main lock file
+  rm -f "$LOCKFILE"
+
   exit 0
 }
 
