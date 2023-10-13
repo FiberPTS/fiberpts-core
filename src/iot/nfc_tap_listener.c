@@ -119,7 +119,7 @@ int main(void) {
             get_current_time_in_est(timestamp, "%Y-%m-%d %H:%M:%S");
 
             char data_to_send[strlen(PROGRAM_NAME) + strlen(uid_str) + strlen(timestamp) + 5];  // 5 for "::" and null-terminator
-            sn// printf(data_to_send, sizeof(data_to_send), "%s::%s::%s", PROGRAM_NAME, uid_str, timestamp);
+            snprintf(data_to_send, sizeof(data_to_send), "%s::%s::%s", PROGRAM_NAME, uid_str, timestamp);
 
             send_data_to_pipe(data_to_send, FIFO_PATH);
             // print_log(PROGRAM_NAME, "Registered NFC Tap");
