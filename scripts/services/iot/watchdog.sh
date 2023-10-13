@@ -1,99 +1,86 @@
 #!/bin/bash
 
-echo "Script started."
-
-# Define the base directory for the NFC tracking application.
+# Constants
+LOCKFILE="/var/run/watchdog.lock"
 BASE_DIR="/home/potato/FiberPTS/src/iot"
-echo "BASE_DIR set to: $BASE_DIR"
-
-# Define the names and paths of the programs to be monitored.
-PROGRAM_NAMES=(
-    "nfc_tap_listener"
-    "action_tap_listener"
-    "tap_event_handler.py"
-)
-echo "PROGRAM_NAMES defined as: ${PROGRAM_NAMES[*]}"
-
+PROGRAM_NAMES=("nfc_tap_listener" "action_tap_listener" "tap_event_handler.py")
 declare -A PROGRAM_PIDS
-echo "PROGRAM_PIDS array declared."
 
-for program in "${PROGRAM_NAMES[@]}"; do
+# Acquire main lock
+acquire_lock() {
+  if (set -o noclobber; echo "$$" > "$LOCKFILE") 2>/dev/null; then
+    trap 'rm -f "$LOCKFILE"' INT TERM EXIT
+  else
+    echo "Failed to acquire lockfile: $LOCKFILE. Held by $(cat $LOCKFILE)"
+    exit 1
+  fi
+}
+
+# Initialize program PIDs
+initialize_pids() {
+  for program in "${PROGRAM_NAMES[@]}"; do
     PROGRAM_PIDS["$program"]="/var/run/${program%.py}.pid"
-done
-echo "PROGRAM_PIDS populated."
+  done
+}
 
+# Update permissions to be executable
 update_permissions() {
-    echo "Entering update_permissions function."
-    for program in "${PROGRAM_NAMES[@]}"; do
-        chmod +x "${BASE_DIR}/${program}"
-        echo "Permissions updated for: ${BASE_DIR}/${program}"
-    done
-    echo "Exiting update_permissions function."
+  for program in "${PROGRAM_NAMES[@]}"; do
+    sudo chmod +x "${BASE_DIR}/${program}"
+  done
 }
 
+# Check and start/stop a given program
 check_program() {
-    local program=$1
-    echo "Checking program: $program"
-    local pid=$(pidof -x "${program}" > /dev/null)
+  local program=$1
+  local lock_file="/var/run/${program%.py}.lock"
+
+  if (set -o noclobber; echo "$$" > "${lock_file}") 2>/dev/null; then
+    local pid=$(pidof -x "${program}")
+
     if [[ $pid ]]; then
-        echo "$program is Online."
-        echo $pid > "${PROGRAM_PIDS[${program}]}"
+      echo $pid > "${PROGRAM_PIDS[${program}]}"
     else
-        echo "$program is Offline."
-        echo "Starting ${program}."
-        sudo "${BASE_DIR}/${program}" >> /var/log/programs.log 2>&1 &
-        echo $! > "${PROGRAM_PIDS[${program}]}"
-        echo "$program started with PID: $!"
+      sudo "${BASE_DIR}/${program}" >> /var/log/programs.log 2>&1 &
+      echo $! > "${PROGRAM_PIDS[${program}]}"
     fi
+
+    sudo rm -f "${lock_file}"
+  fi
 }
 
-
-# Kill the monitored programs when the script receives a SIGTERM or SIGINT (control+c) signal.
+# Kill monitored programs on SIGTERM/SIGINT/SIGHUP/SIGQUIT
 on_sigterm() {
-    echo "Received SIGTERM or SIGINT. Shutting down monitored programs."
-    for pid_file in "${PROGRAM_PIDS[@]}"; do
-        if [[ -f "${pid_file}" ]]; then
-            sudo kill "$(cat "${pid_file}")"
-            echo "Killed program with PID from file: ${pid_file}"
-        fi
-    done
-    exit 0
-}
-
-# Register the function to be called on SIGTERM
-trap on_sigterm SIGTERM SIGINT
-echo "Signal trap set for SIGTERM and SIGINT."
-
-# Function to check WiFi connection and reconnect if disconnected
-check_wifi() {
-    echo "Checking WiFi connection."
-    if nmcli device wifi list | grep -q "FERRARAMFG"; then
-        if ! nmcli con show --active | grep -q "FERRARAMFG"; then
-            echo "Connecting to FERRARAMFG."
-            nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
-            nmcli con up FERRARAMFG
-        else
-            echo "Already connected to FERRARAMFG."
-        fi
-    else
-        echo "FERRARAMFG not found in the list of available WiFi networks."
+  for pid_file in "${PROGRAM_PIDS[@]}"; do
+    if [[ -f "${pid_file}" ]]; then
+      sudo kill "$(cat "${pid_file}")"
+      sudo rm -f "${pid_file}"
     fi
+  done
+  exit 0
 }
 
-# Extend the Python path to include a custom directory.
-export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.10/site-packages
-echo "PYTHONPATH extended."
+# Check WiFi connection
+check_wifi() {
+  if nmcli device wifi list | grep -q "FERRARAMFG"; then
+    if ! nmcli con show --active | grep -q "FERRARAMFG"; then
+      nmcli device wifi connect FERRARAMFG password FerraraWIFI1987
+      nmcli con up FERRARAMFG
+    fi
+  fi
+}
 
-# Update the program file permissions to be executable
+# Main
+acquire_lock
+initialize_pids
+trap on_sigterm SIGTERM SIGINT SIGHUP SIGQUIT
+export PYTHONPATH=$PYTHONPATH:/home/potato/.local/lib/python3.10/site-packages
 update_permissions
 
-# Main loop to continuously monitor the programs.
-echo "Entering main loop."
 while true; do
-    check_wifi
-    for program in "${PROGRAM_NAMES[@]}"; do
-        check_program "${program}"
-    done
-    echo "Sleeping for 10 seconds."
-    sleep 10
+  check_wifi
+  for program in "${PROGRAM_NAMES[@]}"; do
+    check_program "${program}"
+  done
+  sleep 10
 done
