@@ -41,7 +41,7 @@ check_program() {
     if [[ $pid ]]; then
       echo $pid > "${PROGRAM_PIDS[${program}]}"
     else
-      sudo "${BASE_DIR}/${program}" >> /var/log/programs.log 2>&1 &
+      "${BASE_DIR}/${program}" >> /var/log/programs.log 2>&1 &
       echo $! > "${PROGRAM_PIDS[${program}]}"
     fi
 
