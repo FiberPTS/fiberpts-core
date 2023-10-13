@@ -135,11 +135,11 @@ class DisplayManager:
 
             # Calculate the time difference
             time_difference = current_time - most_recent_datetime
-            print(f"Debug: Time Difference: {time_difference}")
-
-            print(f"Most Recent: {most_recent_datetime}")  # Debugging
-            print(f"Current Time: {current_time}")  # Debugging
-            print(f"Time Difference: {time_difference}")  # Debugging
+            # print(f"Debug: Time Difference: {time_difference}")
+            #
+            # print(f"Most Recent: {most_recent_datetime}")  # Debugging
+            # print(f"Current Time: {current_time}")  # Debugging
+            # print(f"Time Difference: {time_difference}")  # Debugging
 
             # Extract minutes and seconds from the time difference
             total_seconds = int(time_difference.total_seconds())
