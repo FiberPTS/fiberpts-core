@@ -111,7 +111,7 @@ class DisplayManager:
     #     raw_data = image_to_rgb565(image)
     #     write_to_framebuffer(raw_data, self.fb_path)
 
-    def draw_display(self, action_taps, bg_color=None):
+    def draw_display(self, action_taps, text_color=None, bg_color=None):
         """
         Creates and draws an image for the display based on the provided data.
 
@@ -122,6 +122,7 @@ class DisplayManager:
         Returns:
             None
         """
+        text_color_to_use = text_color or self.text_color
         bg_color_to_use = bg_color or self.bg_color
         image = Image.new("RGB", self.res, bg_color_to_use)
 
@@ -161,7 +162,7 @@ class DisplayManager:
 
         ]
         for text, x, y in texts:
-            image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use)
+            image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use, text_color=text_color_to_use)
 
         # Convert the image to RGB565 format and write to framebuffer
         raw_data = image_to_rgb565(image)

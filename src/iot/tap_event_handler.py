@@ -92,7 +92,7 @@ def main():
     try:
         while True:
             if ready_to_upload(action_taps) > 0:
-                display_manager.display_centered_text("Uploading File", text_color=(0,0,0), bg_color=(30, 250, 250))
+                display_manager.display_centered_text("Uploading File", text_color=(0, 0, 0), bg_color=(30, 250, 250))
                 if upload_report(action_taps, FILE_PATH_INFO.DATA_FOLDER):
                     display_manager.display_centered_text("Upload Complete", bg_color=(0, 170, 0))
                     action_taps["Records"] = []
@@ -105,7 +105,7 @@ def main():
 
             # Display the relevant data on the screen
             # display_manager.draw_display(last_tags_and_ids)
-            display_manager.draw_display(action_taps)
+            display_manager.draw_display(action_taps, text_color=(255, 255, 255), bg_color=(0, 0, 0))
 
             # Read data from the FIFO Pipe
             fifo_data = read_from_file_non_blocking(FILE_PATH_INFO.FIFO_PATH)
@@ -154,7 +154,7 @@ def main():
             # Update the display with the background color indicating success or failure
             bg_color = (0, 170, 0) if tap_success else (0, 0, 255)
             # display_manager.draw_display(last_tags_and_ids, bg_color=bg_color)
-            display_manager.draw_display(action_taps, bg_color=bg_color)
+            display_manager.draw_display(action_taps, text_color=(255, 255, 255), bg_color=bg_color)
             time.sleep(0.5)
     except KeyboardInterrupt:
         print_log("Program Interrupted")
