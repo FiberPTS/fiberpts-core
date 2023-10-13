@@ -133,6 +133,7 @@ class DisplayManager:
             eastern = ZoneInfo('America/New_York')
             most_recent_datetime = datetime.datetime.strptime(most_recent_timestamp, '%Y-%m-%d %H:%M:%S').replace(tzinfo=eastern)  # Assuming the timestamp is in this format
             current_time = datetime.datetime.strptime(get_current_time(True), '%Y-%m-%d %I:%M:%S %p').replace(tzinfo=eastern)
+            most_recent_time_str = most_recent_datetime.strftime('%I:%M:%S %p')
 
             # Calculate the time difference
             time_difference = current_time - most_recent_datetime
@@ -148,18 +149,17 @@ class DisplayManager:
 
             stopwatch_text = f"{minutes} min {seconds} sec"
         else:
-            most_recent_timestamp = "N/A"
+            most_recent_time_str = "N/A"
             stopwatch_text = "0 min 0 sec"
+
 
         # Draw the various pieces of data onto the image
         texts = [
             (f"Last Tap", 5, 0),
-            (most_recent_timestamp, 5, 30),
+            (most_recent_time_str, 5, 30),
             (f"Stopwatch", 5, 75),
             (stopwatch_text, 5, 105),  # Add the stopwatch text
             (f"Total Operations: {len(action_taps['Records'])}", 5, 150),
-            (f"Total Units: {sum([record['UoM'] for record in action_taps.get('Records')])}", 5, 180),
-
         ]
         for text, x, y in texts:
             image = self.draw_rotated_text(image, text, (x, y), bg_color_to_use, text_color=text_color_to_use)
