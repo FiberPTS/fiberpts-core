@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall
 
 # Base directory
-BASEDIR = /home/potato/FiberPTS/src/iot
+BASEDIR = src/iot
 
 # Include directories
 INCLUDES = -I$(BASEDIR)/utility
