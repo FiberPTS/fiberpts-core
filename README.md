@@ -1,21 +1,21 @@
-Logs: /var/log/programs.log.*
-Logrotate: /etc/logrotate.d/programs
-Program Service: /etc/systemd/system/monitor.service
-Source: /home/potato/NFC_Tracking
-LIBNFC: /home/potato/libnfc
-Permission File: /lib/udev/rules.d/
-Config File: /etc/nfc/libnfc.conf
+Logs: /var/log/programs.log.* \
+Logrotate: /etc/logrotate.d/programs \
+Program Service: /etc/systemd/system/monitor.service \
+Source: /home/potato/FiberPTS \
+LIBNFC: /home/potato/libnfc \
+Permission File: /lib/udev/rules.d/ \
+Config File: /etc/nfc/libnfc.conf 
 
-Must run commands on setup
-Linux:
-username: potato
-password: ...
-sudo systemctl enable ssh
-sudo systemctl start ssh
-Windows:
-python setup_board.py --ip IP --usr USERNAME --pw PASSWORD --driver AC600
-Linux:
-python send_command.py --ip IP --usr USERNAME --pw PASSWORD --command "nmcli device wifi connect WIFINAME password PASSWORD"
+Must run commands on setup \
+Linux: \
+username: potato \
+password: ... \
+sudo systemctl enable ssh \
+sudo systemctl start ssh \
+Windows: \
+python setup_board.py --ip IP --usr USERNAME --pw PASSWORD --driver AC600 \
+Linux: \
+python send_command.py --ip IP --usr USERNAME --pw PASSWORD --command "nmcli device wifi connect WIFINAME password PASSWORD" \
 
 To Do: 
 - Running this in parallel
@@ -27,4 +27,4 @@ To Do:
 	- dtc -@ -q -I dts -O dtb -o spicc-st7789v-240x320.dtbo spicc-st7789v-240x240.pre.dts
 	- sudo ldto merge spicc-st7789v-240x320
 - ili9341 display
-- create and merge spicc overlays (modify preexisting spicc-ili9341 with spicc-st7789v-240x320-legacy)
+    - create and merge spicc overlays (modify preexisting spicc-ili9341 with spicc-st7789v-240x320-legacy)
