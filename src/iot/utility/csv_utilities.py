@@ -8,8 +8,10 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
 from zoneinfo import ZoneInfo
+import os
 
-# FILE_PATH = '/var/FiberPTS/data.csv'
+
+MACHINE_NAME = os.environ.get('MACHINE_NAME', 'Default')
 FILE_PATH = "/Users/nxfer/Github Repositories/FiberPTS"
 SERVICE_ACCOUNT_JSON_PATH = "/home/potato/FiberPTS/gdrive-api-key.json"
 
@@ -34,15 +36,15 @@ def upload_file_to_drive(file_paths, parent_folder_id="1xonItT9hqD0goUq2qfldvfFT
         # Convert to Eastern Time
         now_est = now_utc.astimezone(ZoneInfo('America/New_York'))
 
-        # Format the datetime
-        name = now_est.strftime('%m-%d-%y')
+        # Format 
+        folder_name = now_est.strftime('%m-%d-%y')
         folders = drive.list(
-            query=f"name='{name}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
+            query=f"name='{folder_name}' and '{parent_folder_id}' in parents and mimeType='{GoogleMimeTypes.folder.value}'")
         folder = next(folders, None)
 
         # If the folder does not exist, create it
         if not folder:
-            folder = drive.create(name=name, parents=[parent_folder_id], mime_type=GoogleMimeTypes.folder)
+            folder = drive.create(name=folder_name, parents=[parent_folder_id], mime_type=GoogleMimeTypes.folder)
 
         for file_path in file_paths:
             file_name = file_path.split('/')[-1]
@@ -272,12 +274,18 @@ def compute_analytics(csv_path):
     }
 
 
-def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
+def generate_pdf_report(analytics, graph1_path, graph2_path, folder_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+    pdf_path = f"{folder_path}/{MACHINE_NAME}-Report.pdf"
+    
+    # Add title to the report
+    pdf.set_font("Arial", size=14, style='B')
+    title = ' '.join(MACHINE_NAME.split('-'))
+    pdf.cell(0, 10, txt=f"{title} Report", ln=True, align='C')
 
     # Add analytics data
+    pdf.set_font("Arial", size=12)
     for key, value in analytics.items():
         pdf.cell(200, 10, txt=f"{key}: {value}", ln=True)
 
@@ -290,6 +298,7 @@ def generate_pdf_report(analytics, graph1_path, graph2_path, pdf_path):
     pdf.image(graph2_path, x=10, y=None, w=190)
 
     pdf.output(pdf_path)
+    return pdf_path
 
 
 def ready_to_upload(action_taps):
@@ -304,30 +313,29 @@ def upload_report(data, folder_path):
     # if not ready_to_upload():
     #     return
     # csv_file = generate_sample_data("data.csv", num_records=100)
-    csv_file_path = f"{folder_path}/data.csv"
-    graph1_file_path = f"{folder_path}/graph-delta.png"
-    graph2_file_path = f"{folder_path}/graph-avg-delta.png"
-    report_file_path = f"{folder_path}/report.pdf"
+    csv_path = f"{folder_path}/{MACHINE_NAME}.csv"
+    graph1_path = f"{folder_path}/{MACHINE_NAME}-graph-delta.png"
+    graph2_path = f"{folder_path}/{MACHINE_NAME}-graph-avg-delta.png"
 
     # Generate CSV file
-    json_to_csv(data, csv_file_path)
+    json_to_csv(data, csv_path)
 
     # Generate graph
-    if (not generate_graph_from_csv(csv_file_path, graph1_file_path) or 
-        not generate_average_delta_graph_from_csv(csv_file_path, graph2_file_path)):
+    if (not generate_graph_from_csv(csv_path, graph1_path) or 
+        not generate_average_delta_graph_from_csv(csv_path, graph2_path)):
         return False
 
     # Compute analytics
-    analytics = compute_analytics(csv_file_path)
+    analytics = compute_analytics(csv_path)
 
     print("Analytics Computed!")
 
     # Generate PDF report
-    generate_pdf_report(analytics, graph1_file_path, graph2_file_path, report_file_path)
+    pdf_path = generate_pdf_report(analytics, graph1_path, graph2_path, folder_path)
 
     print("PDF Report Generated!")
 
     # Upload files
-    files_to_upload = [csv_file_path, report_file_path]
+    files_to_upload = [csv_path, pdf_path]
     upload_file_to_drive(files_to_upload)
     return True
