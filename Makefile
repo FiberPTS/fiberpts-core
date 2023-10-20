@@ -28,11 +28,11 @@ all: nfc_tap_listener action_tap_listener
 
 # Linking rule for nfc_tap_listener
 nfc_tap_listener: $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o nfc_tap_listener $(BASEDIR)/nfc_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(BASEDIR)/nfc_tap_listener $(BASEDIR)/nfc_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
 
 # Linking rule for action_tap_listener
 action_tap_listener: $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o action_tap_listener $(BASEDIR)/action_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(BASEDIR)/action_tap_listener $(BASEDIR)/action_tap_listener.o $(BASEDIR)/utility/log_utils.o $(BASEDIR)/utility/signal_utils.o $(BASEDIR)/utility/utils.o $(LIBS)
 
 # Compilation rule to build .o from .c
 %.o: %.c
