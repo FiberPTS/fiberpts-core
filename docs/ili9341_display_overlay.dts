@@ -1,0 +1,62 @@
+/*
+ * ILI9341 Display Overlay
+ * Copyright (c) 2018 BayLibre, SAS.
+ * Author: Neil Armstrong <narmstrong@baylibre.com>
+ *
+ * Version: 1.1
+ * Last Modified: [Your Last Modification Date]
+ *
+ * SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+ *
+ * Description:
+ * This overlay enables support for the Ilitek ILI9341 based panels, including
+ * various Adafruit displays with different sizes and features. It specifies
+ * the pin connections for these displays and configures the necessary
+ * interfaces.
+ */
+
+// Device Tree Source and Plugin Declaration
+/dts-v1/;
+/plugin/;
+
+// Include necessary GPIO bindings for the device tree.
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/gpio/meson-gxl-gpio.h>
+
+/ {
+    // Compatibility of Overlay with Various Devices
+    compatible = "libretech,cc", "amlogic,s905x", "amlogic,meson-gxl";
+
+    // SPI Interface Configuration
+    spi_interface_fragment: fragment@0 {
+        target-path = "/aliases";
+        __overlay__ {
+            spi0 = "/soc/cbus@c1100000/spi@8d80";
+        };
+    };
+
+    // Display Configuration and Connection Details
+    display_config_fragment: fragment@1 {
+        target = <&spicc>;
+        __overlay__ {
+            display@0 {
+                compatible = "ilitek,ili9341";
+                reg = <0>;
+                height = <320>;
+                width = <240>;
+                rotate = <180>;
+                buswidth = <8>;
+                spi-max-frequency = <30000000>;
+
+                // GPIO Pin Configurations
+                led-gpios = <&gpio GPIOX_0 GPIO_ACTIVE_HIGH>;
+                dc-gpios = <&gpio GPIOX_17 GPIO_ACTIVE_HIGH>;
+                reset-gpios = <&gpio GPIOX_18 GPIO_ACTIVE_LOW>;
+
+                // Activation Status
+                status = "okay";
+            };
+        };
+    };
+};
+
