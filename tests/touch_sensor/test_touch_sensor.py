@@ -86,3 +86,19 @@ class TestSendingRequestToScreenPipe:
             
             # Check correctness of written data
             mock_fifo.assert_has_calls(expected_calls, any_order=False)
+
+    # TODO: Test max FIFO capacity reached
+    def test_handling_full_buffer_error():
+        pass
+
+    # TODO: Test not being able to write to FIFO due to permission issues
+    def test_write_failure_due_to_permission_issues():
+        pass
+
+    # TODO: Test FIFO path not found
+    def test_handling_file_not_found_error():
+        pass
+
+    # TODO: Test unexpected system shutdown
+    def test_unexpected_system_shutdown():
+        pass
