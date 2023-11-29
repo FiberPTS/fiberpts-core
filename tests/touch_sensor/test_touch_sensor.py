@@ -1,6 +1,6 @@
 import tempfile
 import time
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, call
 
 import json
 import pytest
@@ -49,10 +49,10 @@ class TestSendingRequestToScreenPipe:
         return mock_open()  # Simulate file object
 
     @pytest.parametrize('type', [('success'), ('failure')])
-    def test_sending_single_request_to_screen_pipe(self, 
-                                                   type, 
-                                                   mock_fifo, 
-                                                   touch_sensor
+    def test_sending_single_tao_to_screen_pipe(self, 
+                                               type, 
+                                               mock_fifo, 
+                                               touch_sensor
     ):
         sample_data = {
             'type': type, 
@@ -65,3 +65,24 @@ class TestSendingRequestToScreenPipe:
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
             touch_sensor.send_to_screen(type, time.gmtime(0))
             mock_fifo().write.assert_called_once_with(sample_data)
+
+    def test_rapid_succesive_taps(self, mock_fifo, touch_sensor):
+        with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
+            for i in range(10):  # Simulate 10 rapid taps
+                touch_sensor.send_to_screen('success', time.gmtime(i))
+
+            # Generate expected calls
+            expected_calls = []
+            for i in range(10):
+                sample_tap_data = json.dumps(
+                    {
+                        'type': 'success',
+                        'data': {
+                            'timestamp': time.strftime('%Y-%m-%dT%X', time.gmtime(i))
+                        }
+                    }
+                )
+                expected_calls.append(call().write(sample_tap_data))
+            
+            # Check correctness of written data
+            mock_fifo.assert_has_calls(expected_calls, any_order=False)
