@@ -1,20 +1,20 @@
+import json
 import tempfile
 import time
-from unittest.mock import patch, mock_open, call
+from unittest.mock import call, mock_open, patch
 
-import json
 import pytest
 
 from src.touch_sensor.touch_sensor import TouchSensor
 
-DEBOUNCE_TIME = 0.001
+DEBOUNCE_TIME = 0.001  # Time in seconds
 
 
 @pytest.fixture
 def touch_sensor():
     with tempfile.NamedTemporaryFile() as tmp_fifo:
         fifo_path = tmp_fifo.name
-        yield TouchSensor(debounce=DEBOUNCE_TIME, screen_pipe_path=fifo_path)
+        yield TouchSensor(debounce=DEBOUNCE_TIME, screen_pipe=fifo_path)
 
 
 class TestDebounceBehavior:
@@ -63,13 +63,13 @@ class TestSendingRequestToScreenPipe:
         
         # Ensures that when TouchSensor calls open, it uses the mocked version
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
-            touch_sensor.send_to_screen(type, time.gmtime(0))
+            touch_sensor.pipe_data_to_screen(type, time.gmtime(0))
             mock_fifo().write.assert_called_once_with(sample_data)
 
     def test_rapid_succesive_taps(self, mock_fifo, touch_sensor):
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
             for i in range(10):  # Simulate 10 rapid taps
-                touch_sensor.send_to_screen('success', time.gmtime(i))
+                touch_sensor.pipe_data_to_screen('success', time.gmtime(i))
 
             # Generate expected calls
             expected_calls = []
