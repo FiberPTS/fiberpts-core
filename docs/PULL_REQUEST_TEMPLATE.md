@@ -2,4 +2,4 @@
 - Concise description of key changes made.
 
 ## Considerations:
-- Any other relevant notes or dependencies.
+- Any relevant notes or needed context.
