@@ -1,10 +1,10 @@
 import time
 
 class TouchSensor:
-    def __init__(self, debounce: int, screen_pipe: str, cloud_db_pipe: str) -> None:
+    def __init__(self, debounce: int, screen_pipe_path: str, cloud_db_pipe_path: str) -> None:
         self.debounce = debounce
-        self.screen_pipe = screen_pipe
-        self.cloud_db_pipe = cloud_db_pipe
+        self.screen_pipe_path = screen_pipe_path
+        self.cloud_db_pipe_path = cloud_db_pipe_path
     
     def tap(self) -> bool:
         pass

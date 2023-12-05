@@ -24,11 +24,11 @@ def touch_sensor() -> Generator[TouchSensor, None, None]:
         a specified debounce time.
     """
     with tempfile.NamedTemporaryFile() as tmp_fifo:
-        screen_fifo_path = str(tmp_fifo.name)
+        screen_pipe_path = str(tmp_fifo.name)
         yield TouchSensor(
             debounce=DEBOUNCE_TIME, 
-            screen_pipe=screen_fifo_path, 
-            cloud_db_path=None  # TODO: Change when testing cloud DB
+            screen_pipe_path=screen_pipe_path, 
+            cloud_db_pipe_path=''  # TODO: Change when testing cloud DB
         )
 
 
@@ -161,20 +161,3 @@ class TestSendingRequestToScreenPipe:
                 expected_calls.append(call().write(sample_tap_data))
             
             mock_fifo.assert_has_calls(expected_calls, any_order=False)
-
-
-    # TODO: Test max FIFO capacity reached
-    def test_handling_full_buffer_error():
-        pass
-
-    # TODO: Test not being able to write to FIFO due to permission issues
-    def test_write_failure_due_to_permission_issues():
-        pass
-
-    # TODO: Test FIFO path not found
-    def test_handling_file_not_found_error():
-        pass
-
-    # TODO: Test unexpected system shutdown
-    def test_unexpected_system_shutdown():
-        pass
