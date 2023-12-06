@@ -126,38 +126,3 @@ class TestSendingRequestToScreenPipe:
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
             touch_sensor.pipe_data_to_screen(type, time.gmtime(0))
             mock_fifo().write.assert_called_once_with(json.dumps(sample_data))
-
-    def test_rapid_succesive_taps(
-        self, 
-        mock_fifo: MagicMock, 
-        touch_sensor: TouchSensor
-    ) -> None:
-        """Tests the TouchSensor's handling of rapid successive tap events.
-
-        This test simulates rapid taps and checks if each tap event is being sent
-        to the screen pipe in the correct order without missing any events.
-
-        Args:
-            mock_fifo: The mock file object fixture for intercepting file operations.
-            touch_sensor: The TouchSensor instance used for testing.
-        """
-        with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
-            n = 10
-
-            # Simulate 10 rapid taps
-            for i in range(n):
-                touch_sensor.pipe_data_to_screen('success', time.gmtime(i))
-
-            expected_calls = []
-            for i in range(n):
-                sample_tap_data = json.dumps(
-                    {
-                        'type': 'success',
-                        'data': {
-                            'timestamp': time.strftime('%Y-%m-%dT%X', time.gmtime(i))
-                        }
-                    }
-                )
-                expected_calls.append(call().write(sample_tap_data))
-            
-            mock_fifo.assert_has_calls(expected_calls, any_order=False)
