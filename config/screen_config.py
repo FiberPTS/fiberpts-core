@@ -1,0 +1,15 @@
+# Dashboard configurations
+# FONT_SIZE =
+# FONT_FAMILY =
+# FONT_COLOR =
+# DASHBOARD_BG_COLOR = 
+
+# Pop-up message configurations
+# FONT_SIZE_POPUP =
+# FONT_COLOR_POPUP =
+
+# GOOD_TAP_BG_COLOR =
+# BAD_TAP_BG_COLOR =
+
+# SET_ORDER_BG_COLOR =
+# SET_EMPLOYEE_BG_COLOR =
