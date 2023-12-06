@@ -1,11 +1,11 @@
 import json
-import tempfile
 import time
-from typing import Generator, Tuple
-from unittest.mock import call, MagicMock, mock_open, patch
+from typing import Tuple
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
+from config.pipe_config import TAP_DATA_PIPE
 from src.touch_sensor.touch_sensor import TouchSensor
 
 
@@ -13,23 +13,32 @@ DEBOUNCE_TIME = 0.001  # Time in seconds
 
 
 @pytest.fixture
-def touch_sensor() -> Generator[TouchSensor, None, None]:
-    """Fixture to provide a TouchSensor instance for testing.
-    
-    This fixture creates a named temporary file to simulate a FIFO file
-    used by the TouchSensor instance for inter-process communication.
-    
-    Yields:
-        A TouchSensor instance initialized with a temporary FIFO path and
-        a specified debounce time.
+def mock_fifo() -> MagicMock:
+    """Creates a mock file object for simulating FIFO file operations.
+
+    Returns:
+        A MagicMock instance simulating a file object.
     """
-    with tempfile.NamedTemporaryFile() as tmp_fifo:
-        screen_pipe_path = str(tmp_fifo.name)
-        yield TouchSensor(
-            debounce=DEBOUNCE_TIME, 
-            screen_pipe_path=screen_pipe_path, 
-            cloud_db_pipe_path=''  # TODO: Change when testing cloud DB
-        )
+    return mock_open()
+
+
+@pytest.fixture
+def touch_sensor(mock_fifo: MagicMock) -> TouchSensor:
+    """Fixture to provide a TouchSensor instance for testing.
+
+    The TouchSensor is initialized with a mock FIFO path and a predefined
+    debounce time.
+
+    Args:
+        mock_fifo: The mock FIFO file object.
+
+    Returns:
+        An instance of TouchSensor initialized for testing.
+    """
+    return TouchSensor(
+        debounce_time=DEBOUNCE_TIME, 
+        tap_data_pipe=TAP_DATA_PIPE
+    )
 
 
 class TestDebounceBehavior:
@@ -81,8 +90,8 @@ class TestDebounceBehavior:
             test_values: A tuple of wait time and expected boolean result.
         """
         wait_time, expected = test_values
-        touch_sensor.tap()
-        touch_sensor.tap()  # Debounce timer reset
+        touch_sensor.tap()  # Debounce timer starts
+        touch_sensor.tap()  # Debounce timer is reset
         time.sleep(wait_time)
         assert touch_sensor.tap() == expected
 
@@ -90,30 +99,19 @@ class TestDebounceBehavior:
 class TestSendingRequestToScreenPipe:
     """Test suite for testing the communication of the TouchSensor with the screen pipe."""
 
-    @pytest.fixture
-    def mock_fifo(self) -> MagicMock:
-        """Fixture that provides a mock file object for simulating FIFO file operations.
-
-        Returns:
-            A MagicMock instance simulating a file object.
-        """
-        return mock_open()
-
-    @pytest.mark.parametrize('type', [('success'), ('failure')])
-    def test_sending_single_tap_to_screen_pipe(
+    @pytest.mark.parametrize('type', ['success', 'failure'])
+    def test_writing_to_tap_data_pipe(
         self, 
         type: str, 
-        mock_fifo: MagicMock, 
         touch_sensor: TouchSensor
     ) -> None:
-        """Tests the TouchSensor's ability to send a single tap event to the screen pipe.
+        """Tests correctly writing to the tap data pipe.
 
         This test verifies that the TouchSensor correctly formats and sends tap data 
-        based on the given type (success or failure) to the screen pipe.
+        based on the given type (success or failure) to the tap data pipe.
 
         Args:
             type: The type of tap event to send, can be 'success' or 'failure'.
-            mock_fifo: The mock file object fixture for intercepting file operations.
             touch_sensor: The TouchSensor instance used for testing.
         """
         sample_data = {
@@ -124,5 +122,5 @@ class TestSendingRequestToScreenPipe:
         }
         
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
-            touch_sensor.pipe_data_to_screen(type, time.gmtime(0))
+            touch_sensor.pipe_tap_data(type, time.gmtime(0))
             mock_fifo().write.assert_called_once_with(json.dumps(sample_data))
