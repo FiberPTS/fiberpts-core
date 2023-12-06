@@ -6,7 +6,8 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 from config.pipe_config import TAP_DATA_PIPE
-from src.touch_sensor.touch_sensor import TouchSensor
+from config.touch_sensor_config import TIMESTAMP_FORMAT
+from src.touch_sensor.touch_sensor import TapStatus, TouchSensor
 
 
 DEBOUNCE_TIME = 0.001  # Time in seconds
@@ -99,10 +100,10 @@ class TestDebounceBehavior:
 class TestSendingRequestToScreenPipe:
     """Test suite for testing the communication of the TouchSensor with the screen pipe."""
 
-    @pytest.mark.parametrize('type', ['success', 'failure'])
+    @pytest.mark.parametrize('tap_status', [TapStatus.GOOD, TapStatus.BAD])
     def test_writing_to_tap_data_pipe(
         self, 
-        type: str, 
+        tap_status: str, 
         touch_sensor: TouchSensor
     ) -> None:
         """Tests correctly writing to the tap data pipe.
@@ -115,12 +116,12 @@ class TestSendingRequestToScreenPipe:
             touch_sensor: The TouchSensor instance used for testing.
         """
         sample_data = {
-            'type': type, 
+            'status': tap_status, 
             'data': {
-                'timestamp': time.strftime('%Y-%m-%dT%X', time.gmtime(0))
+                'timestamp': time.strftime(TIMESTAMP_FORMAT, time.gmtime(0))
             }
         }
         
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
-            touch_sensor.pipe_tap_data(type, time.gmtime(0))
+            touch_sensor.pipe_tap_data(tap_status, time.gmtime(0))
             mock_fifo().write.assert_called_once_with(json.dumps(sample_data))
