@@ -7,7 +7,7 @@ import pytest
 
 from config.pipe_config import TAP_DATA_PIPE
 from config.touch_sensor_config import TIMESTAMP_FORMAT
-from src.touch_sensor.touch_sensor import TapStatus, TouchSensor
+from src.touch_sensor.touch_sensor import *
 
 
 DEBOUNCE_TIME = 0.001  # Time in seconds
@@ -24,7 +24,7 @@ def mock_fifo() -> MagicMock:
 
 
 @pytest.fixture
-def touch_sensor(mock_fifo: MagicMock) -> TouchSensor:
+def touch_sensor() -> TouchSensor:
     """Fixture to provide a TouchSensor instance for testing.
 
     The TouchSensor is initialized with a mock FIFO path and a predefined
@@ -75,9 +75,12 @@ class TestDebounceBehavior:
             test_values: A tuple of wait time and expected boolean result.
         """
         wait_time, expected = test_values
-        touch_sensor.tap()
+        touch_sensor.handle_tap()
+        time.sleep(DEBOUNCE_TIME)
+
+        touch_sensor.handle_tap()
         time.sleep(wait_time)
-        assert touch_sensor.tap() == expected
+        assert touch_sensor.handle_tap() == expected
 
     def test_reset_debounce_time_behavior(
         self, 
@@ -85,16 +88,19 @@ class TestDebounceBehavior:
         test_values: Tuple[float, bool]
     ) -> None:
         """Tests the reset of the debounce timer when a tap is registered.
+
+        If a tap is registered before the debounce timer is completed, the
+        timer resets.
                 
         Args:
             touch_sensor: The TouchSensor fixture for testing.
             test_values: A tuple of wait time and expected boolean result.
         """
         wait_time, expected = test_values
-        touch_sensor.tap()  # Debounce timer starts
-        touch_sensor.tap()  # Debounce timer is reset
+        touch_sensor.handle_tap()  # Debounce timer starts
+        touch_sensor.handle_tap()  # Debounce timer is reset
         time.sleep(wait_time)
-        assert touch_sensor.tap() == expected
+        assert touch_sensor.handle_tap() == expected
 
 
 class TestSendingRequestToScreenPipe:
@@ -103,7 +109,7 @@ class TestSendingRequestToScreenPipe:
     @pytest.mark.parametrize('tap_status', [TapStatus.GOOD, TapStatus.BAD])
     def test_writing_to_tap_data_pipe(
         self, 
-        tap_status: str, 
+        tap_status: TapStatus, 
         touch_sensor: TouchSensor
     ) -> None:
         """Tests correctly writing to the tap data pipe.
@@ -115,13 +121,14 @@ class TestSendingRequestToScreenPipe:
             type: The type of tap event to send, can be 'success' or 'failure'.
             touch_sensor: The TouchSensor instance used for testing.
         """
-        sample_data = {
+        sample_tap = Tap(timestamp=time.time(0), status=tap_status)
+        test_tap_data = {
             'status': tap_status, 
             'data': {
                 'timestamp': time.strftime(TIMESTAMP_FORMAT, time.gmtime(0))
             }
         }
-        
+
         with patch('src.touch_sensor.touch_sensor.open', mock_fifo):
             touch_sensor.pipe_tap_data(tap_status, time.gmtime(0))
-            mock_fifo().write.assert_called_once_with(json.dumps(sample_data))
+            mock_fifo().write.assert_called_once_with(json.dumps(test_tap_data))

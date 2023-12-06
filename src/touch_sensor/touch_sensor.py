@@ -34,22 +34,25 @@ class TouchSensor:
     ) -> None:
         self.debounce_time = debounce_time
         self.tap_data_pipe = tap_data_pipe
+        self.last_tap = Tap()
     
-    def tap(self) -> bool:
+    def handle_tap(self) -> bool:
         timestamp = time.time()
+        tap_status = TapStatus.BAD
 
-        tap_status = self.check_debounce(timestamp)
-        self.pipe_tap_data(tap_status, timestamp)
-
-        if tap_status == TapStatus.GOOD:       
+        if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
+            tap_status = TapStatus.GOOD 
+        tap = Tap(timestamp=timestamp, status=tap_status)
+        
+        self.pipe_tap_data(tap)
+        
+        if tap.status == TapStatus.GOOD:       
             # TODO Create record on Supabase
             # TODO: Fork child process to deal with record creation
             pass
+        
+        self.last_tap = tap  # Reset debounce timer
+        return tap.status != TapStatus.BAD
 
-        return tap_status != TapStatus.BAD
-    
-    def check_debounce(self, timestamp: float) -> TapStatus:
-        pass
-
-    def pipe_tap_data(self, tap_status: str, timestamp: float) -> None:
+    def pipe_tap_data(self, tap: NamedTuple) -> None:
         pass
