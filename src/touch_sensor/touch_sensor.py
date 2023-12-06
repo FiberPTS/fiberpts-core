@@ -1,3 +1,4 @@
+from typing import NamedTuple
 from enum import auto, Enum
 import time
 
@@ -9,6 +10,13 @@ class TapStatus(Enum):
     """Class for representing the status of a tap"""
     GOOD = auto()
     BAD = auto()
+
+
+class Tap(NamedTuple):
+    timestamp: float = 0.0
+    status: TapStatus = TapStatus.BAD
+    # order_id: str = ''
+    # employee_name: str = ''
 
 
 class TouchSensor:
