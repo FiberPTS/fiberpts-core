@@ -30,7 +30,7 @@
 		
 		__overlay__ {
 			/*
-			 * The display signals are connected to :
+			 * The display signals are connected to:
 			 * - SDO(MISO) to Pin21 (SPI_MISO)
 			 * - LED/Backlight to Pin2 (5v)
 			 * - SCK to Pin23 (SPI_CLK)
@@ -47,9 +47,11 @@
 				buswidth = <8>;
 				rotate = <180>;
 				spi-max-frequency = <30000000>;
+
 				led-gpios = <&gpio GPIOX_0 GPIO_ACTIVE_HIGH>;
 				dc-gpios = <&gpio GPIOX_17 GPIO_ACTIVE_HIGH>;
 				reset-gpios = <&gpio GPIOX_18 GPIO_ACTIVE_LOW>;
+				
 				status = "okay";
 			};
 		};
