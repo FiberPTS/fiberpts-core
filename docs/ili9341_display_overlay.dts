@@ -25,9 +25,17 @@
 / {
 	compatible = "libretech,cc", "amlogic,s905x", "amlogic,meson-gxl";
 
-	fragment@0 {
+	// SPI Interface Configuration
+    spi_interface_fragment: fragment@0 {
+        target-path = "/aliases";
+        __overlay__ {
+            spi0 = "/soc/cbus@c1100000/spi@8d80";
+        };
+    };
+
+    // Display Configuration and Connection Details
+    display_config_fragment: fragment@1 {
 		target = <&spicc>;
-		
 		__overlay__ {
 			/*
 			 * The display signals are connected to:
@@ -44,8 +52,10 @@
 			display@0 {
 				compatible = "adafruit,yx240qv29", "ilitek,ili9341";
 				reg = <0>;
-				buswidth = <8>;
+				height = <320>;
+				width = <240>;
 				rotate = <180>;
+				buswidth = <8>;
 				spi-max-frequency = <30000000>;
 
 				led-gpios = <&gpio GPIOX_0 GPIO_ACTIVE_HIGH>;
