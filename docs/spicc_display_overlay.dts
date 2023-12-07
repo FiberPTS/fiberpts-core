@@ -37,7 +37,7 @@
 			pinctrl-2 = <&spi_pins>, <&spi_idle_low_pins>;
 			pinctrl-names = "default", "idle-high", "idle-low";
 
-			cs-gpios = <&gpio GPIOX_10 GPIO_ACTIVE_LOW>;
+			cs-gpios = <&gpio GPIOX_10 GPIO_ACTIVE_LOW>, <&gpio GPIOX_1 GPIO_ACTIVE_LOW>;
 		};
 	};
 };
