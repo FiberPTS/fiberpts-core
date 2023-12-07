@@ -25,7 +25,7 @@
 / {
 	compatible = "libretech,cc", "amlogic,s905x", "amlogic,meson-gxl";
 
-    fragment@0 {
+	fragment@0 {
 		target = <&spicc>;
 		__overlay__ {
 			/*
