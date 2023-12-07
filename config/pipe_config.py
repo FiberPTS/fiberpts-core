@@ -1,3 +1,4 @@
 # File paths for IPC pipes
-TAP_DATA_PIPE = '/opt/FiberPTS/tap_data_pipe'
-NFC_DATA_PIPE = '/opt/FiberPTS/nfc_data_pipe'
+PIPE_PATH = '/opt/FiberPTS/pipes'
+TAP_DATA_PIPE = f'{PIPE_PATH}/touch_sensor_to_screen_pipe'
+NFC_DATA_PIPE = f'{PIPE_PATH}/nfc_to_screen_pipe'
