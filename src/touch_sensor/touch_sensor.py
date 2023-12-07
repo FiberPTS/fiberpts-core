@@ -1,15 +1,19 @@
-from typing import NamedTuple
 from enum import auto, Enum
+import json
+import os
 import time
+from typing import NamedTuple
 
 from config.pipe_config import TAP_DATA_PIPE
-from config.touch_sensor_config import DEBOUNCE_TIME
+from config.touch_sensor_config import *
 
 
 class TapStatus(Enum):
     """Class for representing the status of a tap"""
     GOOD = auto()
     BAD = auto()
+    def __repr__(self):
+        return f'{self.name}'
 
 
 class Tap(NamedTuple):
@@ -55,4 +59,17 @@ class TouchSensor:
         return tap.status != TapStatus.BAD
 
     def pipe_tap_data(self, tap: NamedTuple) -> None:
-        pass
+        timestamp = time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp))
+        tap_data = {
+            'timestamp': timestamp,
+            'status': repr(tap.status),
+            # 'order_id': tap.order_id,
+            # 'employee_name': tap.employee_name 
+        }
+
+        if not os.path.exists(TAP_DATA_PIPE):
+            raise FileNotFoundError  # TODO: Determine error message format
+        
+        fd = os.open(TAP_DATA_PIPE, os.O_WRONLY)
+        with os.fdopen(fd, 'w') as pipeout:  # Convert file descriptor to fp
+            json.dump(tap_data, pipeout)
