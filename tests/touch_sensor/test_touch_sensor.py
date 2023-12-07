@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from config.pipe_config import TAP_DATA_PIPE
+from src.utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from config.touch_sensor_config import TIMESTAMP_FORMAT
 from src.touch_sensor.touch_sensor import *
 
@@ -38,7 +38,7 @@ def touch_sensor() -> TouchSensor:
     """
     return TouchSensor(
         debounce_time=DEBOUNCE_TIME, 
-        tap_data_pipe=TAP_DATA_PIPE
+        tap_data_pipe=TOUCH_SENSOR_TO_SCREEN_PIPE
     )
 
 

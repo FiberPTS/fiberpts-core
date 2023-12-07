@@ -4,7 +4,7 @@ import os
 import time
 from typing import NamedTuple
 
-from config.pipe_config import TAP_DATA_PIPE
+from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from config.touch_sensor_config import *
 
 
@@ -34,7 +34,7 @@ class TouchSensor:
     def __init__(
         self, 
         debounce_time: int = DEBOUNCE_TIME,
-        tap_data_pipe: str = TAP_DATA_PIPE
+        tap_data_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE
     ) -> None:
         self.debounce_time = debounce_time
         self.tap_data_pipe = tap_data_pipe
@@ -67,9 +67,9 @@ class TouchSensor:
             # 'employee_name': tap.employee_name 
         }
 
-        if not os.path.exists(TAP_DATA_PIPE):
+        if not os.path.exists(TOUCH_SENSOR_TO_SCREEN_PIPE):
             raise FileNotFoundError  # TODO: Determine error message format
         
-        fd = os.open(TAP_DATA_PIPE, os.O_WRONLY)
+        fd = os.open(TOUCH_SENSOR_TO_SCREEN_PIPE, os.O_WRONLY)
         with os.fdopen(fd, 'w') as pipeout:  # Convert file descriptor to fp
             json.dump(tap_data, pipeout)
