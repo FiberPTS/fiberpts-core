@@ -2,7 +2,7 @@
 
 # Load the environment variables from the .env.share file
 set -a  # automatically export all variables
-source .env.share  # make sure this path is correct
+source /opt/FiberPTS/.env.share
 set +a  # stop automatically exporting
 
 # Create the directory for pipes if it doesn't exist
