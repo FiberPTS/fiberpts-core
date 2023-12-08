@@ -6,14 +6,14 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Application specific imports
 from config.screen_config import *
-from utils.env_variables import (TOUCH_SENSOR_TO_SCREEN_PIPE, 
-                                 DISPLAY_FRAME_BUFFER_PATH, 
-                                 DEVICE_STATE_FILE_PATH)
-from utils.screen_utils import (ftimestamp, 
-                                read_device_state, 
-                                write_device_state, 
-                                read_pipe, 
-                                write_image_to_fb)
+from src.utils.env_variables import (TOUCH_SENSOR_TO_SCREEN_PIPE, 
+                                     DISPLAY_FRAME_BUFFER_PATH, 
+                                     DEVICE_STATE_FILE_PATH)
+from src.utils.screen_utils import (ftimestamp, 
+                                    read_device_state, 
+                                    write_device_state, 
+                                    read_pipe, 
+                                    write_image_to_fb)
 
 
 class Screen:
