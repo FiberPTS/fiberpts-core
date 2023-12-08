@@ -210,7 +210,7 @@ class Screen:
         """
         self.create_image(self.dashboard_bg_color)
         image_center = self.get_image_center()
-        self.add_text(f"Date: {ftimestamp(time.time())}", (0, 0), self.dashboard_font_family, self.dashboard_font_size, self.dashboard_font_color, centered=False)
+        self.add_text(ftimestamp(time.time()), (0, 0), self.dashboard_font_family, self.dashboard_font_size, self.dashboard_font_color, centered=False)
         self.add_text(f"Unit Count: {self.device_state['unit_count']}", image_center, self.dashboard_font_family, self.dashboard_font_size, self.dashboard_font_color, centered=True)
         self.draw_image()
 
