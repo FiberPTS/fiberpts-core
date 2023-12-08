@@ -199,7 +199,8 @@ class Screen:
             font = ImageFont.truetype(font_family, font_size)
             if centered:
                 # Calculate text size
-                text_width, text_height = draw.textsize(text, font=font)
+                bbox = font.getbbox(text)
+                text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
                 position = (position[0]-text_width//2, position[1]-text_height//2)
             draw.text(position, text, font=font, fill=font_color)
 
