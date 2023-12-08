@@ -1,35 +1,14 @@
-from enum import auto, Enum
 import json
 import os
 import time
-from typing import NamedTuple
 
 from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
+from utils.utils import DEVICE_ID
+from utils.touch_sensor_utils import *
 from config.touch_sensor_config import *
 
 
-class TapStatus(Enum):
-    """Class for representing the status of a tap"""
-    GOOD = auto()
-    BAD = auto()
-    def __repr__(self):
-        return f'{self.name}'
-
-
-class Tap(NamedTuple):
-    timestamp: float = 0.0
-    status: TapStatus = TapStatus.BAD
-    # order_id: str = ''
-    # employee_name: str = ''
-
-
 class TouchSensor:
-    """Represents a touch sensor.
-
-    Attributes:
-        debounce_time: An int specifying the debounce time in seconds.
-        tap_data_pipe: A string specifying the file path to the tap data pipe.
-    """
         
     def __init__(
         self, 
@@ -46,7 +25,12 @@ class TouchSensor:
 
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD 
-        tap = Tap(timestamp=timestamp, status=tap_status)
+        
+        tap = Tap(
+            device_id=DEVICE_ID,
+            timestamp=timestamp, 
+            status=tap_status
+        )
         
         self.pipe_tap_data(tap)
         
@@ -59,13 +43,7 @@ class TouchSensor:
         return tap.status != TapStatus.BAD
 
     def pipe_tap_data(self, tap: NamedTuple) -> None:
-        timestamp = time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp))
-        tap_data = {
-            'timestamp': timestamp,
-            'status': repr(tap.status),
-            # 'order_id': tap.order_id,
-            # 'employee_name': tap.employee_name 
-        }
+        tap_data = dict(tap)
 
         if not os.path.exists(TOUCH_SENSOR_TO_SCREEN_PIPE):
             raise FileNotFoundError  # TODO: Determine error message format
