@@ -2,10 +2,11 @@ import json
 import os
 import time
 
+from config.touch_sensor_config import *
+from cloud_db.cloud_db import CloudDBClient
 from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from utils.utils import DEVICE_ID
 from utils.touch_sensor_utils import *
-from config.touch_sensor_config import *
 
 
 class TouchSensor:
@@ -18,6 +19,7 @@ class TouchSensor:
         self.debounce_time = debounce_time
         self.tap_data_pipe = tap_data_pipe
         self.last_tap = Tap()
+        self.cloud_db = CloudDBClient()
     
     def handle_tap(self) -> bool:
         timestamp = time.time()
@@ -35,9 +37,8 @@ class TouchSensor:
         self.pipe_tap_data(tap)
         
         if tap.status == TapStatus.GOOD:       
-            # TODO Create record on Supabase
             # TODO: Fork child process to deal with record creation
-            pass
+            self.cloud_db.insert_tap_data(tap) 
         
         self.last_tap = tap  # Reset debounce timer
         return tap.status != TapStatus.BAD
