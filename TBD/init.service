@@ -2,7 +2,7 @@
 Description=Initialize Display
 
 [Service]
-ExecStart=/bin/bash /opt/FiberPTS/init_display.sh
+ExecStart=/bin/bash /opt/FiberPTS/init.sh
 
 [Install]
 WantedBy=multi-user.target
