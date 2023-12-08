@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Initialize virtual environment
-source venv/bin/activate
-
 # Initialize Display
+
 # Map the console to the framebuffer
 con2fbmap 1 2
 # Wait for a moment
