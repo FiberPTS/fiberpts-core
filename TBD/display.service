@@ -1,0 +1,8 @@
+[Unit]
+Description=Initialize Display
+
+[Service]
+ExecStart=/bin/bash /opt/FiberPTS/init_display.sh
+
+[Install]
+WantedBy=multi-user.target
