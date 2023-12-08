@@ -140,7 +140,7 @@ class Screen:
         self.touch_sensor_pipe = touch_sensor_pipe
         self.device_state_file_path = device_state_file_path
         # Initialize screen
-        self.device_state = self.read_device_state(device_state_file_path)
+        self.device_state = read_device_state(device_state_file_path)
         self.image = None
         self.clear_display()
     
