@@ -6,22 +6,23 @@ import os
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
 
 
-def __get_device_id() -> str:
-    """Retrieve the device ID from a Unix-like file system.
+def __get_machine_id() -> str:
+    """Retrieves the unique ID of the machine running this program.
 
-    This function is implemented to avoid errors when referencing Unix-like file
-    structure on Windows computers.
+    This function specifically targets Unix-like systems. To ensure
+    compatibility with non-Unix systems, it returns an empty string.
 
     Returns:
         str: The device ID if the file exists, otherwise an empty string.
     """
-    device_id = ''
-    if os.path.exists('/etc/machine-id'):
-        device_id = subprocess.check_output('cat /etc/machine-id', shell=True)
-    return device_id
+    try:
+        with open('/etc/machine-id', 'r') as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        return ''
 
 
-DEVICE_ID = __get_device_id()
+DEVICE_ID = __get_machine_id()
 
 
 def ftimestamp(timestamp: float) -> str:
