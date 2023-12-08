@@ -4,9 +4,6 @@ from typing import NamedTuple
 from utils import ftimestamp
 
 
-from enum import Enum, auto
-from typing import NamedTuple
-
 class TapStatus(Enum):
     """Represents the status of a tap."""
     GOOD = auto()

@@ -1,6 +1,4 @@
-import subprocess
 import time
-import os
 
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
