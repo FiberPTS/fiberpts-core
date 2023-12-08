@@ -52,7 +52,7 @@ def draw_display(bg_color, text, text_position, text_color, res=(240, 320), font
     image = Image.new("RGB", res, bg_color)
 
     # Draw text on the image
-    image = draw_text(image, text, text_position, text_color, bg_color, font_path)
+    image = draw_text(image, text, text_position, text_color, font_path=font_path)
 
     # Convert the image to RGB565 format and write to framebuffer
     raw_data = image_to_rgb565(image)
