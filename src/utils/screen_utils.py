@@ -11,7 +11,7 @@ import numpy as np
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
-
+# TODO: Time seems to be 1 day ahead, so we need to identity the issue and fix this.
 # TODO: This is duplicate code from utils.py, but I need a specific timestamp format
 def ftimestamp(timestamp: float) -> str:
     """

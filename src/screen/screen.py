@@ -15,7 +15,7 @@ from src.utils.screen_utils import (ftimestamp,
                                     read_pipe, 
                                     write_image_to_fb)
 
-
+# TODO: Time seems to be 1 day ahead, so we need to identity the issue and fix this.
 class Screen:
     """
     A class to manage and display the user interface on a screen.
