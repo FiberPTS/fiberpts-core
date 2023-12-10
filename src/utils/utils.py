@@ -19,8 +19,5 @@ def get_machine_id() -> str:
         return ''
 
 
-MACHINE_ID = get_machine_id()
-
-
 def ftimestamp(timestamp: float) -> str:
     return time.strftime(TIMESTAMP_FORMAT, time.localtime(timestamp))

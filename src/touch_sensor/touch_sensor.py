@@ -10,7 +10,7 @@ from cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
 from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from utils.touch_sensor_utils import *
-from utils.utils import MACHINE_ID
+from utils.utils import get_machine_id
 
 
 class TouchSensor:
@@ -29,8 +29,7 @@ class TouchSensor:
     """
 
     def __init__(
-        self, 
-        machine_id: str = MACHINE_ID,
+        self,
         debounce_time: int = DEBOUNCE_TIME,
         screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE
     ) -> None:
@@ -38,11 +37,10 @@ class TouchSensor:
         Initializes the TouchSensor with specified debounce time and pipe path.
 
         Args:
-            machine_id: ID of computer that the touch sensor is connected to.
             debounce_time: An integer specifying the debounce time in seconds.
             screen_pipe: File path to the screen FIFO.
         """
-        self.machine_id = machine_id
+        self.machine_id = get_machine_id()
         self.debounce_time = debounce_time
         self.screen_pipe = screen_pipe
         self.last_tap = Tap()
