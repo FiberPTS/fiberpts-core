@@ -1,7 +1,5 @@
-from enum import auto, Enum
+import time
 from typing import NamedTuple
-
-from utils import ftimestamp
 
 
 class Tap(NamedTuple):
@@ -12,8 +10,8 @@ class Tap(NamedTuple):
         timestamp: The timestamp at which the tap was made.
         status: A TapStatus indicating the status of the tap.
     """
-    device_id: str = ''
-    timestamp: float = 0.0
+    machine_id: str = ''
+    timestamp: time.struct_time = time.localtime()
 
     def __iter__(self):
         """Enable iteration over Tap attributes.
