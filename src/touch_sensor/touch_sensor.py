@@ -24,7 +24,6 @@ class TouchSensor:
         machine_id: ID of computer that the touch sensor is connected to.
         debounce_time: Minimum time interval (in seconds) to consider consecutive taps as distinct.
         screen_pipe: File path to the FIFO used for IPC with the screen module.
-        last_tap: The last recorded tap.
         cloud_db: An instance of CloudDBClient for database interactions.
     """
 
@@ -43,7 +42,6 @@ class TouchSensor:
         self.machine_id = get_machine_id()
         self.debounce_time = debounce_time
         self.screen_pipe = screen_pipe
-        self.last_tap = Tap()
         self.cloud_db = CloudDBClient()
     
     def handle_tap(self) -> bool:
@@ -69,7 +67,6 @@ class TouchSensor:
         # TODO: Implement child process creation for record handling.
         self.cloud_db.insert_tap_data(tap) 
         
-        self.last_tap = tap  # Reset debounce timer
         return True
 
     def pipe_tap_data(self, tap: NamedTuple) -> None:
