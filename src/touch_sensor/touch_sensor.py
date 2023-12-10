@@ -10,7 +10,8 @@ from cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
 from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from utils.touch_sensor_utils import *
-from utils.utils import DEVICE_ID
+from utils.utils import MACHINE_ID
+
 
 class TouchSensor:
     """
@@ -20,6 +21,7 @@ class TouchSensor:
     in a cloud database and sends tap data to screen via dedicated named pipe.
 
     Attributes:
+        machine_id: ID of computer that the touch sensor is connected to.
         debounce_time: Minimum time interval (in seconds) to consider consecutive taps as distinct.
         screen_pipe: File path to the FIFO used for IPC with the screen module.
         last_tap: The last recorded tap.
@@ -28,6 +30,7 @@ class TouchSensor:
 
     def __init__(
         self, 
+        machine_id: str = MACHINE_ID,
         debounce_time: int = DEBOUNCE_TIME,
         screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE
     ) -> None:
@@ -35,9 +38,11 @@ class TouchSensor:
         Initializes the TouchSensor with specified debounce time and pipe path.
 
         Args:
+            machine_id: ID of computer that the touch sensor is connected to.
             debounce_time: An integer specifying the debounce time in seconds.
             screen_pipe: File path to the screen FIFO.
         """
+        self.machine_id = machine_id
         self.debounce_time = debounce_time
         self.screen_pipe = screen_pipe
         self.last_tap = Tap()
@@ -57,7 +62,7 @@ class TouchSensor:
         timestamp = time.time()
         
         tap = Tap(
-            device_id=DEVICE_ID,
+            device_id=self.machine_id,
             timestamp=timestamp, 
         )
         
@@ -88,7 +93,7 @@ class TouchSensor:
         else:
             with os.fdopen(fd, 'w') as pipeout:  # Convert file descriptor to file pointer
                 json.dump(tap_data, pipeout)
-        
+
     def run(self) -> None:
         """
         Monitors the GPIO line for tap events and processes them.
@@ -115,7 +120,6 @@ class TouchSensor:
                 # Block until rising edge event happens
                 if line.read_edge_events():
                     self.handle_tap()
-
 
 
 if __name__ == "__main__":

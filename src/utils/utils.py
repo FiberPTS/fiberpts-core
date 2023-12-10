@@ -1,10 +1,9 @@
 import time
 
-
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
 
 
-def _get_machine_id() -> str:
+def get_machine_id() -> str:
     """Retrieves the unique ID of the machine running this program.
 
     This function specifically targets Unix-like systems. To ensure
@@ -20,7 +19,7 @@ def _get_machine_id() -> str:
         return ''
 
 
-DEVICE_ID = _get_machine_id()
+MACHINE_ID = get_machine_id()
 
 
 def ftimestamp(timestamp: float) -> str:
