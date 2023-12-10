@@ -1,13 +1,16 @@
+from datetime import timedelta
 import json
 import os
 import time
+
+import gpiod
+from gpiod.line import Bias, Edge
 
 from cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
 from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from utils.touch_sensor_utils import *
 from utils.utils import DEVICE_ID
-
 
 class TouchSensor:
     """
@@ -91,3 +94,36 @@ class TouchSensor:
         else:
             with os.fdopen(fd, 'w') as pipeout:  # Convert file descriptor to file pointer
                 json.dump(tap_data, pipeout)
+        
+    def run(self) -> None:
+        """
+        Monitors the GPIO line for tap events and processes them.
+
+        Continuously checks a specific GPIO line for voltage changes. If a change is detected,
+        interprets it as a tap event and triggers the tap handling process.
+        """
+        # TODO: Create chip/pin mapping in gpio_config
+        chip_path = '/dev/gpiochip1'
+        line_offset = 26
+
+        with gpiod.request_lines(
+            path=chip_path,
+            consumer='watch-touch-sensor-line',
+            config={
+                line_offset: gpiod.LineSettings(
+                    edge_detection=Edge.RISING,
+                    bias=Bias.PULL_DOWN,
+                    debounce_period=timedelta(seconds=self.debounce_time)
+                )
+            }
+        ) as line:
+            while True:
+                # Block until rising edge event happens
+                if line.read_edge_events():
+                    self.handle_tap()
+
+
+
+if __name__ == "__main__":
+    touch_sensor = TouchSensor()
+    touch_sensor.run()

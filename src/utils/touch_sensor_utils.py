@@ -4,15 +4,6 @@ from typing import NamedTuple
 from utils import ftimestamp
 
 
-class TapStatus(Enum):
-    """Represents the status of a tap."""
-    GOOD = auto()
-    BAD = auto()
-
-    def __repr__(self):
-        return f'{self.name}'
-
-
 class Tap(NamedTuple):
     """Stores information describing a tap event.
 
