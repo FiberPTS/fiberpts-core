@@ -22,19 +22,3 @@ class Tap(NamedTuple):
         """
         for name, _ in self.__annotations__.items():
             yield name, getattr(self, name)
-
-
-def tap_to_db_entry(tap: Tap) -> dict:
-    """Convert a Tap instance to a database entry format.
-
-    Args:
-        tap: A Tap instance to be converted.
-
-    Returns:
-        A dictionary representing the tap suitable for database entry.
-    """
-    tap_entry = {
-        'timestamp': ftimestamp(tap.timestamp),
-        'device_id': tap.device_id
-    }
-    return tap_entry

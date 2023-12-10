@@ -24,12 +24,12 @@ class CloudDBClient:
         key = os.getenv('DATABASE_API_KEY')
         self.client = supabase.create_client(url, key)
     
-    def insert_tap_data(self, tap: Tap) -> APIResponse:
+    def insert_tap_data(self, tap_record: dict) -> APIResponse:
         """
-        Inserts tap data into the database.
+        Inserts tap data (timestamp and machine ID) into the database.
 
         Args:
-            tap: A Tap object containing the data to be inserted.
+            tap_record: A dict containing the data to be inserted.
 
         Returns:
             An APIResponse object representing the result of the database operation.
@@ -38,6 +38,5 @@ class CloudDBClient:
         # TODO: Implement handling for authentication issues.
         # TODO: Implement data validation.
         # TODO: Implement handling for non-existent table.
-        tap_data = tap_to_db_entry(tap)
-        response = self.client.table('tap_data').insert(tap_data).execute()
+        response = self.client.table('tap_data').insert(tap_record).execute()
         return response

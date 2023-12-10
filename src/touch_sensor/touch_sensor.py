@@ -10,7 +10,7 @@ from cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
 from utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from utils.touch_sensor_utils import *
-from utils.utils import get_machine_id
+from utils.utils import get_machine_id, ftimestamp
 
 
 class TouchSensor:
@@ -65,7 +65,9 @@ class TouchSensor:
         self.pipe_tap_data(tap)
              
         # TODO: Implement child process creation for record handling.
-        self.cloud_db.insert_tap_data(tap) 
+        tap_record = dict(tap)
+        tap_record[timestamp] = ftimestamp(tap_record[timestamp])  # Convert float to formatted timestamp
+        self.cloud_db.insert_tap_data(tap_record) 
         
         return True
 
