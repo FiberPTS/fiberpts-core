@@ -14,7 +14,6 @@ class Tap(NamedTuple):
     """
     device_id: str = ''
     timestamp: float = 0.0
-    status: TapStatus = TapStatus.BAD
 
     def __iter__(self):
         """Enable iteration over Tap attributes.

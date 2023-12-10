@@ -20,7 +20,7 @@ class TouchSensor:
     in a cloud database and sends tap data to screen via dedicated named pipe.
 
     Attributes:
-        debounce_time: Min. time interval (in seconds) to consider consecutive taps as distinct.
+        debounce_time: Minimum time interval (in seconds) to consider consecutive taps as distinct.
         screen_pipe: File path to the FIFO used for IPC with the screen module.
         last_tap: The last recorded tap.
         cloud_db: An instance of CloudDBClient for database interactions.
@@ -55,25 +55,19 @@ class TouchSensor:
             A boolean indicating whether the tap was valid (True) or not (False).
         """
         timestamp = time.time()
-        tap_status = TapStatus.BAD
-
-        if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
-            tap_status = TapStatus.GOOD 
         
         tap = Tap(
             device_id=DEVICE_ID,
             timestamp=timestamp, 
-            status=tap_status
         )
         
         self.pipe_tap_data(tap)
-        
-        if tap.status == TapStatus.GOOD:       
-            # TODO: Implement child process creation for record handling.
-            self.cloud_db.insert_tap_data(tap) 
+             
+        # TODO: Implement child process creation for record handling.
+        self.cloud_db.insert_tap_data(tap) 
         
         self.last_tap = tap  # Reset debounce timer
-        return tap.status != TapStatus.BAD
+        return True
 
     def pipe_tap_data(self, tap: NamedTuple) -> None:
         """
