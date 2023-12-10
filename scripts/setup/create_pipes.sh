@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Load the environment variables from the .env.shared file
-set -a  # automatically export all variables
-source /opt/FiberPTS/.env.shared
-set +a  # stop automatically exporting
-
 # Create the directory for pipes if it doesn't exist
 mkdir -p "$PIPE_FOLDER_PATH"
 
