@@ -85,4 +85,5 @@ Thumbs.db
 # Other
 *.swp
 *.swo
-
+*.img
+*.xz
