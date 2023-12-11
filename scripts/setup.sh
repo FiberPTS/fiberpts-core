@@ -72,7 +72,7 @@ load_env_variables "$@" || {
     exit 1
 }
 
-FLAG_FILE="$PROJECT_PATH/app/exec_pre_install"
+FLAG_FILE="$PROJECT_PATH/app/tmp/exec_pre_install"
 SETUP_DIR="$SCRIPT_DIR/setup"
 
 PRE_REBOOT_SCRIPTS=("create_venv.sh" "install_dependencies.sh" "install_wifi_driver.sh" "set_device_overlays.sh" "set_user_permissions.sh" "create_services.sh")
