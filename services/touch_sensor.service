@@ -3,10 +3,10 @@ Description=Monitor and restart touch_sensor.py
 
 [Service]
 Type=simple
-ExecStart=/opt/FiberPTS/venv/bin/python3 /opt/src/touch_sensor/touch_sensor.py
-User=root
-Group=root
-WorkingDirectory=/opt/FiberPTS
+ExecStart=$PROJECT_PATH/venv/bin/python3 $PROJECT_PATH/src/touch_sensor/touch_sensor.py
+User=$USERNAME
+Group=$GROUP_NAME
+WorkingDirectory=$PROJECT_PATH
 PIDFile=/var/run/touch_sensor.pid
 ExecStop=/bin/kill -15 \$MAINPID
 TimeoutSec=5

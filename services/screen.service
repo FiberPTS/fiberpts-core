@@ -3,10 +3,10 @@ Description=Monitor and restart screen.py
 
 [Service]
 Type=simple
-ExecStart=/opt/FiberPTS/venv/bin/python3 /opt/src/screen/screen.py
-User=root
-Group=root
-WorkingDirectory=/opt/FiberPTS
+ExecStart=$PROJECT_PATH/venv/bin/python3 $PROJECT_PATH/src/screen/screen.py
+User=$USERNAME
+Group=$GROUP_NAME
+WorkingDirectory=$PROJECT_PATH
 PIDFile=/var/run/screen.pid
 ExecStop=/bin/kill -15 \$MAINPID
 TimeoutSec=5
