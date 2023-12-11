@@ -15,8 +15,8 @@ init_display(){
     sleep 0.5
     # Unmap the console
     con2fbmap 1 0
-    # Clear the screen
-    sudo dd if=/dev/zero of="$DISPLAY_FRAME_BUFFER_PATH" bs=1 count=153600
+    # Not needed to clear the screen since screen.py takes care of that
+    # sudo dd if=/dev/zero of="$DISPLAY_FRAME_BUFFER_PATH" bs=1 count=153600
 }
 
 # Check if DISPLAY_FRAME_BUFFER_PATH exists
