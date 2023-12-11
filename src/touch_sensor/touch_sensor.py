@@ -103,23 +103,24 @@ class TouchSensor:
         chip_path = f"/dev/gpiochip{self.touch_sensor_chip}"
         line_offset = self.touch_sensor_line
 
-        with gpiod.request_lines(
+        line = gpiod.request_lines(
             path=chip_path,
             consumer='watch-touch-sensor-line',
             config={
-                line_offset:
+                line_offset: 
                     gpiod.LineSettings(
                         edge_detection=Edge.RISING,
                         bias=Bias.PULL_DOWN,
                         debounce_period=timedelta(seconds=0.5)
-                )
-            }
-        ) as line:
-            while True:
-                # Block until rising edge event happens
-                if line.read_edge_events():
-                    print("edge detected")
-                    self.handle_tap()
+                    )
+                }
+            )
+        line.release()
+        while True:
+            # Block until rising edge event happens
+            if line.read_edge_events():
+                print("edge detected")
+                self.handle_tap()
 
 
 if __name__ == "__main__":
