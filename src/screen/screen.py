@@ -58,7 +58,7 @@ class Screen:
         """Draw the current image to the display (assumes the screen needs 90 degree rotation)."""
         if self.image:
             self.image = self.image.rotate(90, expand=True)
-            write_image_to_fb(self.image, self.display_attributes.display_fb_path)
+            write_image_to_fb(self.image, self.display_attributes.display_fb_path, self.display_attributes.display_fb_lock_path)
         self.image = None
 
     def add_text(self, text: str, position: tuple[int, int], font_family: str, font_size: int, font_color: str, centered: bool = False) -> None:

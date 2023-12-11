@@ -2,12 +2,13 @@ import json
 import os
 import time
 from typing import Dict, Any, NamedTuple
+import fcntl
 
 from PIL import Image
 import numpy as np
 
 from config.screen_config import *
-from src.utils.paths import DISPLAY_FRAME_BUFFER_PATH
+from src.utils.paths import DISPLAY_FRAME_BUFFER_PATH, DISPLAY_FRAME_BUFFER_LOCK_PATH
 
 
 class DisplayAttributes(NamedTuple):
@@ -20,6 +21,7 @@ class DisplayAttributes(NamedTuple):
         display_frame_rate (int): Frame rate for display updates.
     """
     display_fb_path: str = DISPLAY_FRAME_BUFFER_PATH
+    display_fb_lock_path: str = DISPLAY_FRAME_BUFFER_LOCK_PATH
     display_height: str = DISPLAY_HEIGHT
     display_width: str = DISPLAY_WIDTH
     display_frame_rate:str = DISPLAY_FRAME_RATE
@@ -225,7 +227,7 @@ def image_to_raw_rgb565(image: Image) -> np.ndarray:
     return raw_rgb565
 
 
-def write_image_to_fb(image: Image, path_to_fb: str) -> None:
+def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> None:
     """Write a PIL image to a framebuffer device in RGB565 format.
 
     Args:
@@ -238,8 +240,10 @@ def write_image_to_fb(image: Image, path_to_fb: str) -> None:
     """
     raw_data = image_to_raw_rgb565(image)
     try:
-        with open(path_to_fb, "wb") as f:
-            f.write(raw_data.tobytes())
+        with open(path_to_fb_lock, 'w') as lockfile:
+            fcntl.flock(lockfile, fcntl.LOCK_EX)  # Acquire an exclusive lock
+            with open(path_to_fb, "wb") as f:
+                f.write(raw_data.tobytes())
     except FileNotFoundError:
         raise FileNotFoundError # TODO: Determine error message format
     except IOError as e:
