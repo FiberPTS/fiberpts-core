@@ -6,8 +6,11 @@ env_file="$SCRIPT_DIR/../../.env.shared"
 source "$env_file"
 
 init_display(){
+    # Extract the last character of DISPLAY_FRAME_BUFFER_PATH
+    local framebuffer_number="${DISPLAY_FRAME_BUFFER_PATH: -1}"
+
     # Map the console to the framebuffer
-    con2fbmap 1 2
+    con2fbmap 1 "$framebuffer_number"
     # Wait for a moment
     sleep 0.5
     # Unmap the console
