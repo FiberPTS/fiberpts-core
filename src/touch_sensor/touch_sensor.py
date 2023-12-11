@@ -4,6 +4,7 @@ import os
 
 import gpiod
 from gpiod.line import Bias, Edge
+import asyncio
 
 from src.cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
@@ -25,8 +26,8 @@ class TouchSensor:
     def __init__(
         self,
         debounce_time: int = DEBOUNCE_TIME,
-        touch_sensor_line: int = TOUCH_SENSOR_LINE,
-        touch_sensor_chip: int = TOUCH_SENSOR_CHIP,
+        line_offset: int = TOUCH_SENSOR_LINE_OFFSET,
+        chip: int = TOUCH_SENSOR_CHIP,
         screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE                   
     ) -> None:
         """
@@ -37,8 +38,8 @@ class TouchSensor:
             screen_pipe: File path to the screen FIFO.
         """
         self.debounce_time = debounce_time
-        self.touch_sensor_line = touch_sensor_line
-        self.touch_sensor_chip = touch_sensor_chip
+        self.line_offset = line_offset
+        self.chip_path = f"/dev/gpiochip{chip}"
         self.screen_pipe = screen_pipe
         self.cloud_db = CloudDBClient()
         self.last_tap = Tap()
@@ -93,6 +94,26 @@ class TouchSensor:
             with os.fdopen(fd, 'w') as pipeout:  # Convert file descriptor to file pointer
                 json.dump(tap_data, pipeout)
 
+
+    async def poll(self) -> None:
+        with gpiod.request_lines(
+            self.chip_path,
+            consumer="async-touch-sensor",
+            config={
+                self.line_offset: 
+                    gpiod.LineSettings(
+                        edge_detection=Edge.RISING,  # Detect rising edge for touch
+                        bias=Bias.DISABLED,  # Assuming a pull-down configuration
+                        debounce_period=timedelta(milliseconds=50)
+                    )
+            }
+        ) as request:
+            while True:
+                await request.read_edge_events_async()
+                print("Touch detected")
+                self.handle_tap()
+
+
     def run(self) -> None:
         """Monitors the GPIO line for tap events and processes them.
 
@@ -100,19 +121,7 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         # TODO: Create chip/pin mapping in gpio_config
-        chip_path = f"/dev/gpiochip{self.touch_sensor_chip}"
-        line_offset = self.touch_sensor_line
-        line_settings = gpiod.LineSettings(
-            edge_detection=Edge.RISING,
-            bias=Bias.PULL_DOWN,
-            debounce_period=timedelta(seconds=0.5)
-            )
-        with SelfReleasingGpioLineRequest(chip_path, line_offset, line_settings) as line:
-            while True:
-                # Block until rising edge event happens
-                if line.read_edge_events():
-                    print("edge detected")
-                    self.handle_tap()
+        asyncio.run(self.poll())
 
 
 if __name__ == "__main__":
