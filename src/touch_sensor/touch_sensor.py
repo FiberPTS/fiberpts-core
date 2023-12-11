@@ -114,6 +114,7 @@ class TouchSensor:
             while True:
                 # Block until rising edge event happens
                 if line.read_edge_events():
+                    print("edge detected")
                     self.handle_tap()
 
 

@@ -35,6 +35,7 @@ create_and_assign_group() {
         usermod -a -G "$GROUP_NAME" "$USERNAME" || return 1
         # Add to any other necessary groups
         usermod -a -G video "$USERNAME" || return 1
+        usermod -a -G gpio "$USERNAME" || return 1
     fi
 }
 
