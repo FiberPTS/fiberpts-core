@@ -33,9 +33,14 @@ load_env_variables() {
 }
 
 setup_cron_job() {
-    local job_command="$SCRIPT_DIR/$(basename $0) $WIFI_NAME $WIFI_PSK"
-    (crontab -l 2>/dev/null; echo "@reboot $job_command") | crontab -
-    echo "Cron job set for next reboot."
+    local job_command="bash $SCRIPT_DIR/$(basename $0) $WIFI_NAME $WIFI_PSK"
+    # Check if the cron job already exists
+    if crontab -l 2>/dev/null | grep -Fq "$cron_job"; then
+        echo "Cron job already exists. Skipping."
+    else
+        (crontab -l 2>/dev/null; echo "$cron_job") | crontab -
+        echo "Cron job set for next reboot."
+    fi
 }
 
 cleanup_after_reboot() {
