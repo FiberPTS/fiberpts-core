@@ -11,7 +11,7 @@ from src.utils.utils import TIMESTAMP_FORMAT
 
 load_dotenv()
 
-
+# TODO: Must first check if there is a record in devices table for the associated machine_id and machine_name (can hardcode this)
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API."""
 
