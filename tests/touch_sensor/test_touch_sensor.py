@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from src.utils.pipe_paths import TOUCH_SENSOR_TO_SCREEN_PIPE
+from src.utils.paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from config.touch_sensor_config import TIMESTAMP_FORMAT
 from src.touch_sensor.touch_sensor import *
 
