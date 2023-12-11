@@ -1,11 +1,13 @@
 import os
+import time
 
 from dotenv import load_dotenv
 import supabase
 from postgrest import APIResponse
 
 from utils.touch_sensor_utils import Tap
-from utils.utils import ftimestamp
+from utils.utils import TIMESTAMP_FORMAT
+
 
 load_dotenv()
 
@@ -38,7 +40,7 @@ class CloudDBClient:
         # TODO: Implement handling for non-existent table.
 
         tap_record = {
-            'timestamp': ftimestamp(tap.timestamp),
+            'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'machine_id': tap.machine_id
         }
         response = self.client.table('tap_data').insert(tap_record).execute()

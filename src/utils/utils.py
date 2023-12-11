@@ -1,6 +1,16 @@
-import time
+from enum import Enum
+
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
+
+
+class TapStatus(Enum):
+    """Represents the status of a tap."""
+    GOOD = 0
+    BAD = 1
+
+    def __repr__(self):
+        return f'{self.value}'
 
 
 def get_machine_id() -> str:
@@ -17,7 +27,3 @@ def get_machine_id() -> str:
             return file.read().strip()
     except FileNotFoundError:
         return ''
-
-
-def ftimestamp(timestamp: float) -> str:
-    return time.strftime(TIMESTAMP_FORMAT, time.localtime(timestamp))
