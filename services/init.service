@@ -1,8 +1,10 @@
 [Unit]
-Description=Initialize Display
+Description=Initialize the device
 
 [Service]
-ExecStart=/bin/bash /opt/FiberPTS/init.sh
+ExecStart=$PROJECT_PATH/scripts/run/init.sh
+User=$USERNAME
+Group=$GROUP_NAME
 
 [Install]
 WantedBy=multi-user.target
