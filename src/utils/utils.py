@@ -1,7 +1,23 @@
 from enum import Enum
+import fcntl
 
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
+
+
+class SelfReleasingLock:
+    def __init__(self, lockfile_path):
+        self.lockfile_path = lockfile_path
+        self.lockfile = None
+
+    def __enter__(self):
+        self.lockfile = open(self.lockfile_path, 'w')
+        fcntl.flock(self.lockfile, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        fcntl.flock(self.lockfile, fcntl.LOCK_UN)
+        self.lockfile.close()
 
 
 class TapStatus(Enum):

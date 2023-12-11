@@ -9,6 +9,7 @@ import numpy as np
 
 from config.screen_config import *
 from src.utils.paths import DISPLAY_FRAME_BUFFER_PATH, DISPLAY_FRAME_BUFFER_LOCK_PATH
+from src.utils.utils import SelfReleasingLock
 
 
 class DisplayAttributes(NamedTuple):
@@ -233,15 +234,15 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
     Args:
         image (Image): The PIL image to write.
         path_to_fb (str): Path to the framebuffer device.
+        path_to_fb_lock (str): Path to the framebuffer lock file.
     
     Raises:
         FileNotFoundError: If the framebuffer device path does not exist.
         IOError: If there is an error writing to the framebuffer.
     """
-    raw_data = image_to_raw_rgb565(image)
     try:
-        with open(path_to_fb_lock, 'w') as lockfile:
-            fcntl.flock(lockfile, fcntl.LOCK_EX)  # Acquire an exclusive lock
+        with SelfReleasingLock(path_to_fb_lock):
+            raw_data = image_to_raw_rgb565(image)
             with open(path_to_fb, "wb") as f:
                 f.write(raw_data.tobytes())
     except FileNotFoundError:
