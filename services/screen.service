@@ -1,5 +1,6 @@
 [Unit]
 Description=Monitor and restart screen.py
+After=init.service
 
 [Service]
 Type=simple
