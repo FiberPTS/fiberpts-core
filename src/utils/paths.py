@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
 
-load_dotenv(f"{script_dir}/../../.env.shared")
+load_dotenv(f"{script_dir}/../../app/.env.shared")
 
 # File paths to named pipes
 TOUCH_SENSOR_TO_SCREEN_PIPE: str = os.getenv('TOUCH_SENSOR_TO_SCREEN_PIPE')
