@@ -8,8 +8,10 @@ from postgrest import APIResponse
 from src.utils.touch_sensor_utils import Tap
 from src.utils.utils import TIMESTAMP_FORMAT
 
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
 
-load_dotenv()
+load_dotenv(f"{script_dir}/../../app/.env")
 
 # TODO: Must first check if there is a record in devices table for the associated machine_id and machine_name (can hardcode this)
 class CloudDBClient:
