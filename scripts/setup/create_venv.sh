@@ -20,7 +20,7 @@ create_virtual_environment() {
     fi
 }
 
-# TODO: Fix implicit importing of FiberPTS modules without needing .pth file
+# TODO: Fix implicit importing of FiberPTS modules without needing .pth file by sourcing in service files
 add_path_to_pth_file() {
     local venv_dir="$PROJECT_PATH/venv"
     local pth_file_name="fiberpts.pth"
