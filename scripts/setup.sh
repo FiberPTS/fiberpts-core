@@ -46,6 +46,9 @@ cleanup_after_reboot() {
 }
 
 run_scripts() {
+    local phase=$1
+    local scripts=("${@:2}")
+
     for script in "${scripts[@]}"; do
         echo "Running script: $script"
         if ! bash "$SETUP_DIR/$script" 2>&1; then
