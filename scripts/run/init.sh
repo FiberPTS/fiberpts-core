@@ -6,7 +6,7 @@ env_file="$SCRIPT_DIR/../../.env.shared"
 
 source "$env_file"
 
-exec 200>"$FRAME_BUFFER_LOCK_PATH"    # Open the lock file for writing and assign file descriptor 200
+exec 200>"$DISPLAY_FRAME_BUFFER_LOCK_PATH"    # Open the lock file for writing and assign file descriptor 200
 
 init_display(){
     flock -x 200 # Wait until lock is acquired
