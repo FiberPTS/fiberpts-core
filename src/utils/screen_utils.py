@@ -1,29 +1,10 @@
-# Standard library imports
 import json
 import os
 import time
 from typing import Dict, Any
 
-# Third-party imports
 from PIL import Image
 import numpy as np
-
-
-SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
-
-# TODO: Time seems to be 1 day ahead, so we need to identity the issue and fix this.
-# TODO: This is duplicate code from utils.py, but I need a specific timestamp format
-def ftimestamp(timestamp: float) -> str:
-    """
-    Format a given Unix timestamp into a string based on the predefined timestamp format.
-
-    Args:
-        timestamp (float): The Unix timestamp to format.
-
-    Returns:
-        str: The formatted timestamp as a string.
-    """
-    return time.strftime(SAVED_TIMESTAMP_FORMAT, time.localtime(timestamp))
 
 
 def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
