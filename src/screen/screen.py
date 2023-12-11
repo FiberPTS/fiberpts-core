@@ -1,10 +1,7 @@
-# Standard library imports
 import time
 
-# Third-party imports
 from PIL import Image, ImageDraw, ImageFont
 
-# Application specific imports
 from config.screen_config import *
 from src.utils.env_variables import (TOUCH_SENSOR_TO_SCREEN_PIPE, 
                                      DISPLAY_FRAME_BUFFER_PATH, 
