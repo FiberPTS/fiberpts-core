@@ -13,12 +13,15 @@ assert_conditions() {
 # For updating the device with new repository changes
 load_env_variables() {
     set -a # Exports all environment variables
-    source "$SCRIPT_DIR/../../.env.shared" || return 1
-    source "$SCRIPT_DIR/../../.env" || return 1
+    source "$SCRIPT_DIR/../../app/.env.shared" || return 1
+    source "$SCRIPT_DIR/../../app/.env" || return 1
     set +a # Stops exporting environment variables
 }
 
+main() {
+    assert_conditions
+    load_env_variables
+    bash "$SCRIPT_DIR/../setup/set_user_permissions.sh"
+}
 
-assert_conditions
-load_env_variables
-bash "$SCRIPT_DIR/../setup/set_user_permissions.sh"
+main

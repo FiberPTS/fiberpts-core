@@ -43,8 +43,8 @@ set_ownership_and_permissions() {
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/src || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/scripts/run || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/config || return 1
-    chown :"$GROUP_NAME" "$PROJECT_PATH"/.env.shared || return 1
-    chown :"$GROUP_NAME" "$PROJECT_PATH"/.env || return 1
+    chown :"$GROUP_NAME" "$PROJECT_PATH"/app/.env.shared || return 1
+    chown :"$GROUP_NAME" "$PROJECT_PATH"/app/.env || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/app || return 1
 
     # Set executable permissions
@@ -55,10 +55,10 @@ set_ownership_and_permissions() {
 
     # Set readable permissions
     find "$PROJECT_PATH"/config -type f -name "*.py" ! -name "__init__.py" -exec chmod 440 {} \; || return 1
-    chmod 440 "$PROJECT_PATH"/.env || return 1
+    chmod 440 "$PROJECT_PATH"/app/.env || return 1
 
     # Set readable/writable permissions
-    chmod 660 "$PROJECT_PATH"/.env.shared || return 1 # Need writable for init.sh script to modify DISPLAY_FRAME_BUFFER_PATH
+    chmod 660 "$PROJECT_PATH"/app/.env.shared || return 1 # Need writable for init.sh script to modify DISPLAY_FRAME_BUFFER_PATH
 
     echo "Group ownership and permissions set"
 }

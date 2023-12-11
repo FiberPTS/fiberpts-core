@@ -27,8 +27,8 @@ load_env_variables() {
     set -a # Exports all environment variables
     WIFI_NAME="$1"
     WIFI_PSK="$2"
-    source "$SCRIPT_DIR/../.env.shared" || return 1
-    source "$SCRIPT_DIR/../.env" || return 1
+    source "$SCRIPT_DIR/../app/.env.shared" || return 1
+    source "$SCRIPT_DIR/../app/.env" || return 1
     set +a # Stops exporting environment variables
 }
 
@@ -84,6 +84,7 @@ main() {
         install_apt_dependencies
         run_scripts "Pre-Reboot" "${PRE_REBOOT_SCRIPTS[@]}"
         setup_cron_job
+        mkdir -p "$PROJECT_PATH/app/tmp"
         touch "$FLAG_FILE"
         reboot
     fi
