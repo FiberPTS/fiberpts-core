@@ -75,8 +75,8 @@ load_env_variables "$@" || {
 FLAG_FILE="$PROJECT_PATH/app/exec_pre_install"
 SETUP_DIR="$SCRIPT_DIR/setup"
 
-PRE_REBOOT_SCRIPTS=("create_venv.sh" "install_dependencies.sh" "install_wifi_driver.sh" "set_device_overlays.sh" "create_services.sh")
-POST_REBOOT_SCRIPTS=("create_pipes.sh" "set_user_permissions.sh" "connect_wifi.sh")
+PRE_REBOOT_SCRIPTS=("create_venv.sh" "install_dependencies.sh" "install_wifi_driver.sh" "set_device_overlays.sh" "set_user_permissions.sh" "create_services.sh")
+POST_REBOOT_SCRIPTS=("create_pipes.sh" "connect_wifi.sh")
 
 main() {
     # Phase 1: Pre Reboot
@@ -92,6 +92,7 @@ main() {
     if [ -f "$FLAG_FILE" ]; then
         run_scripts "Post-Reboot" "${POST_REBOOT_SCRIPTS[@]}"
         cleanup_after_reboot
+        reboot
     fi
     
     echo "Based."
