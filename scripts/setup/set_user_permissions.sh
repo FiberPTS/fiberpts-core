@@ -21,7 +21,7 @@ add_application_user() {
     else
         adduser "$USERNAME" --disabled-password --gecos "" || return 1
         # Running a subshell for setting the username and password securely
-        sh -c 'echo "$1:$2" | chpasswd' sh "$USERNAME" "$PASSWORD" || return 1
+        bash -c 'echo "$1:$2" | chpasswd' bash "$USERNAME" "$PASSWORD" || return 1
         echo "User created and password set."
     fi
 }
@@ -59,6 +59,8 @@ set_ownership_and_permissions() {
 
     # Set readable/writable permissions
     chmod -R 660 "$PROJECT_PATH"/app || return 1
+
+    echo "Group ownership and permissions set"
 }
 
 main() {
