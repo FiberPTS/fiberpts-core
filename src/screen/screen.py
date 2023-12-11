@@ -3,16 +3,20 @@ import time
 from PIL import Image, ImageDraw, ImageFont
 
 from config.screen_config import *
-from src.utils.env_variables import (TOUCH_SENSOR_TO_SCREEN_PIPE, 
-                                     DISPLAY_FRAME_BUFFER_PATH, 
-                                     DEVICE_STATE_FILE_PATH)
+from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE,
+                             DISPLAY_FRAME_BUFFER_PATH,
+                             DEVICE_STATE_FILE_PATH)
 from src.utils.screen_utils import (ftimestamp, 
                                     read_device_state, 
                                     write_device_state, 
                                     read_pipe, 
                                     write_image_to_fb)
+from src.utils.utils import TapStatus
 
-# TODO: Time seems to be 1 day ahead, so we need to identity the issue and fix this.
+
+SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
+
+
 class Screen:
     """
     A class to manage and display the user interface on a screen.
@@ -207,7 +211,8 @@ class Screen:
         """
         self.create_image(self.dashboard_bg_color)
         image_center = self.get_image_center()
-        self.add_text(ftimestamp(time.time()), (0, 0), self.dashboard_font_family, self.dashboard_font_size, self.dashboard_font_color, centered=False)
+        date_str = time.strftime(SAVED_TIMESTAMP_FORMAT, time.localtime(time.time()))
+        self.add_text(date_str, (0, 0), self.dashboard_font_family, self.dashboard_font_size, self.dashboard_font_color, centered=False)
         self.add_text(f"Unit Count: {self.device_state['unit_count']}", image_center, self.dashboard_font_family, self.dashboard_font_size, self.dashboard_font_color, centered=True)
         self.draw_image()
 
@@ -233,13 +238,12 @@ class Screen:
         while not is_pipe_empty:
             tap_data = read_pipe(self.touch_sensor_pipe)
             if tap_data:
-                # TODO: Decide if this data is or will be useful
-                # device_id = tap_data["device_id"]
+                # TODO: We may decide to store this data from a stopwatch time.
                 # timestamp = tap_data["timestamp"]
-                status = tap_data['status']  # This will be either "GOOD" or "BAD"
-                if status == 'Bad':
+                status = tap_data['status']
+                if status == TapStatus.BAD:
                     self.draw_popup(self.popup_warning_message, self.popup_warning_bg_color)
-                elif status == 'Good':
+                elif status == TapStatus.GOOD:
                     self.device_state['unit_count'] += 1
                     write_device_state(self.device_state, self.device_state_file_path)
                     self.draw_popup(self.tap_event_message, self.tap_event_bg_color)
