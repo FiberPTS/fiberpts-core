@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Error message to look for
-ERROR_PATTERN="panel-ilitek-ili9341 spi0.0: error -110 when sending command 0x2a"
+ERROR_PATTERN="TOBEDETERMINED"
 
 while true; do
     # Check the dmesg output for the error pattern

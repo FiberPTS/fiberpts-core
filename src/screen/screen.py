@@ -121,7 +121,7 @@ class Screen:
             else:
                 is_pipe_empty = True
 
-    def start(self) -> None:
+    def run(self) -> None:
         """Start the main loop of the screen, updating the display at the set frame rate and handling incoming pipe data."""
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
         while True:
@@ -134,4 +134,4 @@ class Screen:
 
 if __name__ == "__main__":
     screen = Screen()
-    screen.start()
+    screen.run()
