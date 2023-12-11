@@ -1,31 +1,42 @@
 #!/bin/bash
 
-# INSTALL PYTHON AND CREATE VIRTUAL ENVIRONMENT
-sudo apt install python3-pip python3-venv -y
-python3 -m venv /opt/FiberPTS/venv
+assert_conditions() {
+    # Root check
+    if [ "$(id -u)" -ne 0 ]; then
+        echo "This script must be run as root. Please use sudo."
+        exit 1
+    fi
 
-# INSTALL DEPENDENCIES
-sudo /opt/FiberPTS/venv/bin/pip3 install -r /opt/FiberPTS/requirements.txt
+    if [ -z "$PROJECT_PATH" ]; then
+        echo "Required environment variable PROJECT_PATH is not set."
+        exit 1
+    fi
+}
 
+create_virtual_environment() {
+    python3 -m venv "$PROJECT_PATH/venv" || { echo "Failed to create virtual environment."; exit 1; }
+    echo "Virtual environment created at $PROJECT_PATH/venv"
+}
 
-# SET PROJECT PATH
-# Path to the project directory
-PROJECT_DIR="/opt/FiberPTS"
+# TODO: Fix implicit importing of FiberPTS modules without needing .pth file
+add_path_to_pth_file() {
+    local venv_dir="$PROJECT_PATH/venv"
+    local pth_file_name="fiberpts.pth"
+    local pth_file_path="$venv_dir/lib/python3.11/site-packages/$pth_file_name"
 
-# Path to the virtual environment
-VENV_DIR="$PROJECT_DIR/venv"
+    if [ -d "$venv_dir" ]; then
+        echo "$PROJECT_PATH" > "$pth_file_path"
+        echo "Path added to $pth_file_path"
+    else
+        echo "Error: Virtual environment directory not found."
+        exit 1
+    fi
+}
 
-# Name of the .pth file
-PTH_FILE_NAME="fiberpts.pth"
+main() {
+    assert_conditions
+    create_virtual_environment
+    add_path_to_pth_file
+}
 
-# Full path to the .pth file in the virtual environment
-PTH_FILE_PATH="$VENV_DIR/lib/python3.11/site-packages/$PTH_FILE_NAME"
-
-# Check if the virtual environment directory exists
-if [ -d "$VENV_DIR" ]; then
-    # Create or overwrite the .pth file with the project directory path
-    echo "$PROJECT_DIR" > "$PTH_FILE_PATH"
-    echo "Path added to $PTH_FILE_PATH"
-else
-    echo "Error: Virtual environment directory not found."
-fi
+main
