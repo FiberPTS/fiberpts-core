@@ -1,15 +1,100 @@
 import json
 import os
 import time
-from typing import Dict, Any
+from typing import Dict, Any, NamedTuple
 
 from PIL import Image
 import numpy as np
 
+from config.screen_config import *
+from src.utils.paths import DISPLAY_FRAME_BUFFER_PATH
+
+
+class DisplayAttributes(NamedTuple):
+    """Represents display-related attributes.
+
+    Attributes:
+        display_fb_path (str): Path to the display framebuffer.
+        display_height (int): Height of the display in pixels.
+        display_width (int): Width of the display in pixels.
+        display_frame_rate (int): Frame rate for display updates.
+    """
+    display_fb_path: str = DISPLAY_FRAME_BUFFER_PATH
+    display_height: str = DISPLAY_HEIGHT
+    display_width: str = DISPLAY_WIDTH
+    display_frame_rate:str = DISPLAY_FRAME_RATE
+
+
+class DashboardAttributes(NamedTuple):
+    """Contains attributes specific to the dashboard's appearance.
+
+    Attributes:
+        dashboard_font_family (str): Font family for the dashboard text.
+        dashboard_font_size (int): Font size for the dashboard text.
+        dashboard_font_color (str): Color of the dashboard text.
+        dashboard_bg_color (str): Background color of the dashboard.
+    """
+    dashboard_font_family: str = DASHBOARD_FONT_FAMILY
+    dashboard_font_size: int = DASHBOARD_FONT_SIZE
+    dashboard_font_color: str = DASHBOARD_FONT_COLOR
+    dashboard_bg_color: str = DASHBOARD_BG_COLOR
+
+
+class EventAttributes(NamedTuple):
+    """Defines attributes for various event backgrounds.
+
+    Attributes:
+        popup_error_bg_color (str): Background color for error popups.
+        popup_warning_bg_color (str): Background color for warning popups.
+        tap_event_bg_color (str): Background color for tap event messages.
+        order_set_bg_color (str): Background color for order set messages.
+        employee_set_bg_color (str): Background color for employee set messages.
+    """
+    popup_error_bg_color: str = POPUP_ERROR_BG_COLOR
+    popup_warning_bg_color: str = POPUP_WARNING_BG_COLOR
+    tap_event_bg_color: str = TAP_EVENT_BG_COLOR
+    order_set_bg_color: str = ORDER_SET_BG_COLOR
+    employee_set_bg_color: str = EMPLOYEE_SET_BG_COLOR
+
+
+class MessageAttributes(NamedTuple):
+    """Represents attributes related to the messaging in popups and events.
+
+    Attributes:
+        popup_font_family (str): Font family for popup messages.
+        popup_font_size (int): Font size for popup messages.
+        popup_font_color (str): Color of the popup message text.
+        popup_error_message (str): Default message for error popups.
+        popup_warning_message (str): Default message for warning popups.
+        tap_event_message (str): Default message for tap event notifications.
+        order_set_message (str): Default message for order set notifications.
+        employee_set_message (str): Default message for employee set notifications.
+    """
+    popup_font_family: str = POPUP_FONT_FAMILY
+    popup_font_size: int = POPUP_FONT_SIZE
+    popup_font_color: str = POPUP_FONT_COLOR
+    popup_error_message: str = POPUP_ERROR_MESSAGE
+    popup_warning_message: str = POPUP_WARNING_MESSAGE
+    tap_event_message: str = TAP_EVENT_MESSAGE
+    order_set_message: str = ORDER_SET_MESSAGE
+    employee_set_message: str = EMPLOYEE_SET_MESSAGE
+
+
+class PopupAttributes(NamedTuple):
+    """Encapsulates attributes specifically for popup configuration.
+
+    Attributes:
+        event_attributes (NamedTuple): Attributes related to event backgrounds.
+        message_attributes (NamedTuple): Attributes pertaining to messaging in popups.
+        popup_duration (int): Duration to display popups (in seconds).
+    """
+    event_attributes: NamedTuple = EventAttributes()
+    message_attributes: NamedTuple = MessageAttributes()
+    popup_duration: int = POPUP_DURATION
+
 
 def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
-    """
-    Check if the 'to_timestamp' is at least the next day compared to 'from_timestamp'.
+    """Check if the 'to_timestamp' is at least the next day compared to 'from_timestamp'.
 
     Args:
         from_timestamp (float): The starting Unix timestamp.
@@ -27,8 +112,7 @@ def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
 
 
 def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
-    """
-    Read the device state from a JSON file. Reset the unit count if the saved timestamp is from the previous day.
+    """Read the device state from a JSON file. Reset the unit count if the saved timestamp is from the previous day.
 
     Args:
         path_to_device_state (str): Path to the JSON file containing the device state.
@@ -58,8 +142,7 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
 
 
 def write_device_state(device_state: Dict[str, Any], path_to_device_state: str) -> None:
-    """
-    Write the updated device state to a JSON file.
+    """Write the updated device state to a JSON file.
 
     Args:
         device_state (Dict[str, Any]): The device state to write.
@@ -80,8 +163,7 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str) 
 
 
 def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
-    """
-    Read and parse JSON data from a named pipe.
+    """Read and parse JSON data from a named pipe.
 
     Args:
         path_to_pipe (str): Path to the named pipe.
@@ -104,9 +186,21 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
         return {}
 
 
-def image_to_raw_rgb565(image: Image) -> np.ndarray:
+def get_image_center(image: Image) -> tuple[int, int]:
+    """Get the center coordinates of an image.
+
+    Returns:
+        tuple[int, int]: The center coordinates (x, y) of the image, or (-1, -1) if no image is set.
     """
-    Convert a PIL image to raw RGB565 format.
+    if image:
+        width, height = image.size
+        center_x, center_y = width//2, height//2
+        return (center_x, center_y)
+    return (-1,-1)
+
+
+def image_to_raw_rgb565(image: Image) -> np.ndarray:
+    """Convert a PIL image to raw RGB565 format.
 
     Args:
         image (Image): The PIL image to convert.
@@ -132,8 +226,7 @@ def image_to_raw_rgb565(image: Image) -> np.ndarray:
 
 
 def write_image_to_fb(image: Image, path_to_fb: str) -> None:
-    """
-    Write a PIL image to a framebuffer device in RGB565 format.
+    """Write a PIL image to a framebuffer device in RGB565 format.
 
     Args:
         image (Image): The PIL image to write.
