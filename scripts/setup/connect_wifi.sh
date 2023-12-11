@@ -8,8 +8,45 @@ assert_conditions() {
 }
 
 connect_wifi() {
-    nmcli dev wifi connect "$WIFI_NAME" password "$WIFI_PSK"
-    nmcli connection modify "$WIFI_NAME" connection.autoconnect yes
+    local attempt=0
+    local max_attempts=5
+    local success=false
+
+    while [ $attempt -lt $max_attempts ] && [ "$success" = false ]; do
+        ((attempt++))
+        echo "Attempt $attempt of $max_attempts"
+
+        # Try to connect with existing credentials
+        nmcli dev wifi connect "$WIFI_NAME" password "$WIFI_PSK"
+        local status=$?
+
+        if [ $status -eq 0 ]; then
+            success=true
+            echo "Connected successfully to $WIFI_NAME."
+        elif [ $status -eq 1 ]; then
+            # General errors (e.g., Wi-Fi is turned off)
+            echo "An error occurred. Unable to connect to $WIFI_NAME."
+            break
+        elif [ $status -eq 2 ]; then
+            # Invalid arguments (e.g., wrong password or SSID not found)
+            echo "Invalid SSID or password. Please enter credentials again."
+            echo -n "Enter Wi-Fi Name: "
+            read WIFI_NAME
+            echo -n "Enter Wi-Fi Password: "
+            read -s WIFI_PSK
+            echo
+        else
+            # Other errors
+            echo "An unexpected error occurred. Unable to connect."
+            break
+        fi
+    done
+
+    if [ "$success" = false ]; then
+        echo "Failed to connect after $max_attempts attempts."
+    else
+        nmcli connection modify "$WIFI_NAME" connection.autoconnect yes
+    fi
 }
 
 main() {
