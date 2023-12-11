@@ -11,4 +11,4 @@ sleep 0.5
 # Unmap the console
 con2fbmap 1 0
 # Clear the screen
-dd if=/dev/zero of="$DISPLAY_FRAME_BUFFER_PATH" bs=1 count=153600
+sudo dd if=/dev/zero of="$DISPLAY_FRAME_BUFFER_PATH" bs=1 count=153600
