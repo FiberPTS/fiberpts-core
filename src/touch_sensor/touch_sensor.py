@@ -25,7 +25,9 @@ class TouchSensor:
     def __init__(
         self,
         debounce_time: int = DEBOUNCE_TIME,
-        screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE                      
+        touch_sensor_line: int = TOUCH_SENSOR_LINE,
+        touch_sensor_chip: int = TOUCH_SENSOR_CHIP,
+        screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE                   
     ) -> None:
         """
         Initializes the TouchSensor with specified debounce time and pipe path.
@@ -35,6 +37,8 @@ class TouchSensor:
             screen_pipe: File path to the screen FIFO.
         """
         self.debounce_time = debounce_time
+        self.touch_sensor_line = touch_sensor_line
+        self.touch_sensor_chip = touch_sensor_chip
         self.screen_pipe = screen_pipe
         self.cloud_db = CloudDBClient()
         self.last_tap = Tap()
@@ -96,8 +100,8 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         # TODO: Create chip/pin mapping in gpio_config
-        chip_path = '/dev/gpiochip1'
-        line_offset = 26
+        chip_path = f"/dev/gpiochip{self.touch_sensor_chip}"
+        line_offset = self.touch_sensor_line
 
         with gpiod.request_lines(
             path=chip_path,
