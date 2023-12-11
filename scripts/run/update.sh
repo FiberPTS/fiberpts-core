@@ -34,7 +34,7 @@ run_scripts() {
     echo -e "\nFinished update"
 }
 
-SCRIPTS=("set_user_permissions.sh" "set_device_overlays.sh" "create_services.sh")
+SCRIPTS=("set_user_permissions.sh" "create_services.sh")
 
 main() {
     assert_conditions
