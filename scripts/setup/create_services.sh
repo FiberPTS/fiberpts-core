@@ -20,7 +20,7 @@ process_service_files() {
 
     for service_template in "$service_dir"/*.service; do
         local service_filename=$(basename "$service_template")
-        if [ ! -d "$SYSTEMD_DIR/$service_filename" ]; then
+        if [ ! -f "$SYSTEMD_DIR/$service_filename" ]; then
             envsubst < "$service_template" > "$SYSTEMD_DIR/$service_filename"
             echo "Service file created: $service_filename"
             systemctl enable "$service_filename"
