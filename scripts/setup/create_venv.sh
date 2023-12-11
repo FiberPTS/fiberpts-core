@@ -14,7 +14,7 @@ assert_conditions() {
 }
 
 create_virtual_environment() {
-    if [ ! -d "$PROJECT_DIR/venv" ]; then
+    if [ ! -d "$PROJECT_PATH/venv" ]; then
         python3 -m venv "$PROJECT_PATH/venv" || { echo "Failed to create virtual environment."; exit 1; }
         echo "Virtual environment created at $PROJECT_PATH/venv"
     fi
