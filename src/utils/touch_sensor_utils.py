@@ -1,7 +1,7 @@
 import time
 from typing import NamedTuple
 
-from utils import TapStatus
+from src.utils import TapStatus
 
 
 class Tap(NamedTuple):

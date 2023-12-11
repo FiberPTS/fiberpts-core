@@ -5,11 +5,11 @@ import os
 import gpiod
 from gpiod.line import Bias, Edge
 
-from cloud_db.cloud_db import CloudDBClient
+from src.cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
-from utils.paths import TOUCH_SENSOR_TO_SCREEN_PIPE
-from utils.touch_sensor_utils import *
-from utils.utils import get_machine_id, TapStatus
+from src.utils.paths import TOUCH_SENSOR_TO_SCREEN_PIPE
+from src.utils.touch_sensor_utils import *
+from src.utils.utils import get_machine_id, TapStatus
 
 
 class TouchSensor:
