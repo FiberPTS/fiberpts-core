@@ -26,7 +26,10 @@ process_service_files() {
             systemctl enable "$service_filename"
             echo "Service file enabled: $service_filename"
         else
-            echo "Service file already exists: $service_filename"
+            envsubst < "$service_template" > "$SYSTEMD_DIR/$service_filename"
+            systemctl daemon-reload
+            systemctl restart "$service_filename"
+            echo "Service file updated: $service_filename"
         fi
     done
 
