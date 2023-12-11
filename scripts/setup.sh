@@ -17,7 +17,7 @@ assert_conditions() {
 }
 
 install_apt_dependencies() {
-    apt-get update && apt-get install -y python3-pip python3-venv zenity || {
+    apt-get update && apt-get install -y python3-pip python3-venv || {
             echo "Failed to install dependencies. Exiting."
             exit 1
         }
@@ -45,25 +45,47 @@ cleanup_after_reboot() {
     echo "Cleanup complete."
 }
 
+print_progress_bar() {
+    local progress=$1
+    local total=$2
+    local bar_length=50  # Length of the progress bar
+    local pos=$((bar_length * progress / total))
+    
+    # Create progress bar string
+    local bar=""
+    for ((i=0; i<bar_length; i++)); do
+        if [ $i -lt $pos ]; then
+            bar="${bar}#"
+        else
+            bar="${bar}."
+        fi
+    done
+
+    # Print progress bar
+    printf "\r[%-50s] %d%%" "$bar" $((progress * 100 / total))
+}
+
 run_scripts() {
-    # Run scripts with progress
     local phase=$1
     local scripts=("${@:2}")
     local total=${#scripts[@]}
     local progress=0
     local step=$((100 / total))
 
-    echo "0" | zenity --progress --title="$phase Phase Progress" --percentage=0 --auto-close --no-cancel
+    echo "$phase Phase Progress"
+    print_progress_bar $progress $total
 
     for script in "${scripts[@]}"; do
         echo "Running script: $script"
         if ! bash "$SETUP_DIR/$script" 2>&1; then
-            echo "Error executing $script. Exiting."
+            echo -e "\nError executing $script. Exiting."
             exit 1
         fi
         progress=$((progress + step))
-        echo $progress | zenity --progress --title="$phase Phase Progress" --percentage=$progress --auto-close --no-cancel
+        print_progress_bar $progress $total
     done
+
+    echo -e "\n$phase Phase Complete"
 }
 
 assert_conditions "$@"
