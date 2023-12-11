@@ -1,10 +1,10 @@
 from datetime import timedelta
 import json
 import os
+import select
 
 import gpiod
 from gpiod.line import Bias, Edge
-import asyncio
 
 from src.cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
@@ -95,25 +95,6 @@ class TouchSensor:
                 json.dump(tap_data, pipeout)
 
 
-    async def poll(self) -> None:
-        with gpiod.request_lines(
-            self.chip_path,
-            consumer="async-touch-sensor",
-            config={
-                self.line_offset: 
-                    gpiod.LineSettings(
-                        edge_detection=Edge.RISING,  # Detect rising edge for touch
-                        bias=Bias.DISABLED,  # Assuming a pull-down configuration
-                        debounce_period=timedelta(milliseconds=50)
-                    )
-            }
-        ) as request:
-            while True:
-                await request.read_edge_events_async()
-                print("Touch detected")
-                self.handle_tap()
-
-
     def run(self) -> None:
         """Monitors the GPIO line for tap events and processes them.
 
@@ -121,7 +102,23 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         # TODO: Create chip/pin mapping in gpio_config
-        asyncio.run(self.poll())
+        with gpiod.request_lines(
+            self.chip_path,
+            consumer="async-watch-touch",
+            config={
+                self.line_offset: gpiod.LineSettings(
+                    edge_detection=Edge.RISING,  # Assuming touch is detected on rising edge
+                    bias=Bias.DISABLED,  # Assuming external pull-up/pull-down is not needed
+                    debounce_period=timedelta(milliseconds=50)  # Adjust based on your requirement
+                )
+            },
+        ) as request:
+            poll = select.poll()
+            poll.register(request.fd, select.POLLIN)
+            while True:
+                poll.poll()  # Wait for an event on the GPIO line
+                for event in request.read_edge_events():
+                    self.handle_tap(event)
 
 
 if __name__ == "__main__":
