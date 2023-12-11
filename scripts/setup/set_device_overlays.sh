@@ -14,9 +14,11 @@ assert_conditions() {
 }
 
 install_libretech_wiring_tool() {
-    git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "$PROJECT_DIR" || { echo "Git clone failed"; exit 1; }
-    sh "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
-    "$PROJECT_DIR/libretech-wiring-tool/ldto" merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
+    if [ ! -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
+        git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "$PROJECT_DIR/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
+        sh "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
+        "$PROJECT_DIR/libretech-wiring-tool/ldto" merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
+    fi
 }
 
 main() {

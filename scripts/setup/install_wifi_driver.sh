@@ -14,10 +14,10 @@ assert_conditions() {
 }
 
 install_rtl8812au_driver() {
-    cd "$PROJECT_DIR" || { echo "Failed to change directory to $PROJECT_DIR"; exit 1; }
-    git clone -b v5.6.4.2 https://github.com/aircrack-ng/rtl8812au.git || { echo "Git clone failed"; exit 1; }
-    cd rtl8812au || { echo "Failed to change directory to rtl8812au"; exit 1; }
-    make dkms_install || { echo "make dkms_install failed"; exit 1; }
+    if [ ! -d "$PROJECT_DIR/rtl8812au" ]; then
+        git clone -b v5.6.4.2 https://github.com/aircrack-ng/rtl8812au.git "$PROJECT_DIR/rtl8812au" || { echo "Git clone failed"; exit 1; }
+        make -C "$PROJECT_DIR/rtl8812au" dkms_install || { echo "make dkms_install failed"; exit 1; }
+    fi
 }
 
 main() {

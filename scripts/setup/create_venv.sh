@@ -14,8 +14,10 @@ assert_conditions() {
 }
 
 create_virtual_environment() {
-    python3 -m venv "$PROJECT_PATH/venv" || { echo "Failed to create virtual environment."; exit 1; }
-    echo "Virtual environment created at $PROJECT_PATH/venv"
+    if [ ! -d "$PROJECT_DIR/venv" ]; then
+        python3 -m venv "$PROJECT_PATH/venv" || { echo "Failed to create virtual environment."; exit 1; }
+        echo "Virtual environment created at $PROJECT_PATH/venv"
+    fi
 }
 
 # TODO: Fix implicit importing of FiberPTS modules without needing .pth file
