@@ -15,10 +15,22 @@ assert_conditions() {
 
 create_fifo_pipes() {
     mkdir -p "$PIPE_FOLDER_PATH"
-    mkfifo "$TOUCH_SENSOR_TO_SCREEN_PIPE"
-    echo "FIFO pipe $TOUCH_SENSOR_TO_SCREEN_PIPE created"
-    mkfifo "$NFC_TO_SCREEN_PIPE"
-    echo "FIFO pipe $NFC_TO_SCREEN_PIPE created"
+
+    # Check if TOUCH_SENSOR_TO_SCREEN_PIPE already exists
+    if [ -p "$TOUCH_SENSOR_TO_SCREEN_PIPE" ]; then
+        echo "FIFO pipe $TOUCH_SENSOR_TO_SCREEN_PIPE already exists."
+    else
+        mkfifo "$TOUCH_SENSOR_TO_SCREEN_PIPE"
+        echo "FIFO pipe $TOUCH_SENSOR_TO_SCREEN_PIPE created."
+    fi
+
+    # Check if NFC_TO_SCREEN_PIPE already exists
+    if [ -p "$NFC_TO_SCREEN_PIPE" ]; then
+        echo "FIFO pipe $NFC_TO_SCREEN_PIPE already exists."
+    else
+        mkfifo "$NFC_TO_SCREEN_PIPE"
+        echo "FIFO pipe $NFC_TO_SCREEN_PIPE created."
+    fi
 }
 
 main() {

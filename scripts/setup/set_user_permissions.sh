@@ -15,18 +15,27 @@ assert_conditions() {
 }
 
 add_application_user() {
-    adduser "$USERNAME" --disabled-password --gecos "" || return 1
-    # Running a subshell for setting the username and password securely
-    sh -c 'echo "$1:$2" | chpasswd' sh "$USERNAME" "$PASSWORD" || return 1
-    echo "User created and password set."
+    # Check if user already exists
+    if id "$USERNAME" &>/dev/null; then
+        echo "User $USERNAME already exists. Skipping user creation."
+    else
+        adduser "$USERNAME" --disabled-password --gecos "" || return 1
+        # Running a subshell for setting the username and password securely
+        sh -c 'echo "$1:$2" | chpasswd' sh "$USERNAME" "$PASSWORD" || return 1
+        echo "User created and password set."
+    fi
 }
 
 create_and_assign_group() {
-    groupadd "$GROUP_NAME" || return 1
+    # Check if group already exists
+    if getent group "$GROUP_NAME" &>/dev/null; then
+        echo "Group $GROUP_NAME already exists. Skipping group creation."
+    else
+        groupadd "$GROUP_NAME" || return 1
+    fi
     usermod -a -G "$GROUP_NAME" "$USERNAME" || return 1
     # Add to any other necessary groups
     usermod -a -G video "$USERNAME" || return 1
-    
 }
 
 set_ownership_and_permissions() {
