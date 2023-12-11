@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 import supabase
 from postgrest import APIResponse
 
-from utils.touch_sensor_utils import Tap
-from utils.utils import TIMESTAMP_FORMAT
+from src.utils.touch_sensor_utils import Tap
+from src.utils.utils import TIMESTAMP_FORMAT
 
 
 load_dotenv()
