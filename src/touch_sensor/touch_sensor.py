@@ -101,14 +101,14 @@ class TouchSensor:
         Continuously checks a specific GPIO line for voltage changes. If a change is detected,
         interprets it as a tap event and triggers the tap handling process.
         """
-        # TODO: Create chip/pin mapping in gpio_config
+        # Configure the GPIO line
         with gpiod.request_lines(
             self.chip_path,
             consumer="async-watch-touch",
             config={
                 self.line_offset: gpiod.LineSettings(
-                    edge_detection=Edge.RISING,  # Assuming touch is detected on rising edge
-                    bias=Bias.DISABLED,  # Assuming external pull-up/pull-down is not needed
+                    edge_detection=Edge.BOTH,  # Detect both rising and falling edges
+                    bias=Bias.PULL_DOWN,  # No internal pull-up/pull-down resistor needed
                     debounce_period=timedelta(milliseconds=50)  # Adjust based on your requirement
                 )
             },
@@ -116,9 +116,15 @@ class TouchSensor:
             poll = select.poll()
             poll.register(request.fd, select.POLLIN)
             while True:
-                poll.poll()  # Wait for an event on the GPIO line
-                for event in request.read_edge_events():
-                    self.handle_tap(event)
+                # Wait for an event on the GPIO line with a timeout
+                if poll.poll(1000):  # Timeout of 1000 milliseconds (1 second)
+                    for event in request.read_edge_events():
+                        print(event)
+                        if event.type == event.Type.RISING_EDGE:
+                            self.handle_tap()  # Handle the tap event
+                else:
+                    # No event within the timeout period
+                    print("Waiting for tap event...")
 
 
 if __name__ == "__main__":
