@@ -102,6 +102,7 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         # Configure the GPIO line
+        request = None
         try:
             request = gpiod.request_lines(
                 self.chip_path,
@@ -121,8 +122,8 @@ class TouchSensor:
                 if poll.poll(1000):  # Timeout of 1000 milliseconds (1 second)
                     for event in request.read_edge_events():
                         print(event)
-                        if event.type == event.Type.RISING_EDGE:
-                            self.handle_tap()  # Handle the tap event
+                        #if event.type == event.event_type.RISING_EDGE:
+                        #    self.handle_tap()  # Handle the tap event
                 else:
                     # No event within the timeout period
                     print("Waiting for tap event...")
