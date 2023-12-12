@@ -101,8 +101,6 @@ class TouchSensor:
         Continuously checks a specific GPIO line for voltage changes. If a change is detected,
         interprets it as a tap event and triggers the tap handling process.
         """
-        chip = gpiod.Chip('/dev/gpiochip1')  # Use the appropriate chip name
-        line = chip.get_line('95')  # GPIO line number
         with gpiod.request_lines(
             '/dev/gpiochip1',
             consumer="get-line-value",
