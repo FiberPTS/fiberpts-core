@@ -107,7 +107,8 @@ class TouchSensor:
             config={'95': gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
             value = request.get_value('95')
-            print("{}={}".format('95', value))
+            print("{}={}".format('95', type(value)))
+
 if __name__ == "__main__":
     touch_sensor = TouchSensor()
     touch_sensor.run()
