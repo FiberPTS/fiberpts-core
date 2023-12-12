@@ -102,17 +102,18 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         # Configure the GPIO line
-        with gpiod.request_lines(
-            self.chip_path,
-            consumer="async-watch-touch",
-            config={
-                self.line_offset: gpiod.LineSettings(
-                    edge_detection=Edge.BOTH,  # Detect both rising and falling edges
-                    bias=Bias.PULL_DOWN,  # No internal pull-up/pull-down resistor needed
-                    debounce_period=timedelta(milliseconds=50)  # Adjust based on your requirement
-                )
-            },
-        ) as request:
+        try:
+            request = gpiod.request_lines(
+                self.chip_path,
+                consumer="async-watch-touch",
+                config={
+                    self.line_offset: gpiod.LineSettings(
+                        edge_detection=Edge.RISING,  # Detect both rising and falling edges
+                        bias=Bias.PULL_DOWN,  # No internal pull-up/pull-down resistor needed
+                        debounce_period=timedelta(milliseconds=50)  # Adjust based on your requirement
+                    )
+                },
+            )
             poll = select.poll()
             poll.register(request.fd, select.POLLIN)
             while True:
@@ -125,7 +126,11 @@ class TouchSensor:
                 else:
                     # No event within the timeout period
                     print("Waiting for tap event...")
-
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        finally:
+            if request is not None:
+                request.release()  # Ensure the GPIO line is released
 
 if __name__ == "__main__":
     touch_sensor = TouchSensor()
