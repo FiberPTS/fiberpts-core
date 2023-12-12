@@ -111,7 +111,7 @@ class Screen:
             if tap_data:
                 # TODO: We may decide to store this data from a stopwatch time.
                 # timestamp = tap_data["timestamp"]
-                status = tap_data['status']
+                status = TapStatus[tap_data['status']]
                 if status == TapStatus.BAD:
                     self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message, self.popup_attributes.event_attributes.popup_warning_bg_color)
                 elif status == TapStatus.GOOD:

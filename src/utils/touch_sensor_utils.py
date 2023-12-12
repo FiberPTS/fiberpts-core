@@ -26,24 +26,8 @@ class Tap(NamedTuple):
         This method allows the Tap instance to be converted to a dictionary.
         """
         for name, _ in self.__annotations__.items():
-            yield name, getattr(self, name)
-
-
-class SelfReleasingGpioLineRequest:
-    def __init__(self, chip_path: str, line_offset: int, line_settings: gpiod.LineSettings):
-        self.chip_path = chip_path
-        self.line_offset = line_offset
-        self.line_settings = line_settings
-        self.line = None
-
-    def __enter__(self):
-        self.line = gpiod.request_lines(
-            path=self.chip_path,
-            consumer='watch-touch-sensor-line',
-            config={self.line_offset: self.line_settings}
-            )
-        return self.line
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.line:
-            self.line.release()
+            value = getattr(self, name)
+            if isinstance(value, TapStatus):
+                yield name, value.name  # or value.value if you prefer the numeric value
+            else:
+                yield name, value

@@ -66,11 +66,11 @@ class TouchSensor:
             status=tap_status
         )
 
-        #self.pipe_tap_data(tap)
+        self.pipe_tap_data(tap)
 
         if tap.status == TapStatus.GOOD:
             # TODO: Implement child process creation for record handling.
-            #self.cloud_db.insert_tap_data(tap)
+            # self.cloud_db.insert_tap_data(tap)
             pass
         
         self.last_tap = tap
@@ -86,15 +86,18 @@ class TouchSensor:
             FileNotFoundError: If the pipeline path does not exist.
         """
         tap_data = dict(tap)
+        print(tap)
 
         try:
             fd = os.open(self.screen_pipe, os.O_WRONLY)
-        except FileNotFoundError:
-            raise FileNotFoundError  # TODO: Determine error message format
-        else:
-            with os.fdopen(fd, 'w') as pipeout:  # Convert file descriptor to file pointer
+            with os.fdopen(fd, 'w') as pipeout:
                 json.dump(tap_data, pipeout)
-
+        except FileNotFoundError:
+            raise FileNotFoundError("Named pipe not found")
+        except BrokenPipeError:
+            print("Cannot write to pipe - broken pipe")
+        except Exception as e:
+            print(f"Error writing to pipe: {e}")
 
     def run(self) -> None:
         """Monitors the GPIO line for tap events and processes them.
@@ -110,7 +113,7 @@ class TouchSensor:
             while True:
                 value = request.get_value(self.line_offset)
                 if value==gpiod.line.Value.ACTIVE:
-                    print(self.handle_tap())
+                    self.handle_tap()
                 elif value==gpiod.line.Value.INACTIVE:
                     pass
                 time.sleep(0.1)
