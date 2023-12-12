@@ -102,13 +102,16 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         with gpiod.request_lines(
-            '/dev/gpiochip1',
+            self.chip_path,
             consumer="get-line-value",
-            config={'95': gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
+            config={self.line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
-            value = request.get_value('95')
-            print(gpiod.line.Value.INACTIVE==value)
-            print("{}={}".format('95', value))
+            value = request.get_value(self.line_offset)
+            if value==gpiod.line.Value.ACTIVE:
+                print(self.handle_tap())
+            elif value==gpiod.line.Value.INACTIVE:
+                pass
+            time.sleep(0.1)
 
 if __name__ == "__main__":
     touch_sensor = TouchSensor()
