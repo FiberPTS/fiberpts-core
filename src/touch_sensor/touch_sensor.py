@@ -70,7 +70,8 @@ class TouchSensor:
 
         if tap.status == TapStatus.GOOD:
             # TODO: Implement child process creation for record handling.
-            self.cloud_db.insert_tap_data(tap)
+            #self.cloud_db.insert_tap_data(tap)
+            pass
         
         self.last_tap = tap
         return tap.status != TapStatus.BAD
