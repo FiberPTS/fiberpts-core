@@ -103,12 +103,13 @@ class TouchSensor:
         """
         chip = gpiod.Chip('/dev/gpiochip1')  # Use the appropriate chip name
         line = chip.get_line('95')  # GPIO line number
-        line.request(consumer='app', type=gpiod.LINE_REQ_DIR_IN)
-
-        while True:
-            state = line.get_value()
-            print(f"GPIO state: {state}")
-
+        with gpiod.request_lines(
+            '/dev/gpiochip1',
+            consumer="get-line-value",
+            config={'95': gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
+        ) as request:
+            value = request.get_value('95')
+            print("{}={}".format('95', value))
 if __name__ == "__main__":
     touch_sensor = TouchSensor()
     touch_sensor.run()
