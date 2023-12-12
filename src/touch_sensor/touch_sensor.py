@@ -101,37 +101,13 @@ class TouchSensor:
         Continuously checks a specific GPIO line for voltage changes. If a change is detected,
         interprets it as a tap event and triggers the tap handling process.
         """
-        # Configure the GPIO line
-        request = None
-        try:
-            request = gpiod.request_lines(
-                self.chip_path,
-                consumer="async-watch-touch",
-                config={
-                    self.line_offset: gpiod.LineSettings(
-                        edge_detection=Edge.RISING,  # Detect both rising and falling edges
-                        bias=Bias.PULL_DOWN,  # No internal pull-up/pull-down resistor needed
-                        debounce_period=timedelta(milliseconds=50)  # Adjust based on your requirement
-                    )
-                },
-            )
-            poll = select.poll()
-            poll.register(request.fd, select.POLLIN)
-            while True:
-                # Wait for an event on the GPIO line with a timeout
-                if poll.poll(1000):  # Timeout of 1000 milliseconds (1 second)
-                    for event in request.read_edge_events():
-                        print(event)
-                        #if event.type == event.event_type.RISING_EDGE:
-                        #    self.handle_tap()  # Handle the tap event
-                else:
-                    # No event within the timeout period
-                    print("Waiting for tap event...")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-        finally:
-            if request is not None:
-                request.release()  # Ensure the GPIO line is released
+        chip = gpiod.Chip('1')  # Use the appropriate chip name
+        line = chip.get_line('95')  # GPIO line number
+        line.request(consumer='app', type=gpiod.LINE_REQ_DIR_IN)
+
+        while True:
+            state = line.get_value()
+            print(f"GPIO state: {state}")
 
 if __name__ == "__main__":
     touch_sensor = TouchSensor()
