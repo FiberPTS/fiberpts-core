@@ -66,7 +66,7 @@ class TouchSensor:
             status=tap_status
         )
 
-        self.pipe_tap_data(tap)
+        #self.pipe_tap_data(tap)
 
         if tap.status == TapStatus.GOOD:
             # TODO: Implement child process creation for record handling.
