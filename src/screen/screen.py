@@ -52,16 +52,23 @@ class Screen:
         Args:
             bg_color (str): Background color for the image.
         """
-        self.image = Image.new('RGB', (self.display_attributes.display_height, self.display_attributes.display_width), bg_color)
+        self.image = Image.new('RGB', (self.display_attributes.display_height, self.display_attributes.display_width),
+                               bg_color)
 
     def draw_image(self) -> None:
         """Draw the current image to the display (assumes the screen needs 90 degree rotation)."""
         if self.image:
             self.image = self.image.rotate(90, expand=True)
-            write_image_to_fb(self.image, self.display_attributes.display_fb_path, self.display_attributes.display_fb_lock_path)
-        self.image = None
+            write_image_to_fb(self.image, self.display_attributes.display_fb_path,
+                              self.display_attributes.display_fb_lock_path)
 
-    def add_text(self, text: str, position: tuple[int, int], font_family: str, font_size: int, font_color: str, centered: bool = False) -> None:
+    def add_text(self,
+                 text: str,
+                 position: tuple[int, int],
+                 font_family: str,
+                 font_size: int,
+                 font_color: str,
+                 centered: bool = False) -> None:
         """Add text to the current image at the specified position.
 
         Args:
@@ -78,7 +85,7 @@ class Screen:
             if centered:
                 bbox = font.getbbox(text)
                 text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-                position = (position[0]-text_width//2, position[1]-text_height//2)
+                position = (position[0] - text_width // 2, position[1] - text_height // 2)
             draw.text(position, text, font=font, fill=font_color)
 
     def draw_dashboard(self) -> None:
@@ -86,8 +93,17 @@ class Screen:
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
         image_center = get_image_center(self.image)
         date_str = time.strftime(SAVED_TIMESTAMP_FORMAT, time.localtime(time.time()))
-        self.add_text(date_str, (0, 0), self.dashboard_attributes.dashboard_font_family, self.dashboard_attributes.dashboard_font_size, self.dashboard_attributes.dashboard_font_color, centered=False)
-        self.add_text(f"Unit Count: {self.device_state['unit_count']}", image_center, self.dashboard_attributes.dashboard_font_family, self.dashboard_attributes.dashboard_font_size, self.dashboard_attributes.dashboard_font_color, centered=True)
+        self.add_text(date_str, (0, 0),
+                      self.dashboard_attributes.dashboard_font_family,
+                      self.dashboard_attributes.dashboard_font_size,
+                      self.dashboard_attributes.dashboard_font_color,
+                      centered=False)
+        self.add_text(f"Unit Count: {self.device_state['unit_count']}",
+                      image_center,
+                      self.dashboard_attributes.dashboard_font_family,
+                      self.dashboard_attributes.dashboard_font_size,
+                      self.dashboard_attributes.dashboard_font_color,
+                      centered=True)
         self.draw_image()
 
     def draw_popup(self, text: str, bg_color: str) -> None:
@@ -99,37 +115,46 @@ class Screen:
         """
         self.create_image(bg_color)
         image_center = get_image_center(self.image)
-        self.add_text(text, image_center, self.popup_attributes.message_attributes.popup_font_family, self.popup_attributes.message_attributes.popup_font_size, self.popup_attributes.message_attributes.popup_font_color, centered=True)
+        self.add_text(text,
+                      image_center,
+                      self.popup_attributes.message_attributes.popup_font_family,
+                      self.popup_attributes.message_attributes.popup_font_size,
+                      self.popup_attributes.message_attributes.popup_font_color,
+                      centered=True)
         self.draw_image()
         time.sleep(self.popup_attributes.popup_duration)
 
     def handle_pipe_data(self) -> None:
         """Handle data received from the touch sensor pipe. Updates device state and draws popups based on the received data."""
+        found_pipe_data = False
         is_pipe_empty = False
         while not is_pipe_empty:
             tap_data = read_pipe(self.touch_sensor_pipe)
             if tap_data:
+                found_pipe_data = True
                 # TODO: We may decide to store this data from a stopwatch time.
                 # timestamp = tap_data["timestamp"]
                 status = TapStatus[tap_data['status']]
                 if status == TapStatus.BAD:
-                    self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message, self.popup_attributes.event_attributes.popup_warning_bg_color)
+                    self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
+                                    self.popup_attributes.event_attributes.popup_warning_bg_color)
                 elif status == TapStatus.GOOD:
                     self.device_state['unit_count'] += 1
                     write_device_state(self.device_state, self.device_state_file_path)
-                    self.draw_popup(self.popup_attributes.message_attributes.tap_event_message, self.popup_attributes.event_attributes.tap_event_bg_color)
+                    self.draw_popup(self.popup_attributes.message_attributes.tap_event_message,
+                                    self.popup_attributes.event_attributes.tap_event_bg_color)
             else:
                 is_pipe_empty = True
+        return found_pipe_data
 
     def run(self) -> None:
         """Start the main loop of the screen, updating the display at the set frame rate and handling incoming pipe data."""
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
+        self.draw_dashboard()
         while True:
-            start_time = time.time()
-            self.draw_dashboard()
-            elapsed_time = time.time() - start_time
-            time.sleep(max(0, frame_duration - elapsed_time))
-            self.handle_pipe_data()
+            time.sleep(frame_duration)
+            if self.handle_pipe_data():
+                self.draw_dashboard()
 
 
 if __name__ == "__main__":
