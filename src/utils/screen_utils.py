@@ -250,6 +250,8 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
             fbfd = os.open(path_to_fb, os.O_RDWR)
 
             fixed_info = fcntl.ioctl(fbfd, 0x4602, struct.pack("HHI", 0, 0, 0))
+            print(len(fixed_info))
+            print(fixed_info)
             _, _, screensize = struct.unpack("HHH", fixed_info)
 
             if len(raw_bytes) != screensize:
