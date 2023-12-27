@@ -1,7 +1,7 @@
 # Display configurations
 DISPLAY_HEIGHT = 320
 DISPLAY_WIDTH = 240
-DISPLAY_FRAME_RATE = 5
+DISPLAY_FRAME_RATE = 4
 
 # Dashboard configurations
 DASHBOARD_FONT_FAMILY = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
