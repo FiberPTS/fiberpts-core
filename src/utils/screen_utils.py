@@ -3,6 +3,8 @@ import os
 import time
 from typing import Dict, Any, NamedTuple
 import fcntl
+import struct
+import mmap
 
 from PIL import Image
 import numpy as np
@@ -138,8 +140,8 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
     current_time = time.time()
 
     if is_at_least_next_day(saved_timestamp, current_time):
-            device_state['unit_count'] = 0
-            write_device_state(device_state, path_to_device_state)
+        device_state['unit_count'] = 0
+        write_device_state(device_state, path_to_device_state)
 
     return device_state
 
@@ -243,9 +245,23 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
     try:
         with SelfReleasingLock(path_to_fb_lock):
             raw_data = image_to_raw_rgb565(image)
-            with open(path_to_fb, "wb") as f:
-                f.write(raw_data.tobytes())
+            raw_bytes = raw_data.tobytes()
+
+            fbfd = os.open(path_to_fb, os.O_RDWR)
+
+            fixed_info = fcntl.ioctl(fbfd, 0x4602, struct.pack("HHI", 0, 0, 0))
+            _, _, screensize = struct.unpack("HHH", fixed_info)
+
+            if len(raw_bytes) != screensize:
+                raise ValueError('Size mismatch: Data size does not match buffer size')
+
+            fbp = mmap.mmap(fbfd, screensize, flags=mmap.MAP_SHARED, prot=mmap.PROT_WRITE)
+            fbp[:] = raw_bytes
+            fbp.flush()
+
+            os.close(fbfd)
+
     except FileNotFoundError:
-        raise FileNotFoundError # TODO: Determine error message format
+        raise FileNotFoundError  # TODO: Determine error message format
     except IOError as e:
-        raise IOError # TODO: Determine error message format
+        raise IOError  # TODO: Determine error message format
