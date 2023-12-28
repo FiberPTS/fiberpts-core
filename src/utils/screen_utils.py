@@ -247,15 +247,13 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
             raw_data = image_to_raw_rgb565(image)
             raw_bytes = raw_data.tobytes()
 
-            fbfd = os.open(path_to_fb, os.O_RDWR)
-
-            fixed_info = fcntl.ioctl(fbfd, 0x4602, struct.pack("HHI", 0, 0, 0))
-            print(len(fixed_info))
-            print(fixed_info)
-            _, _, screensize = struct.unpack("HHH", fixed_info)
+            width, height = image.size
+            screensize = width * height * 2
 
             if len(raw_bytes) != screensize:
                 raise ValueError('Size mismatch: Data size does not match buffer size')
+
+            fbfd = os.open(path_to_fb, os.O_RDWR)
 
             fbp = mmap.mmap(fbfd, screensize, flags=mmap.MAP_SHARED, prot=mmap.PROT_WRITE)
             fbp[:] = raw_bytes
