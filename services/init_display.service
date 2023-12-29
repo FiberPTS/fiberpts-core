@@ -2,7 +2,7 @@
 Description=Initialize the device
 
 [Service]
-ExecStart=$PROJECT_PATH/scripts/run/init.sh
+ExecStart=$PROJECT_PATH/scripts/run/init_display.sh
 User=$USERNAME
 Group=$GROUP_NAME
 
