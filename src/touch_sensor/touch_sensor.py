@@ -23,13 +23,11 @@ class TouchSensor:
         last_tap: The last recorded tap.
     """
 
-    def __init__(
-        self,
-        debounce_time: int = DEBOUNCE_TIME,
-        line_offset: int = TOUCH_SENSOR_LINE_OFFSET,
-        chip: int = TOUCH_SENSOR_CHIP,
-        screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE                   
-    ) -> None:
+    def __init__(self,
+                 debounce_time: int = DEBOUNCE_TIME,
+                 line_offset: int = TOUCH_SENSOR_LINE_OFFSET,
+                 chip: int = TOUCH_SENSOR_CHIP,
+                 screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE) -> None:
         """
         Initializes the TouchSensor with specified debounce time and pipe path.
 
@@ -60,11 +58,7 @@ class TouchSensor:
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD
 
-        tap = Tap(
-            machine_id=get_machine_id(), 
-            timestamp=timestamp,
-            status=tap_status
-        )
+        tap = Tap(machine_id=get_machine_id(), timestamp=timestamp, status=tap_status)
 
         self.pipe_tap_data(tap)
 
@@ -72,7 +66,7 @@ class TouchSensor:
             # TODO: Implement child process creation for record handling.
             # self.cloud_db.insert_tap_data(tap)
             pass
-        
+
         self.last_tap = tap
         return tap.status != TapStatus.BAD
 
@@ -89,8 +83,7 @@ class TouchSensor:
         print(tap)
 
         try:
-            fd = os.open(self.screen_pipe, os.O_WRONLY)
-            with os.fdopen(fd, 'w') as pipeout:
+            with open(self.screen_pipe, 'w') as pipeout:
                 json.dump(tap_data, pipeout)
         except FileNotFoundError:
             raise FileNotFoundError("Named pipe not found")
@@ -106,18 +99,19 @@ class TouchSensor:
         interprets it as a tap event and triggers the tap handling process.
         """
         with gpiod.request_lines(
-            self.chip_path,
-            consumer="get-line-value",
-            config={self.line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
+                self.chip_path,
+                consumer="get-line-value",
+                config={self.line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
             while True:
                 value = request.get_value(self.line_offset)
-                if value==gpiod.line.Value.ACTIVE:
+
+                if value == gpiod.line.Value.ACTIVE:
                     self.handle_tap()
-                elif value==gpiod.line.Value.INACTIVE:
+                elif value == gpiod.line.Value.INACTIVE:
                     pass
                 time.sleep(0.1)
-                
+
 
 if __name__ == "__main__":
     touch_sensor = TouchSensor()
