@@ -38,6 +38,7 @@ class TouchSensor:
         self.debounce_time = debounce_time
         self.line_offset = line_offset
         self.chip_path = f"/dev/gpiochip{chip}"
+        self.device_id = get_device_id()
         self.screen_pipe = screen_pipe
         self.cloud_db = CloudDBClient()
         self.last_tap = Tap()
@@ -58,16 +59,18 @@ class TouchSensor:
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD
 
-        tap = Tap(device_id=get_device_id(), timestamp=timestamp, status=tap_status)
+        tap = Tap(device_id=self.device_id, timestamp=timestamp, status=tap_status)
 
         self.pipe_tap_data(tap)
 
-        if tap.status == TapStatus.GOOD:
+        is_valid_tap = tap.status == TapStatus.GOOD
+
+        if is_valid_tap:
             # TODO: Implement child process creation for record handling.
             self.cloud_db.insert_tap_data(tap)
 
         self.last_tap = tap
-        return tap.status != TapStatus.BAD
+        return is_valid_tap
 
     def pipe_tap_data(self, tap: Tap) -> None:
         """Sends tap data to named pipe for IPC with screen module.

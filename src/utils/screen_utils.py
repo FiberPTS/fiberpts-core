@@ -182,11 +182,11 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
     try:
         with open(path_to_pipe, 'r') as pipein:
             raw_data = pipein.read()
-        if raw_data:
-            return json.loads(raw_data)
+            if raw_data:
+                return json.loads(raw_data)
         return {}
     except FileNotFoundError:
-        raise FileNotFoundError  # TODO: Determine error message format
+        raise FileNotFoundError # TODO: Determine error message format
 
 
 def get_image_center(image: Image) -> tuple[int, int]:

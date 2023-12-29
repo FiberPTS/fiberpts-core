@@ -14,8 +14,8 @@ POPUP_FONT_FAMILY = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 POPUP_FONT_SIZE = 24
 POPUP_FONT_COLOR = 'white'
 POPUP_ERROR_BG_COLOR = 'red'
-POPUP_WARNING_BG_COLOR = 'gold'
-POPUP_DURATION = 2
+POPUP_WARNING_BG_COLOR = 'goldenrod'
+POPUP_DURATION = 1.5
 
 # Tap event pop-up configurations
 TAP_EVENT_BG_COLOR = 'green'

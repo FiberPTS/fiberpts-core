@@ -132,14 +132,14 @@ class Screen:
             # TODO: We may decide to store this data from a stopwatch time.
             # timestamp = tap_data["timestamp"]
             status = TapStatus[tap_data['status']]
-            if status == TapStatus.BAD:
-                self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
-                                self.popup_attributes.event_attributes.popup_warning_bg_color)
-            elif status == TapStatus.GOOD:
+            if status == TapStatus.GOOD:
                 self.device_state['unit_count'] += 1
                 write_device_state(self.device_state, self.device_state_file_path)
                 self.draw_popup(self.popup_attributes.message_attributes.tap_event_message,
                                 self.popup_attributes.event_attributes.tap_event_bg_color)
+            elif status == TapStatus.BAD:
+                self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
+                                self.popup_attributes.event_attributes.popup_warning_bg_color)
             return True
         return False
 
