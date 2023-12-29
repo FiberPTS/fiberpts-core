@@ -180,15 +180,13 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
         FileNotFoundError: If the named pipe does not exist.
     """
     try:
-        fd = os.open(path_to_pipe, os.O_RDONLY | os.O_NONBLOCK)
-    except FileNotFoundError:
-        raise FileNotFoundError # TODO: Determine error message format
-    else:
-        with os.fdopen(fd, 'r') as pipein:
+        with open(path_to_pipe, 'r') as pipein:
             raw_data = pipein.read()
         if raw_data:
             return json.loads(raw_data)
         return {}
+    except FileNotFoundError:
+        raise FileNotFoundError  # TODO: Determine error message format
 
 
 def get_image_center(image: Image) -> tuple[int, int]:
