@@ -126,26 +126,21 @@ class Screen:
 
     def handle_pipe_data(self) -> None:
         """Handle data received from the touch sensor pipe. Updates device state and draws popups based on the received data."""
-        found_pipe_data = False
-        is_pipe_empty = False
-        while not is_pipe_empty:
-            tap_data = read_pipe(self.touch_sensor_pipe)
-            if tap_data:
-                found_pipe_data = True
-                # TODO: We may decide to store this data from a stopwatch time.
-                # timestamp = tap_data["timestamp"]
-                status = TapStatus[tap_data['status']]
-                if status == TapStatus.BAD:
-                    self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
-                                    self.popup_attributes.event_attributes.popup_warning_bg_color)
-                elif status == TapStatus.GOOD:
-                    self.device_state['unit_count'] += 1
-                    write_device_state(self.device_state, self.device_state_file_path)
-                    self.draw_popup(self.popup_attributes.message_attributes.tap_event_message,
-                                    self.popup_attributes.event_attributes.tap_event_bg_color)
-            else:
-                is_pipe_empty = True
-        return found_pipe_data
+        tap_data = read_pipe(self.touch_sensor_pipe)
+        if tap_data:
+            # TODO: We may decide to store this data from a stopwatch time.
+            # timestamp = tap_data["timestamp"]
+            status = TapStatus[tap_data['status']]
+            if status == TapStatus.BAD:
+                self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
+                                self.popup_attributes.event_attributes.popup_warning_bg_color)
+            elif status == TapStatus.GOOD:
+                self.device_state['unit_count'] += 1
+                write_device_state(self.device_state, self.device_state_file_path)
+                self.draw_popup(self.popup_attributes.message_attributes.tap_event_message,
+                                self.popup_attributes.event_attributes.tap_event_bg_color)
+            return True
+        return False
 
     def run(self) -> None:
         """Start the main loop of the screen, updating the display at the set frame rate and handling incoming pipe data."""
