@@ -154,8 +154,7 @@ class Screen:
         while True:
             time.sleep(frame_duration)
             if self.handle_pipe_data():
-                pass
-            self.draw_dashboard()
+                self.draw_dashboard()
 
 
 if __name__ == "__main__":

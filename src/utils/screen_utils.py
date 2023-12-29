@@ -260,7 +260,6 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
             fbp.flush()
 
             os.close(fbfd)
-
     except FileNotFoundError:
         raise FileNotFoundError  # TODO: Determine error message format
     except IOError as e:
