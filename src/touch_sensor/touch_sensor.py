@@ -103,13 +103,15 @@ class TouchSensor:
                 consumer="get-line-value",
                 config={self.line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
+            released = True
             while True:
                 value = request.get_value(self.line_offset)
-
-                if value == gpiod.line.Value.ACTIVE:
-                    self.handle_tap()
+                if released:
+                    if value == gpiod.line.Value.ACTIVE:
+                        self.handle_tap()
+                        released = False
                 elif value == gpiod.line.Value.INACTIVE:
-                    pass
+                    released = True
                 time.sleep(0.1)
 
 
