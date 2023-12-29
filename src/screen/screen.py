@@ -19,8 +19,6 @@ from src.utils.utils import TapStatus
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
-os.environ['TZ'] = 'US/Eastern'  # Replace with your desired timezone
-time.tzset()
 
 class Screen:
     """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.

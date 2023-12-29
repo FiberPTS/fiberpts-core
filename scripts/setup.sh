@@ -79,6 +79,7 @@ PRE_REBOOT_SCRIPTS=("create_venv.sh" "install_dependencies.sh" "install_wifi_dri
 POST_REBOOT_SCRIPTS=("create_pipes.sh" "connect_wifi.sh")
 
 main() {
+    timedatectl set-timezone America/New_York
     # Phase 1: Pre Reboot
     if [ ! -f "$FLAG_FILE" ]; then
         install_apt_dependencies
