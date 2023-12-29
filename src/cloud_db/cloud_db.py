@@ -13,7 +13,7 @@ script_dir = os.path.dirname(script_path)
 
 load_dotenv(f"{script_dir}/../../app/.env")
 
-# TODO: Must first check if there is a record in devices table for the associated machine_id and machine_name (can hardcode this)
+# TODO: Must first check if there is a record in devices table for the associated device_id and machine_name (can hardcode this)
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API."""
 
@@ -26,9 +26,9 @@ class CloudDBClient:
         url = os.getenv('DATABASE_URL')
         key = os.getenv('DATABASE_API_KEY')
         self.client = supabase.create_client(url, key)
-    
+
     def insert_tap_data(self, tap: Tap) -> APIResponse:
-        """Inserts a record with timestamp and machine ID into the `tap_data` table.
+        """Inserts a record with timestamp and device ID into the `tap_data` table.
 
         Args:
             tap: An instance of Tap containing the data to be inserted
@@ -40,10 +40,11 @@ class CloudDBClient:
         # TODO: Implement handling for authentication issues.
         # TODO: Implement data validation.
         # TODO: Implement handling for non-existent table.
+        # TODO: Implement handling for non-existent device record.
 
         tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
-            'machine_id': tap.machine_id
+            'device_id': tap.device_id
         }
         response = self.client.table('tap_data').insert(tap_record).execute()
         return response

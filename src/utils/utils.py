@@ -30,8 +30,8 @@ class TapStatus(Enum):
     def to_json(self):
         return self.value
 
-def get_machine_id() -> str:
-    """Retrieves the unique ID of the machine running this program.
+def get_device_id() -> str:
+    """Retrieves the unique ID of the device running this program.
 
     This function specifically targets Unix-like systems. To ensure
     compatibility with non-Unix systems, it returns an empty string.

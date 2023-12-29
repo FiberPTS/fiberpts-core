@@ -12,11 +12,11 @@ class Tap(NamedTuple):
     """Stores information describing a tap event.
 
     Attributes:
-        machine_id: The ID of the machine from which the tap was made.
+        device_id: The ID of the device from which the tap was made.
         timestamp: The timestamp at which the tap was made.
         status: A TapStatus indicating the status of the tap.
     """
-    machine_id: str = ''
+    device_id: str = ''
     timestamp: time.struct_time = 0.0
     status: TapStatus = TapStatus.BAD
 

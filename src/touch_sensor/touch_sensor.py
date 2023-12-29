@@ -10,7 +10,7 @@ from src.cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
 from src.utils.paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from src.utils.touch_sensor_utils import *
-from src.utils.utils import get_machine_id, TapStatus
+from src.utils.utils import get_device_id, TapStatus
 
 
 class TouchSensor:
@@ -58,7 +58,7 @@ class TouchSensor:
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD
 
-        tap = Tap(machine_id=get_machine_id(), timestamp=timestamp, status=tap_status)
+        tap = Tap(device_id=get_device_id(), timestamp=timestamp, status=tap_status)
 
         self.pipe_tap_data(tap)
 
