@@ -64,8 +64,7 @@ class TouchSensor:
 
         if tap.status == TapStatus.GOOD:
             # TODO: Implement child process creation for record handling.
-            # self.cloud_db.insert_tap_data(tap)
-            pass
+            self.cloud_db.insert_tap_data(tap)
 
         self.last_tap = tap
         return tap.status != TapStatus.BAD
@@ -110,9 +109,10 @@ class TouchSensor:
                     if value == gpiod.line.Value.ACTIVE:
                         self.handle_tap()
                         released = False
+                    else:
+                        time.sleep(0.05)
                 elif value == gpiod.line.Value.INACTIVE:
                     released = True
-                time.sleep(0.1)
 
 
 if __name__ == "__main__":
