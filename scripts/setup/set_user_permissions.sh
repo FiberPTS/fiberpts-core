@@ -45,6 +45,9 @@ set_group_ownership() {
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/scripts || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/config || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/app || return 1
+    chown :"$GROUP_NAME" "$PROJECT_PATH"/venv || return 1
+    chown :"$GROUP_NAME" "$PROJECT_PATH"/venv/bin || return 1
+    chown :"$GROUP_NAME" "$PROJECT_PATH"/venv/bin/python3 || return 1
 
     echo "Group ownership set"
 }
