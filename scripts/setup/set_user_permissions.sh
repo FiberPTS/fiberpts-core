@@ -85,10 +85,7 @@ set_permissions() {
     chmod -R 700 "$PROJECT_PATH"/tests || return 1
 
     # Virtual environment permissions
-    chmod -R 700 "$PROJECT_PATH"/venv || return 1
-    chmod 750 "$PROJECT_PATH"/venv || return 1
-    chmod 750 "$PROJECT_PATH"/venv/bin || return 1
-    chmod 750 "$PROJECT_PATH"/venv/bin/python3 || return 1
+    chmod -R 750 "$PROJECT_PATH"/venv || return 1
 
     # Requirement file permissions
     chmod 660 "$PROJECT_PATH"/requirements.txt || return 1
