@@ -84,9 +84,10 @@ class Screen:
             draw = ImageDraw.Draw(self.image)
             font = ImageFont.truetype(font_family, font_size)
             if centered:
+                ascent, descent = font.getmetrics()
                 bbox = font.getbbox(text)
-                text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-                position = (position[0] - text_width // 2, position[1])
+                text_width, text_height = bbox[2] - bbox[0], ascent + descent
+                position = (position[0] - text_width // 2, position[1] - text_height // 2)
             draw.text(position, text, font=font, fill=font_color)
 
     def draw_dashboard(self) -> None:
