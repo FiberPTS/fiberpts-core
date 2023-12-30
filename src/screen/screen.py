@@ -86,7 +86,7 @@ class Screen:
             if centered:
                 bbox = font.getbbox(text)
                 text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-                position = (position[0] - text_width // 2, position[1] - text_height // 2)
+                position = (position[0] - text_width // 2, position[1])
             draw.text(position, text, font=font, fill=font_color)
 
     def draw_dashboard(self) -> None:
