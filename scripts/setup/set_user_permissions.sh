@@ -39,36 +39,65 @@ create_and_assign_group() {
     fi
 }
 
-set_ownership_and_permissions() {
-    # Set group ownership to relevant files
+# Function to set group ownership
+set_group_ownership() {
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/src || return 1
-    chown -R :"$GROUP_NAME" "$PROJECT_PATH"/scripts/run || return 1
+    chown -R :"$GROUP_NAME" "$PROJECT_PATH"/scripts || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/config || return 1
-    chown :"$GROUP_NAME" "$PROJECT_PATH"/app/.env.shared || return 1
-    chown :"$GROUP_NAME" "$PROJECT_PATH"/app/.env || return 1
     chown -R :"$GROUP_NAME" "$PROJECT_PATH"/app || return 1
 
-    # Set executable permissions
-    # TODO: This is done after shebang is added to all source files when the scripts can be executed after activating the virtual environment (no absolute path execution)
-    # find "$PROJECT_PATH"/src -type f -name "*.py" ! -name "__init__.py" -exec chmod 770 {} \; || return 1
-    find "$PROJECT_PATH"/scripts/run -type f -name "*.sh" -exec chmod 770 {} \; || return 1
-    chmod 770 "$PROJECT_PATH"/app || return 1
+    echo "Group ownership set"
+}
 
-    # Set readable permissions
-    find "$PROJECT_PATH"/config -type f -name "*.py" ! -name "__init__.py" -exec chmod 440 {} \; || return 1
-    chmod 440 "$PROJECT_PATH"/app/.env || return 1
+set_permissions() {
+   # App directory permissions
+    chmod -R 770 "$PROJECT_PATH"/app || return 1
+    chmod 660 "$PROJECT_PATH"/app/.env || return 1
+    chmod 660 "$PROJECT_PATH"/app/.env.shared || return 1
+    chmod 660 "$PROJECT_PATH"/app/device_state.json || return 1
+    chmod 660 "$PROJECT_PATH"/app/pipes/* || return 1
 
-    # Set readable/writable permissions
-    chmod 660 "$PROJECT_PATH"/app/.env.shared || return 1 # Need writable for init.sh script to modify DISPLAY_FRAME_BUFFER_PATH
+    # Config directory permissions
+    chmod -R 750 "$PROJECT_PATH"/config || return 1
+    chmod 640 "$PROJECT_PATH"/config/* || return 1
 
-    echo "Group ownership and permissions set"
+    # Custom directory permissions
+    chmod -R 700 "$PROJECT_PATH"/custom || return 1
+    chmod 600 "$PROJECT_PATH"/custom/* || return 1
+
+    # Scripts directory permissions
+    chmod -R 770 "$PROJECT_PATH"/scripts || return 1
+    chmod 750 "$PROJECT_PATH"/scripts/run/* || return 1
+    chmod 750 "$PROJECT_PATH"/scripts/setup/* || return 1
+    chmod 700 "$PROJECT_PATH"/scripts/setup.sh || return 1
+
+    # Services directory permissions
+    chmod -R 700 "$PROJECT_PATH"/services || return 1
+    chmod 700 "$PROJECT_PATH"/services/* || return 1
+
+    # Source code permissions
+    chmod -R 750 "$PROJECT_PATH"/src || return 1
+
+    # Test directory permissions
+    chmod -R 700 "$PROJECT_PATH"/tests || return 1
+
+    # Virtual environment permissions
+    chmod -R 700 "$PROJECT_PATH"/venv || return 1
+    chmod 750 "$PROJECT_PATH"/venv/bin || return 1
+    chmod 750 "$PROJECT_PATH"/venv/bin/python3 || return 1
+
+    # Requirement file permissions
+    chmod 660 "$PROJECT_PATH"/requirements.txt || return 1
+
+    echo "File permissions set"
 }
 
 main() {
     assert_conditions
     add_application_user || { echo "Failed to add user."; exit 1; }
     create_and_assign_group || { echo "Failed to create and assign group."; exit 1; }
-    set_ownership_and_permissions || { echo "Failed to set ownership and permissions."; exit 1; }
+    set_group_ownership || { echo "Failed to set ownership."; exit 1; }
+    set_permissions || { echo "Failed to set file permissions."; exit 1; }
 }
 
 main
