@@ -86,6 +86,7 @@ set_permissions() {
 
     # Virtual environment permissions
     chmod -R 700 "$PROJECT_PATH"/venv || return 1
+    chmod 750 "$PROJECT_PATH"/venv || return 1
     chmod 750 "$PROJECT_PATH"/venv/bin || return 1
     chmod 750 "$PROJECT_PATH"/venv/bin/python3 || return 1
 
