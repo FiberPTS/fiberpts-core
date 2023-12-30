@@ -68,6 +68,8 @@ parse_arguments() {
     done
     shift $((OPTIND-1))
 
+    load_env_variables
+
     if [ "$scripts_flag" = true ]; then
         scripts_to_run+=("$@")
         run_scripts "$SCRIPT_DIR/setup" "${scripts_to_run[@]}"
@@ -84,7 +86,6 @@ parse_arguments() {
 main() {
     assert_root
     parse_arguments "$@"
-    load_env_variables
 
     local flag_file_path="$PROJECT_PATH/app/tmp/exec_pre_install"
     local pre_reboot_scripts=("create_venv.sh" "install_dependencies.sh" "install_wifi_driver.sh" "set_device_overlays.sh" "set_user_permissions.sh" "create_services.sh")
