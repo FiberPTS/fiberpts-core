@@ -110,6 +110,7 @@ class TouchSensor:
                 value = request.get_value(self.line_offset)
                 if released:
                     if value == gpiod.line.Value.ACTIVE:
+                        # TODO: Consider threading here
                         self.handle_tap()
                         released = False
                     else:

@@ -108,9 +108,10 @@ def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
     Returns:
         bool: True if 'to_timestamp' is at least the next day from 'from_timestamp', False otherwise.
     """
+    day_in_seconds = 86400
     # Get the start of the day for both timestamps
-    from_day_start = from_timestamp - (from_timestamp % 86400)
-    to_day_start = to_timestamp - (to_timestamp % 86400)
+    from_day_start = from_timestamp - (from_timestamp % day_in_seconds)
+    to_day_start = to_timestamp - (to_timestamp % day_in_seconds)
 
     # Check if to_timestamp is at least the next day from from_timestamp
     return to_day_start > from_day_start
@@ -179,6 +180,7 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
     Raises:
         FileNotFoundError: If the named pipe does not exist.
     """
+    # TODO: Consider using user space os.open command instead of built-in open
     try:
         with open(path_to_pipe, 'r') as pipein:
             raw_data = pipein.read()
@@ -186,7 +188,7 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
                 return json.loads(raw_data)
         return {}
     except FileNotFoundError:
-        raise FileNotFoundError # TODO: Determine error message format
+        raise FileNotFoundError  # TODO: Determine error message format
 
 
 def get_image_center(image: Image) -> tuple[int, int]:
@@ -241,6 +243,7 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
         IOError: If there is an error writing to the framebuffer.
     """
     try:
+        # TODO: Check if this lock is necessary
         with SelfReleasingLock(path_to_fb_lock):
             raw_data = image_to_raw_rgb565(image)
             raw_bytes = raw_data.tobytes()
