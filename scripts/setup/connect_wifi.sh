@@ -14,12 +14,15 @@ connect_wifi() {
     systemctl start NetworkManager.service
     while [ $attempt -lt $max_attempts ] && [ "$success" = false ]; do
         ((attempt++))
-        sleep 0.2
+        sleep 0.1
         echo "Attempt $attempt of $max_attempts"
 
         # Try to connect with existing credentials
+        # Temporarily disable 'exit on error'
+        set +e
         nmcli dev wifi connect "$WIFI_NAME" password "$WIFI_PSK"
         local status=$?
+        set -e
 
         if [ $status -eq 0 ]; then
             success=true
@@ -27,7 +30,6 @@ connect_wifi() {
         elif [ $status -eq 1 ]; then
             # General errors (e.g., Wi-Fi is turned off)
             echo "An error occurred. Unable to connect to $WIFI_NAME."
-            break
         elif [ $status -eq 2 ]; then
             # Invalid arguments (e.g., wrong password or SSID not found)
             echo "Invalid SSID or password. Please enter credentials again."
@@ -39,7 +41,6 @@ connect_wifi() {
         else
             # Other errors
             echo "An unexpected error occurred. Unable to connect."
-            break
         fi
     done
 
