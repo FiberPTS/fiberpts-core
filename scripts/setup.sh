@@ -109,7 +109,7 @@ main() {
     fi
 
     echo "Based."
-    /usr/sbin/reboot
+    reboot
 }
 
 main "$@"
