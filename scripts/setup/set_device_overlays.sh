@@ -27,10 +27,12 @@ install_libretech_wiring_tool() {
             git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "$PROJECT_DIR/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
             set_custom_dts
             bash "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
+        else
+            echo "Already installed libretech-wiring-tool..."
         fi
     else
-        echo "Already installed libretech-wiring-tool..."
         if [ -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
+            echo "Already installed libretech-wiring-tool..."
             if [ -f "$overlay_merged_flag_file_path" ]; then
                 echo "Resetting overlays..."
                 rm -f "$overlay_merged_flag_file_path"
@@ -42,6 +44,8 @@ install_libretech_wiring_tool() {
                 /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
                 echo "Overlays merged. Reboot to apply changes."
             fi
+        else
+            echo "Failed to install libretech-wiring-tool during pre-reboot setup phase."
         fi
     fi
 }
