@@ -37,8 +37,8 @@ run_scripts() {
 
 setup_cron_job() {
     local script_name="$SCRIPT_DIR/$(basename $0)"
-    local job_command="bash $script_name -n $WIFI_NAME -p $WIFI_PSK 2>&1 | /bin/systemd-cat -t setup.sh"
-    
+    local job_command="bash $script_name -n \"$WIFI_NAME\" -p \"$WIFI_PSK\" 2>&1 | /bin/systemd-cat -t $script_name"
+   
     if crontab -l 2>/dev/null | grep -Fq "$script_name"; then
         echo "Cron job already exists. Skipping."
     else
