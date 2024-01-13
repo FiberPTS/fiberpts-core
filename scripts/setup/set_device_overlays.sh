@@ -29,6 +29,12 @@ install_libretech_wiring_tool() {
             bash "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
         else
             echo "Already installed libretech-wiring-tool..."
+            if [ -f "$overlay_merged_flag_file_path" ]; then
+                echo "Resetting overlays..."
+                rm -f "$overlay_merged_flag_file_path"
+                /opt/libretech-wiring-tool/ldto reset
+                echo "Overlays reset. Reboot to apply changes."
+            fi
         fi
     else
         if [ -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
@@ -37,7 +43,7 @@ install_libretech_wiring_tool() {
                 echo "Resetting overlays..."
                 rm -f "$overlay_merged_flag_file_path"
                 /opt/libretech-wiring-tool/ldto reset
-                echo "To merge the overlays, you must first reboot, then run this script again."
+                echo "Overlays reset. Reboot to apply changes."
             else
                 echo "Merging overlays..."
                 touch "$overlay_merged_flag_file_path"
@@ -45,7 +51,7 @@ install_libretech_wiring_tool() {
                 echo "Overlays merged. Reboot to apply changes."
             fi
         else
-            echo "Failed to install libretech-wiring-tool during pre-reboot setup phase."
+            echo "Failed installation during pre-reboot phase."
         fi
     fi
 }
