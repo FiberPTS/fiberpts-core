@@ -37,12 +37,12 @@ run_scripts() {
 
 setup_cron_job() {
     local script_name="$SCRIPT_DIR/$(basename $0)"
-    local job_command="sudo bash $script_name -n \"$WIFI_NAME\" -p \"$WIFI_PSK\" 2>&1 | /bin/systemd-cat -t $script_name"
+    local job_command="bash $script_name -n \"$WIFI_NAME\" -p \"$WIFI_PSK\" 2>&1 | /bin/systemd-cat -t $(basename $0)"
    
     if crontab -l 2>/dev/null | grep -Fq "$script_name"; then
         echo "Cron job already exists. Skipping."
     else
-        bash -c '(crontab -l 2>/dev/null; echo "@reboot $job_command") | crontab -'
+        (crontab -l 2>/dev/null; echo "@reboot $job_command") | crontab -
         echo "Cron job set for next reboot."
     fi
 }
