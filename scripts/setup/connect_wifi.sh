@@ -11,9 +11,10 @@ connect_wifi() {
     local attempt=0
     local max_attempts=5
     local success=false
-
+    systemctl start NetworkManager.service
     while [ $attempt -lt $max_attempts ] && [ "$success" = false ]; do
         ((attempt++))
+        sleep 0.2
         echo "Attempt $attempt of $max_attempts"
 
         # Try to connect with existing credentials
