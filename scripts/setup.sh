@@ -37,18 +37,19 @@ run_scripts() {
 
 setup_cron_job() {
     local script_name="$SCRIPT_DIR/$(basename $0)"
-    local job_command="bash $script_name $WIFI_NAME $WIFI_PSK"
-    if crontab -l 2>/dev/null | grep -Fq "$job_command"; then
+    local job_command="bash $script_name $WIFI_NAME $WIFI_PSK 2>&1 | /bin/systemd-cat -t my_script"
+    
+    if crontab -l 2>/dev/null | grep -Fq "$script_name"; then
         echo "Cron job already exists. Skipping."
     else
-        (crontab -l 2>/dev/null; echo "$job_command") | crontab -
+        (crontab -l 2>/dev/null; echo "@reboot $job_command") | crontab -
         echo "Cron job set for next reboot."
     fi
 }
 
 cleanup_after_reboot() {
     crontab -l | grep -v "$SCRIPT_DIR" | crontab -
-    rm -f "$FLAG_FILE_PATH"
+    rm -f "$pre_reboot_flag_file_path"
     echo "Cleanup complete."
 }
 
@@ -87,11 +88,11 @@ main() {
     assert_root
     parse_arguments "$@"
 
-    local flag_file_path="$PROJECT_PATH/app/tmp/exec_pre_install"
+    local pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
     local pre_reboot_scripts=("create_venv.sh" "install_dependencies.sh" "install_wifi_driver.sh" "set_device_overlays.sh" "set_user_permissions.sh" "create_services.sh")
-    local post_reboot_scripts=("create_pipes.sh" "connect_wifi.sh")
+    local post_reboot_scripts=("set_device_overlays.sh" "create_pipes.sh" "connect_wifi.sh")
 
-    if [ ! -f "$flag_file_path" ]; then
+    if [ ! -f "$pre_reboot_flag_file_path" ]; then
         run_scripts "$SCRIPT_DIR/setup" "${pre_reboot_scripts[@]}"
         setup_cron_job
         mkdir -p "$PROJECT_PATH/app/tmp"
@@ -100,7 +101,7 @@ main() {
         reboot
     fi
 
-    if [ -f "$flag_file_path" ]; then
+    if [ -f "$pre_reboot_flag_file_path" ]; then
         run_scripts "$SCRIPT_DIR/setup" "${post_reboot_scripts[@]}"
         cleanup_after_reboot
         echo "Post-Reboot Phase Complete"
