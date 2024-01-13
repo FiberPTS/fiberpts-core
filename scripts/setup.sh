@@ -89,7 +89,7 @@ main() {
     parse_arguments "$@"
 
     local pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
-    local pre_reboot_scripts=("create_venv.sh" "install_dependencies.sh" "install_wifi_driver.sh" "set_device_overlays.sh" "set_user_permissions.sh" "create_services.sh")
+    local pre_reboot_scripts=("create_venv.sh" "install_dependencies.sh" "set_device_overlays.sh" "install_wifi_driver.sh" "set_user_permissions.sh" "create_services.sh")
     local post_reboot_scripts=("set_device_overlays.sh" "create_pipes.sh" "connect_wifi.sh")
 
     if [ ! -f "$pre_reboot_flag_file_path" ]; then
