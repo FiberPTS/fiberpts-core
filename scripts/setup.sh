@@ -99,17 +99,14 @@ main() {
         mkdir -p "$PROJECT_PATH/app/tmp"
         touch "$pre_reboot_flag_file_path"
         echo "Pre-Reboot Phase Complete"
-        reboot
-    fi
-
-    if [ -f "$pre_reboot_flag_file_path" ]; then
+    else
         run_scripts "$SCRIPT_DIR/setup" "${post_reboot_scripts[@]}"
         cleanup_after_reboot "$pre_reboot_flag_file_path"
         echo "Post-Reboot Phase Complete"
-        reboot
     fi
 
     echo "Based."
+    /usr/sbin/reboot
 }
 
 main "$@"
