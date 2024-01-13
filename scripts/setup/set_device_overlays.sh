@@ -27,17 +27,15 @@ install_libretech_wiring_tool() {
             set_custom_dts
             bash "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
         fi
-    fi
-    if [ -f "$pre_reboot_flag_file_path" ] ; then
+    else
         if [ -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
-            if [ ! -f "$overlay_merged_flag_file_path" ]; then
-                touch "$overlay_merged_flag_file_path"
-                /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
-            fi
             if [ -f "$overlay_merged_flag_file_path" ]; then
                 rm -f "$overlay_merged_flag_file_path"
-                /opt/libretech-wiring-tool/ldto reset || { echo "ldto merge command failed"; exit 1; }
+                /opt/libretech-wiring-tool/ldto reset
                 echo "To merge the overlays, you must first reboot, then run this script again."
+            else
+                touch "$overlay_merged_flag_file_path"
+                /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
             fi
         fi
     fi
