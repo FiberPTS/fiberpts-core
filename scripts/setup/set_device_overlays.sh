@@ -18,6 +18,9 @@ set_custom_dts() {
 }
 
 install_libretech_wiring_tool() {
+    local pre_reboot_flag_file_path=$1
+    local overlay_merged_flag_file_path=$2
+
     if [ ! -f "$pre_reboot_flag_file_path" ] ; then
         if [ ! -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
             git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "$PROJECT_DIR/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
@@ -45,7 +48,7 @@ main() {
     local overlay_merged_flag_file_path="$PROJECT_PATH/app/tmp/overlay_merged"
 
     assert_conditions
-    install_libretech_wiring_tool
+    install_libretech_wiring_tool "$pre_reboot_flag_file_path" "$overlay_merged_flag_file_path"
 }
 
 main

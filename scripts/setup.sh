@@ -48,6 +48,7 @@ setup_cron_job() {
 }
 
 cleanup_after_reboot() {
+    local pre_reboot_flag_file_path="$1"
     crontab -l | grep -v "$SCRIPT_DIR" | crontab -
     rm -f "$pre_reboot_flag_file_path"
     echo "Cleanup complete."
@@ -88,7 +89,7 @@ main() {
     assert_root
     parse_arguments "$@"
 
-    pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
+    local pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
     local pre_reboot_scripts=("create_venv.sh" "install_dependencies.sh" "set_device_overlays.sh" "install_wifi_driver.sh" "create_pipes.sh" "set_user_permissions.sh" "create_services.sh")
     local post_reboot_scripts=("set_device_overlays.sh" "connect_wifi.sh")
 
@@ -96,14 +97,14 @@ main() {
         run_scripts "$SCRIPT_DIR/setup" "${pre_reboot_scripts[@]}"
         setup_cron_job
         mkdir -p "$PROJECT_PATH/app/tmp"
-        touch "$flag_file_path"
+        touch "$pre_reboot_flag_file_path"
         echo "Pre-Reboot Phase Complete"
         reboot
     fi
 
     if [ -f "$pre_reboot_flag_file_path" ]; then
         run_scripts "$SCRIPT_DIR/setup" "${post_reboot_scripts[@]}"
-        cleanup_after_reboot
+        cleanup_after_reboot "$pre_reboot_flag_file_path"
         echo "Post-Reboot Phase Complete"
         reboot
     fi
