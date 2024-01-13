@@ -12,6 +12,7 @@ connect_wifi() {
     local max_attempts=5
     local success=false
     systemctl start NetworkManager.service
+    sleep 5
     while [ $attempt -lt $max_attempts ] && [ "$success" = false ]; do
         ((attempt++))
         sleep 0.1
