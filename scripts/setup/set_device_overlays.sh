@@ -18,15 +18,32 @@ set_custom_dts() {
 }
 
 install_libretech_wiring_tool() {
-    if [ ! -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
-        git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "$PROJECT_DIR/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
-        set_custom_dts
-        bash "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
-        "/usr/local/bin/ldto" merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
+    if [ ! -f "$pre_reboot_flag_file_path"]
+        if [ ! -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
+            git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "$PROJECT_DIR/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
+            set_custom_dts
+            bash "$PROJECT_DIR/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
+        fi
+    fi
+    if [ -f "$pre_reboot_flag_file_path"]
+        if [ -d "$PROJECT_DIR/libretech-wiring-tool" ]; then
+            if [ ! -f "$overlay_merged_flag_file_path" ]; then
+                touch "$overlay_merged_flag_file_path"
+                /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
+            fi
+            if [ -f "$overlay_merged_flag_file_path" ]; then
+                rm -f "$overlay_merged_flag_file_path"
+                /opt/libretech-wiring-tool/ldto reset || { echo "ldto merge command failed"; exit 1; }
+                echo "To merge the overlays, you must first reboot, then run this script again."
+            fi
+        fi
     fi
 }
 
 main() {
+    local pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
+    local overlay_merged_flag_file_path="$PROJECT_PATH/app/tmp/overlay_merged"
+
     assert_conditions
     install_libretech_wiring_tool
 }
