@@ -42,7 +42,7 @@ setup_cron_job() {
     if crontab -l 2>/dev/null | grep -Fq "$script_name"; then
         echo "Cron job already exists. Skipping."
     else
-        (crontab -l 2>/dev/null; echo "@reboot $job_command") | crontab -
+        sudo bash -c '(crontab -l 2>/dev/null; echo "@reboot $job_command") | crontab -'
         echo "Cron job set for next reboot."
     fi
 }
