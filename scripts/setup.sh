@@ -11,6 +11,7 @@ assert_root() {
 
 load_env_variables() {
     set -a # Exports all environment variables
+    export PATH="/usr/sbin:$PATH"
     [ -n "$WIFI_NAME" ] && export WIFI_NAME
     [ -n "$WIFI_PSK" ] && export WIFI_PSK
 
