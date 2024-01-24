@@ -53,7 +53,7 @@ set_group_ownership() {
 set_permissions() {
     # App directory permissions
     chmod -R 770 "$PROJECT_PATH"/app || return 1
-    chmod 640 "$PROJECT_PATH"/app/.env || return 1
+    chmod 640 "$PROJECT_PATH"/.env || return 1
     chmod 660 "$PROJECT_PATH"/app/.env.shared || return 1
     chmod 660 "$PROJECT_PATH"/app/device_state.json || return 1
     chmod 660 "$PROJECT_PATH"/app/pipes/* || return 1
