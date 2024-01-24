@@ -16,7 +16,7 @@ load_env_variables() {
     [ -n "$WIFI_PSK" ] && export WIFI_PSK
 
     source "$SCRIPT_DIR/../app/.env.shared" || return 1
-    source "$SCRIPT_DIR/../app/.env" || return 1
+    source "$SCRIPT_DIR/../.env" || return 1
     set +a # Stops exporting environment variables
 }
 

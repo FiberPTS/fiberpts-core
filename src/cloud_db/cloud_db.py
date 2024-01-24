@@ -11,7 +11,7 @@ from src.utils.utils import TIMESTAMP_FORMAT
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
 
-load_dotenv(f"{script_dir}/../../app/.env")
+load_dotenv(f"{script_dir}/../../.env")
 
 # TODO: Must first check if there is a record in devices table for the associated device_id and machine_name (can hardcode this)
 class CloudDBClient:
