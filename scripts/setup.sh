@@ -10,14 +10,14 @@ assert_root() {
 }
 
 load_env_variables() {
-    set -a # Exports all environment variables
+    set -a
     export PATH="/usr/sbin:$PATH"
     [ -n "$WIFI_NAME" ] && export WIFI_NAME
     [ -n "$WIFI_PSK" ] && export WIFI_PSK
 
     source "$SCRIPT_DIR/../app/.env.shared" || return 1
     source "$SCRIPT_DIR/../.env" || return 1
-    set +a # Stops exporting environment variables
+    set +a
 }
 
 run_scripts() {
@@ -26,7 +26,7 @@ run_scripts() {
     local scripts=("$@")
 
     for script in "${scripts[@]}"; do
-        echo "Running script: $script"
+        echo "Running script: $script\n"
         if ! bash "$setup_dir/$script" 2>&1; then
             echo -e "\nError executing $script. Exiting."
             exit 1
@@ -55,8 +55,13 @@ cleanup_after_reboot() {
     echo "Cleanup complete."
 }
 
+print_usage() {
+    echo "Usage: $0 [-s script1.sh script2.sh ...] [-n wifi_name -p wifi_pwd]"
+    exit 1
+}
+
 parse_arguments() {
-    local scripts_flag=false
+    local scripts_provided=false
     local scripts_to_run=()
     WIFI_NAME=""
     WIFI_PSK=""
@@ -65,15 +70,15 @@ parse_arguments() {
         case $opt in
             n) WIFI_NAME="$OPTARG";;
             p) WIFI_PSK="$OPTARG";;
-            s) scripts_flag=true; scripts_to_run+=("$OPTARG");;
-            \?) echo "Invalid option -$OPTARG" >&2; exit 1;;
+            s) scripts_provided=true; scripts_to_run+=("$OPTARG");;
+            \?) echo "Invalid option -$OPTARG" >&2; print_usage;;
         esac
     done
     shift $((OPTIND-1))
 
     load_env_variables
 
-    if [ "$scripts_flag" = true ]; then
+    if [ "$scripts_provided" = true ]; then
         scripts_to_run+=("$@")
         run_scripts "$SCRIPT_DIR/setup" "${scripts_to_run[@]}"
         exit 0
@@ -81,8 +86,7 @@ parse_arguments() {
 
     # Check that either -s or both -n and -p are provided
     if [ -z "$WIFI_NAME" ] || [ -z "$WIFI_PSK" ]; then
-        echo "Usage: $0 [-s script1.sh script2.sh ...] [-n wifi_name -p wifi_pwd]"
-        exit 1
+        print_usage
     fi
 }
 
@@ -92,12 +96,25 @@ main() {
 
     local fb_lock_flag_file_path="$DISPLAY_FRAME_BUFFER_LOCK_PATH"
     local pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
-    local pre_reboot_scripts=("create_venv.sh" "install_dependencies.sh" "set_device_overlays.sh" "install_wifi_driver.sh" "create_pipes.sh" "create_services.sh")
-    local post_reboot_scripts=("set_device_overlays.sh" "connect_wifi.sh" "set_user_permissions.sh")
+    
+    local pre_reboot_scripts=(
+        "create_venv.sh" 
+        "install_dependencies.sh" 
+        "set_device_overlays.sh" 
+        "install_wifi_driver.sh" 
+        "create_pipes.sh" 
+        "create_services.sh"
+    )
+
+    local post_reboot_scripts=(
+        "set_device_overlays.sh" 
+        "connect_wifi.sh" 
+        "set_user_permissions.sh"
+    )
 
     if [ ! -f "$pre_reboot_flag_file_path" ]; then
         run_scripts "$SCRIPT_DIR/setup" "${pre_reboot_scripts[@]}"
-        setup_cron_job
+        # setup_cron_job
         mkdir -p "$PROJECT_PATH/app/tmp"
         touch "$fb_lock_flag_file_path"
         touch "$pre_reboot_flag_file_path"
