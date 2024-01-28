@@ -54,13 +54,13 @@ set_permissions() {
     # App directory permissions
     chmod -R 770 "$PROJECT_PATH"/app || return 1
     chmod 640 "$PROJECT_PATH"/.env || return 1
-    chmod 660 "$PROJECT_PATH"/app/.env.shared || return 1
     chmod 660 "$PROJECT_PATH"/app/device_state.json || return 1
     chmod 660 "$PROJECT_PATH"/app/pipes/* || return 1
 
     # Config directory permissions
     chmod -R 750 "$PROJECT_PATH"/config || return 1
     chmod 640 "$PROJECT_PATH"/config/* || return 1
+    chmod 660 "$PROJECT_PATH"/config/scripts_config.sh || return 1
 
     # Custom directory permissions
     chmod -R 700 "$PROJECT_PATH"/custom || return 1

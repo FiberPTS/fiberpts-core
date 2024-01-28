@@ -14,7 +14,7 @@ assert_conditions() {
 # For updating the device with new repository changes
 load_env_variables() {
     set -a # Exports all environment variables
-    source "$SCRIPT_DIR/../../app/.env.shared" || return 1
+    source "$SCRIPT_DIR/../../config/scripts_config.sh" || return 1
     source "$SCRIPT_DIR/../../.env" || return 1
     set +a # Stops exporting environment variables
 }

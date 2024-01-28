@@ -2,7 +2,7 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-env_file="$SCRIPT_DIR/../../app/.env.shared"
+env_file="$SCRIPT_DIR/../../config/scripts_config.sh"
 
 source "$env_file"
 
