@@ -19,6 +19,12 @@ load_env_variables() {
     set +a # Stops exporting environment variables
 }
 
+# TODO: Test if this works since may need to do a hard reset first
+pull_latest_changes() {
+    echo "Pulling latest changes from $GIT_BRANCH branch..."
+    git -C "$PROJECT_PATH" pull origin "$GIT_BRANCH" || { echo "Git pull failed"; return 1; }
+}
+
 run_scripts() {
     local scripts=("${@:1}")
 
@@ -34,12 +40,36 @@ run_scripts() {
     echo -e "\nFinished update"
 }
 
-SCRIPTS=("set_user_permissions.sh" "create_services.sh")
+usage() {
+    echo "Usage: $0 [-b branch_name]"
+    exit 1
+}
+
+parse_arguments() {
+    while getopts ":b:" opt; do
+        case $opt in
+            b)
+                GIT_BRANCH="$OPTARG"
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                usage
+                ;;
+            :)
+                echo "Option -$OPTARG requires an argument." >&2
+                usage
+                ;;
+        esac
+    done
+}
 
 main() {
+    local scripts=("set_user_permissions.sh" "create_services.sh")
+
     assert_conditions
     load_env_variables
-    run_scripts "${SCRIPTS[@]}"
+    pull_latest_changes || exit 1
+    run_scripts "${scripts[@]}"
 }
 
 main
