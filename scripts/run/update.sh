@@ -11,18 +11,17 @@ assert_conditions() {
     fi
 }
 
-# For updating the device with new repository changes
 load_env_variables() {
-    set -a # Exports all environment variables
+    set -a
     source "$SCRIPT_DIR/../../config/scripts_config.sh" || return 1
     source "$SCRIPT_DIR/../../.env" || return 1
-    set +a # Stops exporting environment variables
+    set +a
 }
 
 # TODO: Test if this works since may need to do a hard reset first
 pull_latest_changes() {
     echo "Pulling latest changes from $GIT_BRANCH branch..."
-    git -C "$PROJECT_PATH" pull origin "$GIT_BRANCH" || { echo "Git pull failed"; return 1; }
+    git -C "$PROJECT_PATH" pull origin "$GIT_BRANCH" || { echo "Git pull failed" >&2; return 1; }
 }
 
 run_scripts() {
@@ -31,16 +30,16 @@ run_scripts() {
     for script in "${scripts[@]}"; do
         echo "Running script: $script"
         if ! bash "$SETUP_DIR/$script" 2>&1; then
-            echo -e "\nError executing $script. Exiting."
+            echo -e "\nError executing $script. Exiting." >&2
             exit 1
         fi
-        echo "Fin"
+        echo "Completed.\n"
     done
 
     echo -e "\nFinished update"
 }
 
-usage() {
+print_usage() {
     echo "Usage: $0 [-b branch_name]"
     exit 1
 }
@@ -53,11 +52,11 @@ parse_arguments() {
                 ;;
             \?)
                 echo "Invalid option: -$OPTARG" >&2
-                usage
+                print_usage
                 ;;
             :)
                 echo "Option -$OPTARG requires an argument." >&2
-                usage
+                print_usage
                 ;;
         esac
     done
@@ -67,6 +66,7 @@ main() {
     local scripts=("set_user_permissions.sh" "create_services.sh")
 
     assert_conditions
+    parse_arguments
     load_env_variables
     pull_latest_changes || exit 1
     run_scripts "${scripts[@]}"
