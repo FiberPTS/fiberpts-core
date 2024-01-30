@@ -31,76 +31,51 @@ run_scripts() {
 }
 
 print_usage() {
-    echo "Usage: $0 [-s script1.sh script2.sh ...] [-n wifi_name -p wifi_pwd]"
+    echo "Usage: $0 [--pre, --post]"
     exit 1
-}
-
-parse_arguments() {
-    local scripts_provided=false
-    local scripts_to_run=()
-    WIFI_NAME=""
-    WIFI_PSK=""
-
-    while getopts ":n:p:s:" opt; do
-        case $opt in
-            n) WIFI_NAME="$OPTARG";;
-            p) WIFI_PSK="$OPTARG";;
-            s) scripts_provided=true; scripts_to_run+=("$OPTARG");;
-            \?) echo "Invalid option -$OPTARG" >&2; print_usage;;
-        esac
-    done
-    shift $((OPTIND-1))
-
-    load_env_variables
-
-    if [ "$scripts_provided" = true ]; then
-        scripts_to_run+=("$@")
-        run_scripts "$SCRIPT_DIR/setup" "${scripts_to_run[@]}"
-        exit 0
-    fi
-
-    # Check that either -s or both -n and -p are provided
-    if [ -z "$WIFI_NAME" ] || [ -z "$WIFI_PSK" ]; then
-        print_usage
-    fi
 }
 
 main() {
     assert_root
-    parse_arguments "$@"
-
-    local fb_lock_flag_file_path="$DISPLAY_FRAME_BUFFER_LOCK_PATH"
-    local pre_reboot_flag_file_path="$PROJECT_PATH/app/tmp/pre_reboot_installed"
     
-    local pre_reboot_scripts=(
-        "create_venv.sh" 
-        "install_dependencies.sh" 
-        "set_device_overlays.sh" 
-        "install_wifi_driver.sh" 
-        "create_pipes.sh" 
-        "create_services.sh"
-    )
+    args=$(getopt --options - --longoptions "pre,post" --name "$0" -- "$@")
 
-    local post_reboot_scripts=(
-        "set_device_overlays.sh" 
-        "connect_wifi.sh" 
-        "set_user_permissions.sh"
-    )
+    # Set positional parameters to the getopt arguments
+    eval set -- "$args"
 
-    if [ ! -f "$pre_reboot_flag_file_path" ]; then
-        run_scripts "$SCRIPT_DIR/setup" "${pre_reboot_scripts[@]}"
-        # setup_cron_job
-        mkdir -p "$PROJECT_PATH/app/tmp"
-        touch "$fb_lock_flag_file_path"
-        touch "$pre_reboot_flag_file_path"
-        echo "Pre-Reboot Phase Complete"
-    else
-        run_scripts "$SCRIPT_DIR/setup" "${post_reboot_scripts[@]}"
-        cleanup_after_reboot "$pre_reboot_flag_file_path"
-        echo "Post-Reboot Phase Complete"
+    # Invalid option provided
+    if [[ $? -ne 0 ]] || [ "$1" == "--" ]; then
+        print_usage
+        exit 3
     fi
 
-    echo "Based."
+    while true; do
+        case "$1" in
+            --pre)
+                echo "Initiating pre-reboot setup..."
+                run_scripts "$SCRIPT_DIR/pre-reboot"
+                mkdir "$PROJECT_PATH/app/flags" 2>/dev/null
+                touch "$DISPLAY_FRAME_BUFFER_LOCK_PATH"
+                touch "$PRE_REBOOT_FLAG_FILE"
+                shift
+                ;;
+            --post)
+                if [ ! -f "$PRE_REBOOT_FLAG_FILE" ]; then
+                    echo -e "$0: pre-reboot dependencies missing"
+                    exit 2
+                fi
+                echo -e "\nInitiating post-reboot setup..."
+                run_scripts "$SCRIPT_DIR/post-reboot"
+                shift
+                ;;
+            --)
+                shift
+                break
+                ;;
+        esac
+    done
+
+    echo -e "\n\n\033[1mBased.\033[0m"
     reboot
 }
 
