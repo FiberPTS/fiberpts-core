@@ -28,12 +28,6 @@ run_scripts() {
         fi
         echo -e "\033[0;32m[OK]\033[0m\t\t${script##*/}"
     done
-
-cleanup_after_reboot() {
-    local pre_reboot_flag_file_path="$1"
-    # crontab -l | grep -v "$SCRIPT_DIR" | crontab -
-    rm -f "$pre_reboot_flag_file_path"
-    echo "Cleanup complete."
 }
 
 print_usage() {
