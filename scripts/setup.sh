@@ -17,19 +17,17 @@ load_env_variables() {
 }
 
 run_scripts() {
-    local setup_dir="$1"
+    local target_dir="$1"
     shift
-    local scripts=("$@")
 
-    for script in "${scripts[@]}"; do
-        echo "Running script: $script\n"
+    for script in "$target_dir"/*.sh; do
+        echo -e "[In Progress]\t${script##*/}"
         if ! bash "$setup_dir/$script" 2>&1; then
-            echo -e "\nError executing $script. Exiting."
-            exit 1
+            echo -e "\033[0;31m[FAIL]\033[0m\t\t${script##*/}"
+            exit 2
         fi
+        echo -e "\033[0;32m[OK]\033[0m\t\t${script##*/}"
     done
-
-    echo -e "\nScripts Execution Complete"
 }
 
 # setup_cron_job() {
