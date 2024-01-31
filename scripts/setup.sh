@@ -1,4 +1,4 @@
-#!/bin/bash
+# !/bin/bash
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -37,6 +37,7 @@ print_usage() {
 
 main() {
     assert_root
+    load_env_variables
     
     args=$(getopt --options - --longoptions "pre,post" --name "$0" -- "$@")
 
