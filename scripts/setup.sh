@@ -22,7 +22,7 @@ run_scripts() {
 
     for script in "$target_dir"/*.sh; do
         echo -e "[In Progress]\t${script##*/}"
-        if ! bash "$setup_dir/$script" 2>&1; then
+        if ! bash "$script" 2>&1; then
             echo -e "\033[0;31m[FAIL]\033[0m\t\t${script##*/}"
             exit 2
         fi
@@ -53,7 +53,7 @@ main() {
         case "$1" in
             --pre)
                 echo "Initiating pre-reboot setup..."
-                run_scripts "$SCRIPT_DIR/pre-reboot"
+                run_scripts "$SCRIPT_DIR/setup/pre-reboot"
                 mkdir "$PROJECT_PATH/app/flags" 2>/dev/null
                 touch "$DISPLAY_FRAME_BUFFER_LOCK_PATH"
                 touch "$PRE_REBOOT_FLAG_FILE"
@@ -65,7 +65,7 @@ main() {
                     exit 2
                 fi
                 echo -e "\nInitiating post-reboot setup..."
-                run_scripts "$SCRIPT_DIR/post-reboot"
+                run_scripts "$SCRIPT_DIR/setup/post-reboot"
                 shift
                 ;;
             --)
