@@ -3,7 +3,17 @@
 assert_conditions() {
     if [ -z "$WIFI_NAME" ] || [ -z "$WIFI_PSK" ]; then
         echo "Environment variables WIFI_NAME or WIFI_PSK are not set."
+        input_credentials "Please enter the Wi-Fi credentials."
     fi
+}
+
+input_credentials() {
+    echo "$1"
+    echo -n "Enter Wi-Fi Name: "
+    read WIFI_NAME
+    echo -n "Enter Wi-Fi Password: "
+    read -s WIFI_PSK
+    echo
 }
 
 connect_wifi() {
@@ -30,17 +40,8 @@ connect_wifi() {
         elif [ $status -eq 1 ]; then
             # General errors (e.g., Wi-Fi is turned off)
             echo "An error occurred. Unable to connect to $WIFI_NAME."
-        elif [ $status -eq 2 ]; then
-            if [ $attempt -eq 1 ]; then
-                echo "Please enter the Wi-Fi credentials."
-            elif [ $attempt -gt 1 ]; then
-                echo "Invalid SSID or password. Please enter credentials again."
-            fi
-            echo -n "Enter Wi-Fi Name: "
-            read WIFI_NAME
-            echo -n "Enter Wi-Fi Password: "
-            read -s WIFI_PSK
-            echo
+        elif [ $status -eq 10 ]; then
+            input_credentials "Invalid SSID or password. Please enter credentials again."
         else
             # Other errors
             echo "An unexpected error occurred. Unable to connect."
