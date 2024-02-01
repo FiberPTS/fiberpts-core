@@ -38,10 +38,11 @@ connect_wifi() {
             success=true
             echo "Connected successfully to $WIFI_NAME."
         elif [ $status -eq 1 ]; then
-            # General errors (e.g., Wi-Fi is turned off)
-            echo "An error occurred. Unable to connect to $WIFI_NAME."
+            # Password incorrect
+            input_credentials "Incorrect password. Please enter credentials again."
         elif [ $status -eq 10 ]; then
-            input_credentials "Invalid SSID or password. Please enter credentials again."
+            # No network found
+            input_credentials "Please enter credentials again."
         else
             # Other errors
             echo "An unexpected error occurred. Unable to connect."
