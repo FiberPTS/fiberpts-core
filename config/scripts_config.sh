@@ -13,3 +13,8 @@ DISPLAY_ERROR_COUNT_THRESHOLD=4
 PIPE_FOLDER_PATH=${PROJECT_PATH}/app/pipes
 TOUCH_SENSOR_TO_SCREEN_PIPE=${PIPE_FOLDER_PATH}/touch_sensor_to_screen_pipe
 NFC_TO_SCREEN_PIPE=${PIPE_FOLDER_PATH}/nfc_to_screen_pipe
+
+# FLAG FILE PATHS
+PRE_REBOOT_FLAG_FILE=${PROJECT_PATH}/app/flags/pre_reboot_setup.flag
+POST_REBOOT_FLAG_FILE=${PROJECT_PATH}/app/flags/post_reboot_setup.flag
+OVERLAY_MERGED_FLAG_FILE=${PROJECT_PATH}/app/flags/overlay_merged.flag

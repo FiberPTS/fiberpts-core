@@ -54,6 +54,10 @@ main() {
     while true; do
         case "$1" in
             --pre)
+                if [ -f "$PRE_REBOOT_FLAG_FILE" ]; then
+                    echo -e "$0: pre-reboot setup already completed"
+                    exit 0
+                fi
                 echo "Initiating pre-reboot setup..."
                 run_scripts "$SCRIPT_DIR/pre-reboot"
                 mkdir "$PROJECT_PATH/app/flags" 2>/dev/null
@@ -65,9 +69,13 @@ main() {
                 if [ ! -f "$PRE_REBOOT_FLAG_FILE" ]; then
                     echo -e "$0: pre-reboot dependencies missing"
                     exit 2
+                elif [ -f "$POST_REBOOT_FLAG_FILE" ]; then
+                    echo -e "$0: post-reboot setup already completed"
+                    exit 0
                 fi
                 echo -e "\nInitiating post-reboot setup..."
                 run_scripts "$SCRIPT_DIR/post-reboot"
+                touch "$POST_REBOOT_FLAG_FILE"
                 shift
                 ;;
             --)
