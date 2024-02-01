@@ -10,9 +10,10 @@ assert_root() {
 }
 
 load_env_variables() {
+    local project_path="$SCRIPT_DIR/../../"
     set -a
-    source "$SCRIPT_DIR/../config/scripts_config.sh" || return 1
-    source "$SCRIPT_DIR/../.env" || return 1
+    source "$project_path/config/scripts_config.sh" || return 1
+    source "$project_path/.env" || return 1
     set +a
 }
 
@@ -54,7 +55,7 @@ main() {
         case "$1" in
             --pre)
                 echo "Initiating pre-reboot setup..."
-                run_scripts "$SCRIPT_DIR/setup/pre-reboot"
+                run_scripts "$SCRIPT_DIR/pre-reboot"
                 mkdir "$PROJECT_PATH/app/flags" 2>/dev/null
                 touch "$DISPLAY_FRAME_BUFFER_LOCK_PATH"
                 touch "$PRE_REBOOT_FLAG_FILE"
@@ -66,7 +67,7 @@ main() {
                     exit 2
                 fi
                 echo -e "\nInitiating post-reboot setup..."
-                run_scripts "$SCRIPT_DIR/setup/post-reboot"
+                run_scripts "$SCRIPT_DIR/post-reboot"
                 shift
                 ;;
             --)
