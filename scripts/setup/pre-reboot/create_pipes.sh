@@ -16,7 +16,7 @@ assert_conditions() {
 create_fifo_pipes() {
     mkdir -p "$PIPE_FOLDER_PATH"
 
-    echo -e "\nCreating FIFO pipes..."
+    echo -e "Creating FIFO pipes..."
 
     if [ -p "$TOUCH_SENSOR_TO_SCREEN_PIPE" ]; then
         echo -e "\033[0;33m[WARNING]\033[0m\tFIFO pipe '$TOUCH_SENSOR_TO_SCREEN_PIPE' already exists."
