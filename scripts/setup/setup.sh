@@ -65,6 +65,8 @@ main() {
                 touch "$DISPLAY_FRAME_BUFFER_LOCK_PATH"
                 touch "$PRE_REBOOT_FLAG_FILE"
                 shift
+                echo -e "\n\n\033[1mBased.\033[0m"
+                reboot
                 ;;
             --post)
                 if [ ! -f "$PRE_REBOOT_FLAG_FILE" ]; then
@@ -78,6 +80,7 @@ main() {
                 run_scripts "$SCRIPT_DIR/post-reboot"
                 touch "$POST_REBOOT_FLAG_FILE"
                 shift
+                echo -e "\n\n\033[1mBased.\033[0m"
                 ;;
             --)
                 shift
@@ -85,9 +88,6 @@ main() {
                 ;;
         esac
     done
-
-    echo -e "\n\n\033[1mBased.\033[0m"
-    exit 0
 }
 
 main "$@"
