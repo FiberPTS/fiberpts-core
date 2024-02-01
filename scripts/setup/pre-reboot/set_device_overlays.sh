@@ -29,7 +29,7 @@ install_libretech_wiring_tool() {
     fi
     if [ -f "$OVERLAY_MERGED_FLAG_FILE" ]; then
         local reset_answer=-1
-        while [ reset_answer -ne 0 ] && [ reset_answer -ne 1 ]; do
+        while [ $reset_answer -ne 0 ] && [ $reset_answer -ne 1 ]; do
             echo "Do you want to reset the overlays?"
             echo -n "Yes (1) or No (0): "
             read reset_answer
@@ -46,7 +46,7 @@ install_libretech_wiring_tool() {
         done
     else 
         local merge_answer=-1
-        while [ merge_answer -ne 0 ] && [ merge_answer -ne 1 ]; do
+        while [ $merge_answer -ne 0 ] && [ $merge_answer -ne 1 ]; do
             echo "Do you want to merge the overlays?"
             echo -n "Yes (1) or No (0): "
             read merge_answer
