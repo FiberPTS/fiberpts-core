@@ -60,7 +60,7 @@ main() {
         echo
         case "${answer}" in
             [Yy] ) echo "Connecting to WiFi...";
-                # connect_wifi
+                connect_wifi
                 break
                 ;;
             [Nn] ) echo "Run this script if you wish to connect to WiFi.";
