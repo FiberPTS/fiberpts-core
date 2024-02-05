@@ -56,7 +56,23 @@ connect_wifi() {
 
 main() {
     assert_conditions
-    connect_wifi
+
+    while true; do
+        local answer
+        read -p "Do you wish to connect to WiFi? (Y/n)" user_input
+        echo
+        case "${answer}" in
+            [Yy] ) echo "Connecting to WiFi...";
+                # connect_wifi
+                break
+                ;;
+            [Nn] ) echo "Not connected to WiFi. Run this script if you wish to connect to WiFi.";
+                break
+                ;;
+            * )    echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)."
+                ;;
+        esac
+    done
 }
 
 main
