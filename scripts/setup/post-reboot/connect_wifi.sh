@@ -9,10 +9,8 @@ assert_conditions() {
 
 input_credentials() {
     echo "$1"
-    echo -n "Enter Wi-Fi Name: "
-    read WIFI_NAME
-    echo -n "Enter Wi-Fi Password: "
-    read -s WIFI_PSK
+    read -p "Enter WiFi network name (SSID): " WIFI_NAME
+    read -sp "Password: " WIFI_PSK
     echo
 }
 
