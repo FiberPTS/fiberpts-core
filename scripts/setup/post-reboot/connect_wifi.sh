@@ -3,12 +3,12 @@
 assert_conditions() {
     if [ -z "${WIFI_NAME}" ] || [ -z "${WIFI_PSK}" ]; then
         echo "Environment variables WIFI_NAME or WIFI_PSK are not set."
-        input_credentials "Please enter the Wi-Fi credentials."
+        echo "Please enter the WiFi credentials."
+        input_credentials
     fi
 }
 
 input_credentials() {
-    echo "$1"
     read -p "Enter WiFi network name (SSID): " WIFI_NAME
     read -sp "Password: " WIFI_PSK
     echo
@@ -18,8 +18,10 @@ connect_wifi() {
     local attempt=0
     local max_attempts=5
     local success=false
+
     systemctl start NetworkManager.service
     sleep 5
+
     while [ ${attempt} -lt ${max_attempts} ] && [ "${success}" = false ]; do
         ((attempt++))
         sleep 0.1
@@ -36,11 +38,14 @@ connect_wifi() {
             success=true
             echo "\033[0;32m[OK]\033[0m\t\tConnected successfully to ${WIFI_NAME}."
         elif [ ${status} -eq 1 ]; then
-            input_credentials "Incorrect password. Please enter credentials again."
+            echo "Incorrect password. Please enter credentials again."
+            input_credentials
         elif [ ${status} -eq 10 ]; then
-            input_credentials "Please enter credentials again."
+            echo "Please enter credentials again."
+            input_credentials
         else
-            echo "An unexpected error occurred. Unable to connect."
+            echo "\033[0;31m[FAIL]\033[0m\t\tAn unexpected error occurred. Unable to connect."
+            exit 1
         fi
     done
 
