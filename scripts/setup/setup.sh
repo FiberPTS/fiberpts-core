@@ -60,12 +60,14 @@ main() {
                 fi
                 echo "Initiating pre-reboot setup..."
                 run_scripts "${SCRIPT_DIR}/pre-reboot"
+                shift
+                echo -e "\n\n\033[1mPre-reeboot setup completed.\033[0m Rebooting..."
+
+                # Create file locks and flags required during post-reboot setup
                 mkdir "${PROJECT_PATH}/app/locks" 2> /dev/null
                 mkdir "${PROJECT_PATH}/app/flags" 2> /dev/null
                 touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
                 touch "${PRE_REBOOT_FLAG_FILE}"
-                shift
-                echo -e "\n\n\033[1mPre-reeboot setup completed.\033[0m Rebooting..."
                 reboot
                 ;;
             --post)
