@@ -43,21 +43,21 @@ reset_overlays() {
 merge_overlays() {
     local answer
     while true; do
-        read -p "Do you want to reset the overlays (Y/n)?" answer
+        read -p "Do you want to merge the overlays (Y/n)?" answer
         echo
         readonly answer
          
         case "${answer}" in
             [Yy] ) echo "Merging overlays...";
-                touch "${OVERLAY_MERGED_FLAG_FILE}"
                 /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
                 echo "Overlays merged. Reboot to apply changes."
+                touch "${OVERLAY_MERGED_FLAG_FILE}"
                 break
                 ;;
-            [Nn] ) echo "Overlays not reset.";
+            [Nn] ) echo "Overlays not merged.";
                 break
                 ;;
-            * )    echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)."
+            * )    echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)"
                 ;;
         esac
     done
