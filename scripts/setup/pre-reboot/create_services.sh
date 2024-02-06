@@ -14,26 +14,30 @@ assert_conditions() {
 }
 
 process_service_files() {
-    local service_dir="$PROJECT_PATH/services"
+    local service_dir="${PROJECT_PATH}/services"
 
     export MAINPID=''
 
-    for service_template in "$service_dir"/*.service; do
-        local service_filename=$(basename "$service_template")
-        if [ ! -f "$SYSTEMD_DIR/$service_filename" ]; then
-            envsubst < "$service_template" > "$SYSTEMD_DIR/$service_filename"
-            echo "Service file created: $service_filename"
-            systemctl enable "$service_filename"
-            echo "Service file enabled: $service_filename"
+    for service_template in "${service_dir}"/*.service; do
+        local service_filename=$(basename "${service_template}")
+        if [ ! -f "${SYSTEMD_DIR}/${service_filename}" ]; then
+            envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
+            systemctl enable "${service_filename}"
+            if [ "$?" -eq 0 ]; do
+                echo "\033[0;32m[OK]\033[0m\t\t'${service_filename}' enabled"
+            else
+                echo "\033[0;31m[FAIL]\033[0m\t\tFailed to enable '${service_filename}'"
+            fi
         else
-            envsubst < "$service_template" > "$SYSTEMD_DIR/$service_filename"
+            envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
             systemctl daemon-reload
-            systemctl restart "$service_filename"
-            echo "Service file updated: $service_filename"
+            systemctl restart "${service_filename}"
+            if [ "$?" -eq 0 ]; do
+                echo "\033[0;32m[OK]\033[0m\t\t'${service_filename}' updated"
+            else
+                echo "\033[0;31m[FAIL]\033[0m\t\tFailed to update '${service_filename}'"
         fi
     done
-
-    echo "All service files are now processed and services enabled."
 }
 
 main() {
