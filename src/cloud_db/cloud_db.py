@@ -27,7 +27,7 @@ class CloudDBClient:
         self.client = supabase.create_client(url, key)
 
     def insert_tap_data(self, tap: Tap) -> APIResponse:
-        """Inserts a record with timestamp and device ID into the `tap_data` table.
+        """Inserts a new tap data record into the `tap_data` table.
 
         Args:
             tap: An instance of Tap containing the data to be inserted
