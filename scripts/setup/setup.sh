@@ -19,10 +19,11 @@ load_env_variables() {
 
 run_scripts() {
     local target_dir="$1"
+    readonly target_dir
     shift
 
     for script in "${target_dir}"/*.sh; do
-        echo -e "[In Progress]\t${script##*/}"
+        echo "In Progress: ${script##*/}"
         if ! bash "${script}" 2>&1; then
             echo -e "\033[0;31m[FAIL]\033[0m\t\t${script##*/}"
             exit 2
