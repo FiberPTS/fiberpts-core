@@ -2,14 +2,13 @@
 
 assert_conditions() {
     if [ -z "${WIFI_NAME}" ] || [ -z "${WIFI_PSK}" ]; then
-        echo "Environment variables WIFI_NAME or WIFI_PSK are not set."
         echo "Please enter the WiFi credentials."
         input_credentials
     fi
 }
 
 input_credentials() {
-    read -p "Enter WiFi network name (SSID): " WIFI_NAME
+    read -p "WiFi Name (SSID): " WIFI_NAME
     read -sp "Password: " WIFI_PSK
     echo
 }
