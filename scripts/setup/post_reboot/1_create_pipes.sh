@@ -3,12 +3,12 @@
 assert_conditions() {
     # Root check
     if [ "$(id -u)" -ne 0 ]; then
-        echo "\033[0;33m[WARNING]\033[0m\tThis script must be run as root. Please use sudo."
+        echo -e "\033[0;33m[WARNING]\033[0m\tThis script must be run as root. Please use sudo."
         exit 1
     fi
 
     if [ -z "${PIPE_FOLDER_PATH}" ] || [ -z "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ] || [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
-        echo "\033[0;33m[WARNING]\033[0m\tRequired environment variables PIPE_FOLDER_PATH, TOUCH_SENSOR_TO_SCREEN_PIPE, or NFC_TO_SCREEN_PIPE are not set."
+        echo -e "\033[0;33m[WARNING]\033[0m\tRequired environment variables PIPE_FOLDER_PATH, TOUCH_SENSOR_TO_SCREEN_PIPE, or NFC_TO_SCREEN_PIPE are not set."
         exit 1
     fi
 }

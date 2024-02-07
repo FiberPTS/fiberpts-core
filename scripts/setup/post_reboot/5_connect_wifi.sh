@@ -36,7 +36,7 @@ connect_wifi() {
 
         if [ ${status} -eq 0 ]; then
             success=true
-            echo "\033[0;32m[OK]\033[0m\t\tConnected successfully to ${WIFI_NAME}."
+            echo -e "\033[0;32m[OK]\033[0m\t\tConnected successfully to ${WIFI_NAME}."
         elif [ ${status} -eq 1 ]; then
             echo "Incorrect password. Please enter credentials again."
             input_credentials
@@ -44,13 +44,13 @@ connect_wifi() {
             echo "Please enter credentials again."
             input_credentials
         else
-            echo "\033[0;31m[FAIL]\033[0m\t\tAn unexpected error occurred. Unable to connect."
+            echo -e "\033[0;31m[FAIL]\033[0m\t\tAn unexpected error occurred. Unable to connect."
             exit 1
         fi
     done
 
     if [ "${success}" = false ]; then
-        echo "\033[0;31m[FAIL]\033[0m\t\tFailed to connect after ${max_attempts} attempts."
+        echo -e "\033[0;31m[FAIL]\033[0m\t\tFailed to connect after ${max_attempts} attempts."
     else
         nmcli connection modify "${WIFI_NAME}" connection.autoconnect yes
     fi
