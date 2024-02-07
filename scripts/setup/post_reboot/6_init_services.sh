@@ -15,14 +15,16 @@ assert_conditions() {
 
 process_service_files() {
     local service_dir="${PROJECT_PATH}/services"
-
-    export MAINPID=''
+    readonly service_dir
 
     for service_template in "${service_dir}"/*.service; do
         local service_filename=$(basename "${service_template}")
+        readonly service_filename
+
         if [ ! -f "${SYSTEMD_DIR}/${service_filename}" ]; then
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
             systemctl enable "${service_filename}"
+            
             if [ "$?" -eq 0 ]; do
                 echo "\033[0;32m[OK]\033[0m\t\t'${service_filename}' enabled"
             else
@@ -32,6 +34,7 @@ process_service_files() {
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
             systemctl daemon-reload
             systemctl restart "${service_filename}"
+
             if [ "$?" -eq 0 ]; do
                 echo "\033[0;32m[OK]\033[0m\t\t'${service_filename}' updated"
             else
@@ -44,5 +47,3 @@ main() {
     assert_conditions
     process_service_files
 }
-
-main

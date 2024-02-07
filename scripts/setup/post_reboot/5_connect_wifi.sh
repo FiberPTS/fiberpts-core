@@ -64,14 +64,17 @@ main() {
         read -p "Do you wish to connect to WiFi? (Y/n)" user_input
         echo
         case "${answer}" in
-            [Yy] ) echo "Connecting to WiFi...";
+            [Yy])
+                echo "Connecting to WiFi...";
                 connect_wifi
                 break
                 ;;
-            [Nn] ) echo "Run this script if you wish to connect to WiFi.";
+            [Nn])
+                echo "Run this script if you wish to connect to WiFi. Exiting...";
                 break
                 ;;
-            * )    echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)."
+            *)
+                echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)."
                 ;;
         esac
     done
