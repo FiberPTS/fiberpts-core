@@ -43,7 +43,7 @@ run_pre_reboot_tasks() {
         exit 0
     fi
     
-    mkdir "${PROJECT_PATH}/app/flags" 2> /dev/null
+    mkdir "${PROJECT_PATH}/.app/flags" 2> /dev/null
     
     local response
     while true; do
@@ -51,7 +51,7 @@ run_pre_reboot_tasks() {
         case "${response}" in
             [Yy])
                 # Create file flags and locks required during post-reboot setup
-                mkdir "${PROJECT_PATH}/app/locks" 2> /dev/null
+                mkdir "${PROJECT_PATH}/.app/locks" 2> /dev/null
                 touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
                 touch "${PRE_REBOOT_FLAG}"
 
