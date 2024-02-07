@@ -32,65 +32,86 @@ run_scripts() {
     done
 }
 
-print_usage() {
-    echo "Usage: $0 [--pre, --post]"
-    exit 1
-}
-
-main() {
-    assert_root
-    load_env_variables
-    
-    args=$(getopt --options - --longoptions "pre,post" --name "$0" -- "$@")
-
-    # Set positional parameters to the getopt arguments
-    eval set -- "${args}"
-
-    # Invalid option provided
-    if [[ $? -ne 0 ]] || [ "$1" == "--" ]; then
-        print_usage
-        exit 3
+run_pre_reboot_tasks() {
+    if [ ! -f "${PRE_REBOOT_FLAG_FILE}" ]; then
+        echo "Initiating pre-reboot setup..."
+        run_scripts "${SCRIPT_DIR}/pre-reboot"
+    else
+        echo -e "\033[0;33m[WARNING]\033[0m\tPre-reboot setup already completed."
+        exit 0
     fi
-
+    echo "Pre-reboot tasks completed. Do you wish to reboot now? (Y/n)"
+    
+    local response
     while true; do
-        case "$1" in
-            --pre)
-                if [ -f "${PRE_REBOOT_FLAG_FILE}" ]; then
-                    echo -e "$0: pre-reboot setup already completed"
-                    exit 0
-                fi
-                echo "Initiating pre-reboot setup..."
-                run_scripts "${SCRIPT_DIR}/pre-reboot"
-                shift
-                echo -e "\n\n\033[1mPre-reeboot setup completed.\033[0m Rebooting..."
-
+        read response
+        case "${response}" in
+            [Yy])
                 # Create file locks and flags required during post-reboot setup
                 mkdir "${PROJECT_PATH}/app/locks" 2> /dev/null
                 mkdir "${PROJECT_PATH}/app/flags" 2> /dev/null
                 touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
                 touch "${PRE_REBOOT_FLAG_FILE}"
+
                 reboot
                 ;;
-            --post)
-                if [ ! -f "${PRE_REBOOT_FLAG_FILE}" ]; then
-                    echo -e "\033[0;33m[WARNING]\033[0m\tPre-reboot dependencies missing."
-                    exit 2
-                elif [ -f "${POST_REBOOT_FLAG_FILE}" ]; then
-                    echo -e "\033[0;33m[WARNING]\033[0m\tPost-reboot setup already completed."
-                    exit 0
-                fi
-                echo -e "\nInitiating post-reboot setup..."
-                run_scripts "${SCRIPT_DIR}/post-reboot"
-                touch "${POST_REBOOT_FLAG_FILE}"
-                shift
-                ;;
-            --)
-                shift
+            [Nn])
+                echo -e "\033[0;33m[WARNING]\033[0m\tPost-reboot setup wont begin until system is rebooted."
                 break
+                ;;
+            *)
+                echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)."
                 ;;
         esac
     done
+    exit 0
+}
+
+run_post_reboot_tasks() {
+    echo "Checking post-reboot requirements..."
+    if [ ! -f "${PRE_REBOOT_FLAG_FILE}" ]; then
+        echo -e "\033[0;33m[WARNING]\033[0m\tPre-reboot dependencies missing."
+        exit 1
+    elif [ -f "${POST_REBOOT_FLAG_FILE}" ]; then
+        echo -e "\033[0;33m[WARNING]\033[0m\tPost-reboot setup already completed."
+        exit 0
+    fi
+
+    echo -e "\nInitiating post-reboot setup..."
+    run_scripts "${SCRIPT_DIR}/post-reboot"
+    touch "${POST_REBOOT_FLAG_FILE}"
+    
+    echo -e "\033[1mFiberPTS\033[0m] setup is done. System will reboot now."
+    reboot
+}   
+
+print_usage() {
+    echo "Usage: $0 --pre | --post"
+}
+
+main() {
+    assert_root
+    load_env_variables
+
+    if [ "$#" -ne 1 ]; then
+        print_usage
+        exit 1
+    fi
+
+    case "$1" in
+        --pre)
+            run_pre_reboot_tasks
+            ;;
+        --post)
+            run_post_reboot_tasks
+            ;;
+        *)
+            echo "$0: Invalid option '$1'"
+            print_usage
+            exit 1
+            ;;
+    esac
+    exit 0
 }
 
 main "$@"
-echo -e "\n\n\033[1mBased.\033[0m"
