@@ -3,6 +3,7 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
+from src.logging.logging import *
 from config.screen_config import *
 from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE,
                              DEVICE_STATE_FILE_PATH)
@@ -18,7 +19,8 @@ from src.utils.utils import TapStatus
 
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
-
+Screen_Logger = Logger('screen.py')
+logger = Screen_Logger.get_logger()
 
 class Screen:
     """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.
@@ -55,6 +57,7 @@ class Screen:
         """
         self.image = Image.new('RGB', (self.display_attributes.display_height, self.display_attributes.display_width),
                                bg_color)
+        logger.info("Image Created")
 
     def draw_image(self) -> None:
         """Draw the current image to the display (assumes the screen needs 90 degree rotation)."""
@@ -62,6 +65,7 @@ class Screen:
             self.image = self.image.rotate(90, expand=True)
             write_image_to_fb(self.image, self.display_attributes.display_fb_path,
                               self.display_attributes.display_fb_lock_path)
+            logger.info("Image Drawn")
 
     def add_text(self,
                  text: str,
@@ -89,6 +93,7 @@ class Screen:
                 text_width, text_height = bbox[2] - bbox[0], ascent + descent
                 position = (position[0] - text_width // 2, position[1] - text_height // 2)
             draw.text(position, text, font=font, fill=font_color)
+            logger.info("Text Added")
 
     def draw_dashboard(self) -> None:
         """Draw the dashboard interface on the screen."""
@@ -107,6 +112,7 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_color,
                       centered=True)
         self.draw_image()
+        logger.info("Dashboard Drawn")
 
     def draw_popup(self, text: str, bg_color: str) -> None:
         """Draw a popup message on the screen with specified text and background color.
@@ -124,6 +130,7 @@ class Screen:
                       self.popup_attributes.message_attributes.popup_font_color,
                       centered=True)
         self.draw_image()
+        logger.info("Popup Drawn")
         time.sleep(self.popup_attributes.popup_duration)
 
     def handle_pipe_data(self) -> None:
@@ -134,17 +141,20 @@ class Screen:
             # timestamp = tap_data["timestamp"]
             status = TapStatus[tap_data['status']]
             if status == TapStatus.GOOD:
+                logger.info("Good tap registered by screen")
                 self.device_state['unit_count'] += 1
                 write_device_state(self.device_state, self.device_state_file_path)
                 self.draw_popup(self.popup_attributes.message_attributes.tap_event_message,
                                 self.popup_attributes.event_attributes.tap_event_bg_color)
             elif status == TapStatus.BAD:
+                logger.info("Bad tap registered by screen")
                 self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
                                 self.popup_attributes.event_attributes.popup_warning_bg_color)
             return True
         return False
 
     def run(self) -> None:
+        logger.info("Main Loop Starting for Screen")
         """Start the main loop of the screen, updating the display at the set frame rate and handling incoming pipe data."""
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
         self.draw_dashboard()

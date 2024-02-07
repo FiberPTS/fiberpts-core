@@ -7,11 +7,14 @@ import gpiod
 from gpiod.line import Bias, Edge
 
 from src.cloud_db.cloud_db import CloudDBClient
+from src.logging.logging import *
 from config.touch_sensor_config import *
 from src.utils.paths import TOUCH_SENSOR_TO_SCREEN_PIPE
 from src.utils.touch_sensor_utils import *
 from src.utils.utils import get_device_id, TapStatus
 
+Touch_Sensor_Logger = Logger('touch_sensor.py')
+logger = Touch_Sensor_Logger.get_logger()
 
 class TouchSensor:
     """Represents a touch sensor.
@@ -70,6 +73,10 @@ class TouchSensor:
             self.cloud_db.insert_tap_data(tap)
 
         self.last_tap = tap
+        if (tap_status == TapStatus.GOOD):
+            logger.info("Valid Tap")
+        else:
+            logger.info("Invalid Tap")
         return is_valid_tap
 
     def pipe_tap_data(self, tap: Tap) -> None:
@@ -88,10 +95,13 @@ class TouchSensor:
             with open(self.screen_pipe, 'w') as pipeout:
                 json.dump(tap_data, pipeout)
         except FileNotFoundError:
+            logger.error("Named pipe not found")
             raise FileNotFoundError("Named pipe not found")
         except BrokenPipeError:
+            logger.error("Cannot write to pipe - broken pipe")
             print("Cannot write to pipe - broken pipe")
         except Exception as e:
+            logger.error("Error writing to pipe: {e}")
             print(f"Error writing to pipe: {e}")
 
     def run(self) -> None:
@@ -110,6 +120,7 @@ class TouchSensor:
                 value = request.get_value(self.line_offset)
                 if released:
                     if value == gpiod.line.Value.ACTIVE:
+                        logger.info("Touch Tap Registered")
                         # TODO: Consider threading here
                         self.handle_tap()
                         released = False

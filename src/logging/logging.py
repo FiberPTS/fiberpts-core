@@ -13,7 +13,6 @@ class Logger:
                  log_file_path='app/logs/runtime.log'):
         self.log_file_path = log_file_path
         self.logger_name = logger_name
-        self.level = level
         self.logger = None
         self._configure_logging()
 
