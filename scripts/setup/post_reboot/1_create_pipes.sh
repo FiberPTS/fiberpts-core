@@ -3,12 +3,12 @@
 assert_conditions() {
     # Root check
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tThis script must be run as root. Please use sudo."
+        echo -e "\t${WARNING_MSG} This script must be run as root. Please use sudo."
         exit 1
     fi
 
     if [ -z "${PIPE_FOLDER_PATH}" ] || [ -z "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ] || [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tRequired environment variables PIPE_FOLDER_PATH, TOUCH_SENSOR_TO_SCREEN_PIPE, or NFC_TO_SCREEN_PIPE are not set."
+        echo -e "\t${WARNING_MSG} Required environment variables PIPE_FOLDER_PATH, TOUCH_SENSOR_TO_SCREEN_PIPE, or NFC_TO_SCREEN_PIPE are not set."
         exit 1
     fi
 }
@@ -19,17 +19,17 @@ create_fifo_pipes() {
     echo -e "Creating FIFO pipes..."
 
     if [ -p "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tFIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' already exists."
+        echo -e "\t${WARNING_MSG} FIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' already exists."
     else
         mkfifo "${TOUCH_SENSOR_TO_SCREEN_PIPE}"
-        echo -e "\033[0;32m[OK]\033[0m\t\tFIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' created."
+        echo -e "\t\t${OK_MSG} FIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' created."
     fi
              
     if [ -p "${NFC_TO_SCREEN_PIPE}" ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tFIFO pipe '${NFC_TO_SCREEN_PIPE}' already exists."
+        echo -e "\t${WARNING_MSG} FIFO pipe '${NFC_TO_SCREEN_PIPE}' already exists."
     else
         mkfifo "${NFC_TO_SCREEN_PIPE}"
-        echo -e "\033[0;32m[OK]\033[0m\t\tFIFO pipe '${NFC_TO_SCREEN_PIPE}' created."
+        echo -e "\t\t${OK_MSG} FIFO pipe '${NFC_TO_SCREEN_PIPE}' created."
     fi
 }
 

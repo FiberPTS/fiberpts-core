@@ -4,7 +4,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 assert_root() {
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tThis script must be run as root. Please use sudo."
+        echo -e "${WARNING_MSG} This script must be run as root. Please use sudo."
         exit 1
     fi
 }
@@ -23,12 +23,11 @@ run_scripts() {
     shift
 
     for script in "${target_dir}"/*.sh; do
-        echo "In Progress: ${script##*/}"
         if ! bash "${script}" 2>&1; then
-            echo -e "\033[0;31m[FAIL]\033[0m\t\t${script##*/}"
+            echo -e "${FAIL_MSG} ${script##*/}"
             exit 2
         fi
-        echo -e "\033[0;32m[OK]\033[0m\t\t${script##*/}"
+        echo -e "${OK_MSG} ${script##*/}"
     done
 }
 
@@ -36,9 +35,6 @@ run_pre_reboot_tasks() {
     if [ ! -f "${PRE_REBOOT_FLAG_FILE}" ]; then
         echo "Initiating pre-reboot setup..."
         run_scripts "${SCRIPT_DIR}/pre-reboot"
-    else
-        echo -e "\033[0;33m[WARNING]\033[0m\tPre-reboot setup already completed."
-        exit 0
     fi
     echo "Pre-reboot tasks completed. Do you wish to reboot now? (Y/n)"
     
@@ -47,7 +43,7 @@ run_pre_reboot_tasks() {
         read response
         case "${response}" in
             [Yy])
-                # Create file locks and flags required during post-reboot setup
+                # Create file flags and locks required during post-reboot setup
                 mkdir "${PROJECT_PATH}/app/locks" 2> /dev/null
                 mkdir "${PROJECT_PATH}/app/flags" 2> /dev/null
                 touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
@@ -56,7 +52,7 @@ run_pre_reboot_tasks() {
                 reboot
                 ;;
             [Nn])
-                echo -e "\033[0;33m[WARNING]\033[0m\tPost-reboot setup wont begin until system is rebooted."
+                echo -e "${WARNING_MSG} Post-reboot setup won't begin until system is rebooted"
                 break
                 ;;
             *)
@@ -69,19 +65,20 @@ run_pre_reboot_tasks() {
 
 run_post_reboot_tasks() {
     echo "Checking post-reboot requirements..."
-    if [ ! -f "${PRE_REBOOT_FLAG_FILE}" ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tPre-reboot dependencies missing."
+    if [ ! -f "${PRE_REBOOT_FLAG}" ]; then
+        echo -e "${WARNING_MSG} Pre-reboot dependencies missing"
         exit 1
-    elif [ -f "${POST_REBOOT_FLAG_FILE}" ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tPost-reboot setup already completed."
+    elif [ -f "${POST_REBOOT_FLAG}" ]; then
+        echo -e "${WARNING_MSG} Post-reboot setup already completed"
         exit 0
     fi
+    echo -e "${OK_MSG} All requirements satisfied"
 
     echo -e "\nInitiating post-reboot setup..."
-    run_scripts "${SCRIPT_DIR}/post-reboot"
-    touch "${POST_REBOOT_FLAG_FILE}"
+    run_scripts "${SCRIPT_DIR}/post_reboot"
+    touch "${POST_REBOOT_FLAG}"
     
-    echo -e "\033[1mFiberPTS\033[0m] setup is done. System will reboot now."
+    echo -e "\n\033[1mFiberPTS\033[0m setup is done. System will reboot now."
     reboot
 }   
 

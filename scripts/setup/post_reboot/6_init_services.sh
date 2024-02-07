@@ -3,12 +3,12 @@
 assert_conditions() {
     # Root check
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tThis script must be run as root. Please use sudo."
+        echo -e "\t${WARNING_MSG} This script must be run as root. Please use sudo."
         exit 1
     fi
 
     if [ -z "${PROJECT_PATH}" ] || [ -z "${SYSTEMD_DIR}" ]; then
-        echo -e "\033[0;33m[WARNING]\033[0m\tRequired environment variables PROJECT_PATH or SYSTEMD_DIR are not set."
+        echo -e "\t${WARNING_MSG} Required environment variables PROJECT_PATH or SYSTEMD_DIR are not set."
         exit 1
     fi
 }
@@ -26,9 +26,9 @@ process_service_files() {
             systemctl enable "${service_filename}"
             
             if [ "$?" -eq 0 ]; do
-                echo -e "\033[0;32m[OK]\033[0m\t\t'${service_filename}' enabled"
+                echo -e "\t${OK_MSG} '${service_filename}' enabled"
             else
-                echo -e "\033[0;31m[FAIL]\033[0m\t\tFailed to enable '${service_filename}'"
+                echo -e "\t${FAIL_MSG} Failed to enable '${service_filename}'"
             fi
         else
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
@@ -36,9 +36,9 @@ process_service_files() {
             systemctl restart "${service_filename}"
 
             if [ "$?" -eq 0 ]; do
-                echo -e "\033[0;32m[OK]\033[0m\t\t'${service_filename}' updated"
+                echo -e "\t${OK_MSG} '${service_filename}' updated"
             else
-                echo -e "\033[0;31m[FAIL]\033[0m\t\tFailed to update '${service_filename}'"
+                echo -e "\t${FAIL_MSG} Failed to update '${service_filename}'"
         fi
     done
 }
