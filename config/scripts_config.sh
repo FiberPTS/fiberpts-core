@@ -1,5 +1,5 @@
 # Application Path Configuration
-PROJECT_DIR=/opt
+PROJECT_DIR=/home/jbesoto/git #/opt
 PROJECT_PATH=${PROJECT_DIR}/FiberPTS
 DEVICE_STATE_FILE_PATH=${PROJECT_PATH}/app/device_state.json
 
@@ -17,6 +17,7 @@ NFC_TO_SCREEN_PIPE=${PIPE_FOLDER_PATH}/nfc_to_screen_pipe
 # Flag File Paths
 PRE_REBOOT_FLAG=${PROJECT_PATH}/app/flags/pre_reboot_setup_done.flag
 POST_REBOOT_FLAG=${PROJECT_PATH}/app/flags/post_reboot_setup_done.flag
+REBOOT_HALTED_FLAG=${PROJECT_PATH}/app/flags/reboot_halted.flag
 OVERLAY_MERGED_FLAG=${PROJECT_PATH}/app/flags/overlay_merged.flag
 
 # Status Messages

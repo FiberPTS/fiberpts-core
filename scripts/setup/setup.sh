@@ -32,26 +32,36 @@ run_scripts() {
 }
 
 run_pre_reboot_tasks() {
-    if [ ! -f "${PRE_REBOOT_FLAG_FILE}" ]; then
+    if [ ! -f "${PRE_REBOOT_FLAG}" ] && [ ! -f "${REBOOT_HALTED_FLAG}" ]; then
         echo "Initiating pre-reboot setup..."
-        run_scripts "${SCRIPT_DIR}/pre-reboot"
+        run_scripts "${SCRIPT_DIR}/pre_reboot"
+        echo -e "Pre-reboot tasks completed."
+    elif [ -f "${REBOOT_HALTED_FLAG}" ]; then
+        echo -e "${WARNING_MSG} Pre-reboot setup already completed"
+    elif [ -f "${PRE_REBOOT_FLAG}" ]; then
+        echo -e "${WARNING_MSG} Pre-reboot setup already completed"
+        exit 0
     fi
-    echo "Pre-reboot tasks completed. Do you wish to reboot now? (Y/n)"
+    
+    mkdir "${PROJECT_PATH}/app/flags" 2> /dev/null
     
     local response
     while true; do
-        read response
+        read -p "Do you wish to reboot now? [Y/n] " response
         case "${response}" in
             [Yy])
                 # Create file flags and locks required during post-reboot setup
                 mkdir "${PROJECT_PATH}/app/locks" 2> /dev/null
-                mkdir "${PROJECT_PATH}/app/flags" 2> /dev/null
                 touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
-                touch "${PRE_REBOOT_FLAG_FILE}"
+                touch "${PRE_REBOOT_FLAG}"
 
+                if [ -f "${REBOOT_HALTED_FLAG}" ]; then
+                    rm -f "${REBOOT_HALTED_FLAG}"
+                fi
                 reboot
                 ;;
             [Nn])
+                touch "${REBOOT_HALTED_FLAG}"
                 echo -e "${WARNING_MSG} Post-reboot setup won't begin until system is rebooted"
                 break
                 ;;
