@@ -10,7 +10,7 @@ class Logger:
     def __init__(self,
                  logger_name,
                  level=logging.INFO,
-                 log_file_path='app/logs/runtime.log'):
+                 log_file_path='.app/logs/fpts.log'):
         self.log_file_path = log_file_path
         self.logger_name = logger_name
         self.logger = None

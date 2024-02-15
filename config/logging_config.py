@@ -16,6 +16,13 @@ LOGGING_CONFIG = {
             'backupCount': 5,
             'encoding': 'utf8',
         },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'FH',
+            'filename': '.app/logs/fpts.log',
+            'mode': 'a',
+        },
     },
     'loggers': {
         '': {  # root logger
