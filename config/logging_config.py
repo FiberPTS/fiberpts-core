@@ -8,14 +8,14 @@ LOGGING_CONFIG = {
         },
     },
     'handlers': {
-        'default': {
-            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
-            'formatter': 'standard',
-            'filename': 'path/to/your/logfile.log',
-            'maxBytes': 1024 * 1024 * 5,  # 5 MB
-            'backupCount': 5,
-            'encoding': 'utf8',
-        },
+        # 'default': {
+        #     'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+        #     'formatter': 'standard',
+        #     'filename': '.app/logs/fpts.log',
+        #     'maxBytes': 1024 * 1024 * 5,  # 5 MB
+        #     'backupCount': 5,
+        #     'encoding': 'utf8',
+        # },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
@@ -26,7 +26,7 @@ LOGGING_CONFIG = {
     },
     'loggers': {
         '': {  # root logger
-            'handlers': ['default'],
+            'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True
         },

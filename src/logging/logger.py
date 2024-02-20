@@ -1,7 +1,8 @@
 import logging
 from logging.config import dictConfig
+from logging.handlers import WatchedFileHandler
 from config.logging_config import LOGGING_CONFIG
-from concurrent_log_handler import ConcurrentRotatingFileHandler
+#from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 class Logger:
     # TODO: Get path to project folder for log_file_path and config_path
@@ -19,7 +20,7 @@ class Logger:
     def _configure_logging(self):
         """Configure logging using the specified configuration file and set up ConcurrentRotatingFileHandler."""
         # Load basic configuration from file
-        dictConfig(LOGGING_CONFIG, disable_existing_loggers=False)
+        dictConfig(LOGGING_CONFIG)
 
         # Get the logger and add the ConcurrentRotatingFileHandler to it
         self.logger = logging.getLogger(self.logger_name)
