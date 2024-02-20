@@ -63,7 +63,7 @@ parse_arguments() {
 }
 
 main() {
-    local scripts=("set_user_permissions.sh" "create_services.sh")
+    local scripts=("post-reboot/set_user_permissions.sh" "pre-reboot/create_services.sh")
 
     assert_conditions
     parse_arguments
