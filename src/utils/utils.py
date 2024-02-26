@@ -1,5 +1,6 @@
 from enum import Enum
 import fcntl
+import subprocess
 
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
@@ -30,17 +31,19 @@ class TapStatus(Enum):
     def to_json(self):
         return self.value
 
-def get_device_id() -> str:
-    """Retrieves the unique ID of the device running this program.
 
-    This function specifically targets Unix-like systems. To ensure
-    compatibility with non-Unix systems, it returns an empty string.
+def get_device_id() -> str:
+    """Retrieves the device's hostname and uses it as a device ID.
 
     Returns:
-        str: The device ID if the file exists, otherwise an empty string.
+        A string representing the device's hostname, used as a device ID.
+
+    Raises:
+        subprocess.CalledProcessError: If the 'hostname' command fails.
     """
     try:
-        with open('/etc/machine-id', 'r') as file:
-            return file.read().strip()
-    except FileNotFoundError:
-        return ''
+        process = subprocess.run(['hostname'], capture_output=True, text=True, check=True)
+        return process.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while fetching the hostname: {e}")
+        raise
