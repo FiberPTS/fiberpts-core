@@ -2,6 +2,8 @@ import os
 
 from dotenv import load_dotenv
 
+SCRIPT_PATH = os.path.abspath(__file__)
+SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
 PROJECT_DIR = os.path.abspath(os.path.join(__file__, '../../..'))
 

@@ -14,7 +14,7 @@ assert_conditions() {
 }
 
 process_service_files() {
-    local service_dir="${PROJECT_PATH}/services"
+    local service_dir="${PROJECT_PATH}/templates"
     readonly service_dir
 
     for service_template in "${service_dir}"/*.service; do
