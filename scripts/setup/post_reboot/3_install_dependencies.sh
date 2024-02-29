@@ -29,6 +29,11 @@ install_python_packages() {
     fi
 }
 
+install_unix_packages() {
+    # Required for parsing JSON and extract first device ID
+    apt-get install jq
+}
+
 main() {
     assert_conditions
     install_python_packages || { echo -e "\t${FAIL_MSG} Failed to install Python dependencies."; exit 1 }
