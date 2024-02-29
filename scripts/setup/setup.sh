@@ -60,7 +60,9 @@ run_pre_reboot_tasks() {
                 if [ -f "${REBOOT_HALTED_FLAG}" ]; then
                     rm -f "${REBOOT_HALTED_FLAG}"
                 fi
-                reboot
+                echo "Rebooting..."
+                reboot --no-wall
+                break;
                 ;;
             [Nn])
                 touch "${REBOOT_HALTED_FLAG}"
