@@ -36,7 +36,7 @@ install_unix_packages() {
 
 main() {
     assert_conditions
-    install_python_packages || { echo -e "\t${FAIL_MSG} Failed to install Python dependencies."; exit 1 }
+    install_python_packages || { echo -e "\t${FAIL_MSG} Failed to install Python dependencies."; exit 1; }
     echo -e "\t${OK_MSG} All Python dependencies installed successfully"
 }
 
