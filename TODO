@@ -1,0 +1,4 @@
+- [] 1_set_device_overlays: Install libretech-wiring-tool inside .app/ folder
+        This is to contain everything related to the project in a single
+        centralized location.
+- [] scripts_config.sh: Make all environment variables readonly 

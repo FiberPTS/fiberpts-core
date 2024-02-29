@@ -32,6 +32,8 @@ run_scripts() {
 }
 
 run_pre_reboot_tasks() {
+    mkdir "${PROJECT_PATH}/.app" 2> /dev/null
+
     if [ ! -f "${PRE_REBOOT_FLAG}" ] && [ ! -f "${REBOOT_HALTED_FLAG}" ]; then
         echo "Initiating pre-reboot setup..."
         run_scripts "${SCRIPT_DIR}/pre_reboot"
@@ -58,7 +60,9 @@ run_pre_reboot_tasks() {
                 if [ -f "${REBOOT_HALTED_FLAG}" ]; then
                     rm -f "${REBOOT_HALTED_FLAG}"
                 fi
-                reboot
+                echo "Rebooting..."
+                reboot --no-wall
+                break;
                 ;;
             [Nn])
                 touch "${REBOOT_HALTED_FLAG}"
