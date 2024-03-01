@@ -31,11 +31,12 @@ install_python_packages() {
 
 install_unix_packages() {
     # Required for parsing JSON and extract first device ID
-    apt-get install jq
+    apt-get install jq -y
 }
 
 main() {
     assert_conditions
+    install_unix_packages || { echo -e "\t${FAIL_MSG} Failed to install Python dependencies."; exit 1; }
     install_python_packages || { echo -e "\t${FAIL_MSG} Failed to install Python dependencies."; exit 1; }
     echo -e "\t${OK_MSG} All Python dependencies installed successfully"
 }
