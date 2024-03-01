@@ -25,7 +25,7 @@ process_service_files() {
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
             systemctl enable "${service_filename}"
             
-            if [ "$?" -eq 0 ]; do
+            if [ "$?" -eq 0 ]; then
                 echo -e "\t${OK_MSG} '${service_filename}' enabled"
             else
                 echo -e "\t${FAIL_MSG} Failed to enable '${service_filename}'"
@@ -35,7 +35,7 @@ process_service_files() {
             systemctl daemon-reload
             systemctl restart "${service_filename}"
 
-            if [ "$?" -eq 0 ]; do
+            if [ "$?" -eq 0 ]; then
                 echo -e "\t${OK_MSG} '${service_filename}' updated"
             else
                 echo -e "\t${FAIL_MSG} Failed to update '${service_filename}'"
