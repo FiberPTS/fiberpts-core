@@ -2,7 +2,6 @@
 
 source ${PROJECT_PATH}/config/scripts_config.sh
 
-mkdir -p ${PROJECT_PATH}/.app/logs
 touch ${LOGROTATE_PATH}/${LOGCONF_FILENAME}
 envsubst < ${PROJECT_PATH}/templates/${LOGCONF_FILENAME} > ${LOGROTATE_PATH}/${LOGCONF_FILENAME}
 
