@@ -4,8 +4,7 @@ Description=Monitor and restart touch_sensor.py
 [Service]
 Type=simple
 ExecStart=${PROJECT_PATH}/venv/bin/python3 ${PROJECT_PATH}/src/touch_sensor/touch_sensor.py
-User=${USERNAME}
-Group=${GROUP_NAME}
+User=root
 WorkingDirectory=${PROJECT_PATH}
 PIDFile=/var/run/touch_sensor.pid
 ExecStop=/bin/kill -15 \${MAINPID}
