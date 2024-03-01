@@ -14,8 +14,6 @@ assert_conditions() {
 }
 
 create_fifo_pipes() {
-    mkdir -p "${PIPE_FOLDER_PATH}"
-
     echo -e "Creating FIFO pipes..."
 
     if [ -p "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then

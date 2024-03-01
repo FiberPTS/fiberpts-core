@@ -23,6 +23,8 @@ run_scripts() {
     shift
 
     for script in "${target_dir}"/*.sh; do
+        # TODO: Add name script name 
+        # TODO: 
         if ! bash "${script}" 2>&1; then
             echo -e "${FAIL_MSG} ${script##*/}"
             exit 2
@@ -32,10 +34,9 @@ run_scripts() {
 }
 
 run_pre_reboot_tasks() {
-    mkdir "${PROJECT_PATH}/.app" 2> /dev/null
-
     if [ ! -f "${PRE_REBOOT_FLAG}" ] && [ ! -f "${REBOOT_HALTED_FLAG}" ]; then
-        echo "Initiating pre-reboot setup..."
+        # TODO: Bold it
+        echo -e "Initiating pre-reboot setup..."
         run_scripts "${SCRIPT_DIR}/pre_reboot"
         echo -e "Pre-reboot tasks completed."
     elif [ -f "${REBOOT_HALTED_FLAG}" ]; then
@@ -44,16 +45,13 @@ run_pre_reboot_tasks() {
         echo -e "${WARNING_MSG} Pre-reboot setup already completed"
         exit 0
     fi
-    
-    mkdir "${PROJECT_PATH}/.app/flags" 2> /dev/null
-    
+        
     local response
     while true; do
         read -p "Do you wish to reboot now? [Y/n] " response
         case "${response}" in
             [Yy])
                 # Create file flags and locks required during post-reboot setup
-                mkdir "${PROJECT_PATH}/.app/locks" 2> /dev/null
                 touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
                 touch "${PRE_REBOOT_FLAG}"
 
@@ -94,7 +92,14 @@ run_post_reboot_tasks() {
     
     echo -e "\n\033[1mFiberPTS\033[0m setup is done. System will reboot now."
     reboot
-}   
+}
+
+make_app_directories() {
+    mkdir -p ${PROJECT_PATH}/.app/flags
+    mkdir -p ${PROJECT_PATH}/.app/locks
+    mkdir -p ${PROJECT_PATH}/.app/logs
+    mkdir -p ${PIPE_FOLDER_PATH}
+}
 
 print_usage() {
     echo "Usage: $0 --pre | --post"
@@ -109,6 +114,7 @@ main() {
         exit 1
     fi
 
+    make_app_directories
     case "$1" in
         --pre)
             run_pre_reboot_tasks
