@@ -1,12 +1,5 @@
 #!/bin/bash
 
-assert_conditions() {
-    if [ -z "${WIFI_NAME}" ] || [ -z "${WIFI_PSK}" ]; then
-        echo "Please enter the WiFi credentials."
-        input_credentials
-    fi
-}
-
 input_credentials() {
     read -p "WiFi Name (SSID): " WIFI_NAME
     read -sp "Password: " WIFI_PSK
@@ -20,6 +13,8 @@ connect_wifi() {
 
     systemctl start NetworkManager.service
     sleep 5
+
+    input_credentials
 
     while [ ${attempt} -lt ${max_attempts} ] && [ "${success}" = false ]; do
         ((attempt++))
@@ -56,11 +51,9 @@ connect_wifi() {
 }
 
 main() {
-    assert_conditions
-
     local answer
     while true; do
-        read -p "Do you wish to connect to WiFi? [Y/n] " user_input
+        read -p "Do you wish to connect to WiFi? [Y/n] " answer
         echo
         case "${answer}" in
             [Yy])
