@@ -39,6 +39,7 @@ process_service_files() {
                 echo -e "\t${OK_MSG} '${service_filename}' updated"
             else
                 echo -e "\t${FAIL_MSG} Failed to update '${service_filename}'"
+            fi
         fi
     done
 }
