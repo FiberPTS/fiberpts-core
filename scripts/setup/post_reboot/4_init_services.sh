@@ -21,6 +21,7 @@ process_service_files() {
         local service_filename=$(basename "${service_template}")
         readonly service_filename
 
+        # BUG: Service file is not created on line 26
         if [ ! -f "${SYSTEMD_DIR}/${service_filename}" ]; then
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
             systemctl enable "${service_filename}"

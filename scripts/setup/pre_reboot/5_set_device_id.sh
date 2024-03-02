@@ -31,6 +31,9 @@ get_new_device_id() {
 # TODO: Freeing up a device ID in case a device is re-imaged
 #   - Ordering of device ids should not be altered (first available device ID must be
 #     fetched instead of the last one)
+# TODO: Rename device-id to hostname-id, and create an 'allocated' (bool) column that indicates whether a certain device ID is taken or not
+# TODO: Get 'hostname-id' and 'allocated', iterate over them. Keep count of records. If allocated is false, then take the ID and assign it 
+# to device's hostname. If no available IDs are found, then use count to create new ID. 
 insert_device_id() {
     local device_id=$1
     local response=$(
