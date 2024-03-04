@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source ${PROJECT_PATH}/config/scripts_config.sh
 # This tells the shell to exit the script if any command within the script exits with a non-zero status
 set -e
 
