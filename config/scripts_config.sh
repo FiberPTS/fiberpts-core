@@ -26,6 +26,30 @@ LOG_FILENAME=fpts.log
 LOGCONF_FILENAME=fpts_log.conf
 
 # Status Messages
-OK_MSG="\033[0;32m[OK]     \033[0m"
-WARNING_MSG="\033[0;33m[WARNING]\033[0m"
-FAIL_MSG="\033[0;31m[FAIL]   \033[0m"
+OK_MSG="${GREEN}[OK]     ${RESET}"
+WARNING_MSG="${YELLOW}[WARNING]${RESET}"
+FAIL_MSG="${RED}[FAIL]   ${RESET}"
+
+#Color Support
+if [ -t 1 ] && [ -n "$(tput colors)" ]; then
+    RED="$(tput setaf 1)"
+    GREEN="$(tput setaf 2)"
+    YELLOW="$(tput setaf 3)"
+    BLUE="$(tput setaf 4)"
+    MAGENTA="$(tput setaf 5)"
+    CYAN="$(tput setaf 6)"
+    WHITE="$(tput setaf 7)"
+    BOLD="$(tput bold)"
+    RESET="$(tput sgr0)"
+else
+    # stdout does not support colors
+    RED=""
+    GREEN=""
+    YELLOW=""
+    BLUE=""
+    MAGENTA=""
+    CYAN=""
+    WHITE=""
+    BOLD=""
+    RESET=""
+fi
