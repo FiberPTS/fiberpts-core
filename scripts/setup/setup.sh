@@ -12,8 +12,8 @@ assert_root() {
 load_env_variables() {
     local project_path="${SCRIPT_DIR}/../../"
     set -a
-    source "${project_path}/config/scripts_config.sh" || return 1
-    source "${project_path}/.env" || return 1
+    source "${project_path}/config/scripts_config.sh"
+    source "${project_path}/.env"
     set +a
 }
 
@@ -108,11 +108,6 @@ print_usage() {
 main() {
     assert_root
     load_env_variables
-
-    if [ "$#" -ne 1 ]; then
-        print_usage
-        exit 1
-    fi
 
     make_app_directories
     case "$1" in
