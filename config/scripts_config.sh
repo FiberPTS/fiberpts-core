@@ -1,3 +1,27 @@
+#Color Support
+if [ -t 1 ] && [ -n "$(tput colors)" ]; then
+    RED="$(tput setaf 1)"
+    GREEN="$(tput setaf 2)"
+    YELLOW="$(tput setaf 3)"
+    BLUE="$(tput setaf 4)"
+    MAGENTA="$(tput setaf 5)"
+    CYAN="$(tput setaf 6)"
+    WHITE="$(tput setaf 7)"
+    BOLD="$(tput bold)"
+    RESET="$(tput sgr0)"
+else
+    # stdout does not support colors
+    RED=""
+    GREEN=""
+    YELLOW=""
+    BLUE=""
+    MAGENTA=""
+    CYAN=""
+    WHITE=""
+    BOLD=""
+    RESET=""
+fi
+
 # Application Paths
 PROJECT_DIR=/opt
 PROJECT_PATH=${PROJECT_DIR}/FiberPTS
@@ -30,26 +54,3 @@ OK_MSG="${GREEN}[OK]     ${RESET}"
 WARNING_MSG="${YELLOW}[WARNING]${RESET}"
 FAIL_MSG="${RED}[FAIL]   ${RESET}"
 
-#Color Support
-if [ -t 1 ] && [ -n "$(tput colors)" ]; then
-    RED="$(tput setaf 1)"
-    GREEN="$(tput setaf 2)"
-    YELLOW="$(tput setaf 3)"
-    BLUE="$(tput setaf 4)"
-    MAGENTA="$(tput setaf 5)"
-    CYAN="$(tput setaf 6)"
-    WHITE="$(tput setaf 7)"
-    BOLD="$(tput bold)"
-    RESET="$(tput sgr0)"
-else
-    # stdout does not support colors
-    RED=""
-    GREEN=""
-    YELLOW=""
-    BLUE=""
-    MAGENTA=""
-    CYAN=""
-    WHITE=""
-    BOLD=""
-    RESET=""
-fi
