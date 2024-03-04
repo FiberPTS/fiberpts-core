@@ -2,11 +2,11 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-env_file="$SCRIPT_DIR/../../scripts/paths.sh"
+env_file="${SCRIPT_DIR}/../../scripts/paths.sh"
 
-source "$env_file"
+source "${env_file}"
 
-exec 200>"$DISPLAY_FRAME_BUFFER_LOCK_PATH" # Open the lock file for writing and assign file descriptor 200
+exec 200>"${DISPLAY_FRAME_BUFFER_LOCK_PATH}" # Open the lock file for writing and assign file descriptor 200
 
 trap 'flock -u 200' EXIT # Trap EXIT signal to ensure lock release on script exit
 
@@ -17,7 +17,7 @@ init_display(){
     local framebuffer_number="${DISPLAY_FRAME_BUFFER_PATH: -1}"
 
     # Map the console to the framebuffer
-    con2fbmap 1 "$framebuffer_number"
+    con2fbmap 1 "${framebuffer_number}"
     # Wait for a moment
     sleep 0.5
     # Unmap the console
@@ -28,8 +28,8 @@ init_display(){
 }
 
 # Check if DISPLAY_FRAME_BUFFER_PATH exists
-if [ -e "$DISPLAY_FRAME_BUFFER_PATH" ]; then
+if [ -e "${DISPLAY_FRAME_BUFFER_PATH}" ]; then
     init_display
 else
-    echo "WARNING: $DISPLAY_FRAME_BUFFER_PATH does not exist."
+    echo "WARNING: ${DISPLAY_FRAME_BUFFER_PATH} does not exist."
 fi

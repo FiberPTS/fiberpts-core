@@ -1,6 +1,6 @@
 # !/bin/bash
 
-#Color Support
+# Color Support
 if [ -t 1 ] && [ -n "$(tput colors)" ]; then
     RED="$(tput setaf 1)"
     GREEN="$(tput setaf 2)"
