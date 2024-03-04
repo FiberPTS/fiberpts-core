@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ${PROJECT_PATH}/config/scripts_config.sh
+source ${PROJECT_PATH}/scripts/paths.sh
 
 touch ${LOGROTATE_PATH}/${LOGCONF_FILENAME}
 envsubst < ${PROJECT_PATH}/templates/${LOGCONF_FILENAME} > ${LOGROTATE_PATH}/${LOGCONF_FILENAME}

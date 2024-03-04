@@ -7,8 +7,9 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DISPLAY_ERROR_MESSAGE="panel-ilitek-ili9341.*SPI transfer failed|spi_master.*failed to transfer one message from queue|panel-ilitek-ili9341.*\*ERROR\* Failed to update display"
+DISPLAY_ERROR_COUNT_THRESHOLD = 4
 
-source "$SCRIPT_DIR/../../config/scripts_config.sh"
+source "$SCRIPT_DIR/../../scripts/paths.sh"
 exec 200> "$DISPLAY_FRAME_BUFFER_LOCK_PATH"
 
 # Unlock file descriptor 200 on script exit

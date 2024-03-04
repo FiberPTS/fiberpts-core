@@ -1,5 +1,34 @@
 # !/bin/bash
 
+#Color Support
+if [ -t 1 ] && [ -n "$(tput colors)" ]; then
+    RED="$(tput setaf 1)"
+    GREEN="$(tput setaf 2)"
+    YELLOW="$(tput setaf 3)"
+    BLUE="$(tput setaf 4)"
+    MAGENTA="$(tput setaf 5)"
+    CYAN="$(tput setaf 6)"
+    WHITE="$(tput setaf 7)"
+    BOLD="$(tput bold)"
+    RESET="$(tput sgr0)"
+else
+    # stdout does not support colors
+    RED=""
+    GREEN=""
+    YELLOW=""
+    BLUE=""
+    MAGENTA=""
+    CYAN=""
+    WHITE=""
+    BOLD=""
+    RESET=""
+fi
+
+# Status Messages
+OK_MSG="${GREEN}[OK]     ${RESET}"
+WARNING_MSG="${YELLOW}[WARNING]${RESET}"
+FAIL_MSG="${RED}[FAIL]   ${RESET}"
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 assert_root() {
@@ -12,7 +41,7 @@ assert_root() {
 load_env_variables() {
     local project_path="${SCRIPT_DIR}/../../"
     set -a
-    source "${project_path}/config/scripts_config.sh" || return 1
+    source "${project_path}/scripts/paths.sh" || return 1
     source "${project_path}/.env" || return 1
     set +a
 }

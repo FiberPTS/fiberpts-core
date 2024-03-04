@@ -13,7 +13,7 @@ assert_conditions() {
 
 load_env_variables() {
     set -a
-    source "$SCRIPT_DIR/../../config/scripts_config.sh" || return 1
+    source "$SCRIPT_DIR/../../scripts/paths.sh" || return 1
     source "$SCRIPT_DIR/../../.env" || return 1
     set +a
 }
