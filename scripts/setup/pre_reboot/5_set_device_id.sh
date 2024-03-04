@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This tells the shell to exit the script if any command within the script exits with a non-zero status
+set -e
+
 readonly TABLE=devices
 readonly COLUMNS=device_id,allocated
 
