@@ -3,12 +3,12 @@
 assert_conditions() {
     # Root check
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "\t${WARNING_MSG} This script must be run as root. Please use sudo."
+        echo -e "${WARNING_MSG} This script must be run as root. Please use sudo."
         exit 1
     fi
 
     if [ -z "${PROJECT_DIR}" ] || [ -z "${PROJECT_PATH}" ] || [ -z "${OVERLAY_MERGED_FLAG}" ]; then
-        echo -e "\t${WARNING_MSG} Required environment variables PROJECT_DIR, PROJECT_PATH, and OVERLAY_MERGED_FLAG is not set."
+        echo -e "${WARNING_MSG} Required environment variables PROJECT_DIR, PROJECT_PATH, and OVERLAY_MERGED_FLAG is not set."
         exit 1
     fi
 }
@@ -69,9 +69,9 @@ install_libretech_wiring_tool() {
         git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "${PROJECT_DIR}/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
         set_custom_dts
         bash "${PROJECT_DIR}/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
-        echo -e "\t${OK_MSG} Installed libretech-wiring-tool"
+        echo -e "${OK_MSG} Installed libretech-wiring-tool"
     else
-        echo -e "\t${WARNING_MSG} Already installed libretech-wiring-tool."
+        echo -e "${WARNING_MSG} Already installed libretech-wiring-tool."
     fi
 
     if [ -f "${OVERLAY_MERGED_FLAG}" ]; then
