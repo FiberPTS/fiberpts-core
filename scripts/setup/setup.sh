@@ -90,7 +90,7 @@ run_post_reboot_tasks() {
     run_scripts "${SCRIPT_DIR}/post_reboot"
     touch "${POST_REBOOT_FLAG}"
     
-    echo -e "\n\033[1mFiberPTS\033[0m setup is done. System will reboot now."
+    echo -e "\n${BOLD}FiberPTS${RESET} setup is done. System will reboot now."
     reboot
 }
 
