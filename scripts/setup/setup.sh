@@ -55,18 +55,18 @@ run_pre_reboot_tasks() {
         case "${response}" in
             [Yy])
                 # Create file flags and locks required during post-reboot setup
-                touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
-                touch "${PRE_REBOOT_FLAG}"
+                touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}" > /dev/null
+                touch "${PRE_REBOOT_FLAG}" > /dev/null
 
                 if [ -f "${REBOOT_HALTED_FLAG}" ]; then
-                    rm -f "${REBOOT_HALTED_FLAG}"
+                    rm -f "${REBOOT_HALTED_FLAG}" > /dev/null
                 fi
                 echo "Rebooting..."
                 reboot --no-wall
                 break;
                 ;;
             [Nn])
-                touch "${REBOOT_HALTED_FLAG}"
+                touch "${REBOOT_HALTED_FLAG}" > /dev/null
                 echo -e "${WARNING_MSG} Post-reboot setup won't begin until system is rebooted"
                 break
                 ;;
@@ -91,17 +91,17 @@ run_post_reboot_tasks() {
 
     echo -e "\nInitiating post-reboot setup..."
     run_scripts "${SCRIPT_DIR}/post_reboot"
-    touch "${POST_REBOOT_FLAG}"
+    touch "${POST_REBOOT_FLAG}" > /dev/null
     
     echo -e "\n\033[1mFiberPTS\033[0m setup is done. System will reboot now."
     reboot
 }
 
 make_app_directories() {
-    mkdir -p ${PROJECT_PATH}/.app/flags
-    mkdir -p ${PROJECT_PATH}/.app/locks
-    mkdir -p ${PROJECT_PATH}/.app/logs
-    mkdir -p ${PIPE_FOLDER_PATH}
+    mkdir -p ${PROJECT_PATH}/.app/flags > /dev/null
+    mkdir -p ${PROJECT_PATH}/.app/locks > /dev/null
+    mkdir -p ${PROJECT_PATH}/.app/logs > /dev/null
+    mkdir -p ${PIPE_FOLDER_PATH} > /dev/null
 }
 
 print_usage() {

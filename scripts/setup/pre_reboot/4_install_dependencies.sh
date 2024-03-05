@@ -25,22 +25,22 @@ install_python_packages() {
     local py_req_file="${PROJECT_PATH}/requirements.txt"
     if [ -f "${py_req_file}" ]; then
         echo "Installing Python packages..."
-        "${PROJECT_PATH}/venv/bin/pip3" install -r "${py_req_file}" || { echo "Failed to install Python packages"; return 1; }
+        "${PROJECT_PATH}/venv/bin/pip3" install -r "${py_req_file}" > /dev/null
     else
         echo -e "${WARNING_MSG} Python requirements file not found: ${py_req_file}"
-        return 1
+        exit 1
     fi
 }
 
 install_unix_packages() {
     # Required for parsing JSON and extract first device ID
-    apt-get install jq -y
+    apt-get install jq -y > /dev/null
 }
 
 main() {
     assert_conditions
-    install_unix_packages || { echo -e "${FAIL_MSG} Failed to install Python dependencies."; exit 1; }
-    install_python_packages || { echo -e "${FAIL_MSG} Failed to install Python dependencies."; exit 1; }
+    install_unix_packages
+    install_python_packages
     echo -e "${OK_MSG} All Python dependencies installed successfully"
 }
 

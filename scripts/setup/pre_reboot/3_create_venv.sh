@@ -18,8 +18,8 @@ assert_conditions() {
 
 create_virtual_environment() {
     if [ ! -d "${PROJECT_PATH}/venv" ]; then
-        sudo apt install python3.11-venv python3-pip -y || { echo "Failed to create virtual environment."; exit 1; }
-        python3 -m venv "${PROJECT_PATH}/venv" || { echo "Failed to create virtual environment."; exit 1; }
+        apt install python3.11-venv python3-pip -y > /dev/null
+        python3 -m venv "${PROJECT_PATH}/venv" > /dev/null
         echo -e "${OK_MSG} Virtual environment created at '${PROJECT_PATH}/venv'"
     fi
 }

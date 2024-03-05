@@ -17,7 +17,7 @@ assert_conditions() {
 }
 
 set_custom_dts() {
-    cp "${PROJECT_PATH}/custom/spi-cc-1cs-ili9341.dts" "${PROJECT_DIR}/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt/spi-cc-1cs-ili9341.dts" || { echo "Install script failed"; exit 1; }
+    cp "${PROJECT_PATH}/custom/spi-cc-1cs-ili9341.dts" "${PROJECT_DIR}/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt/spi-cc-1cs-ili9341.dts" > /dev/null
 }
 
 reset_overlays() {
@@ -29,8 +29,8 @@ reset_overlays() {
 
         case "${answer}" in
             [Yy] ) echo "Resetting overlays...";
-                rm -f "${OVERLAY_MERGED_FLAG}"
-                /opt/libretech-wiring-tool/ldto reset
+                rm -f "${OVERLAY_MERGED_FLAG}" > /dev/null
+                /opt/libretech-wiring-tool/ldto reset > /dev/null
                 echo "Overlays reset. Reboot to apply changes."
                 break
                 ;;
@@ -52,9 +52,9 @@ merge_overlays() {
          
         case "${answer}" in
             [Yy] ) echo "Merging overlays...";
-                /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 || { echo "ldto merge command failed"; exit 1; }
+                /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 > /dev/null
                 echo "Overlays merged. Reboot to apply changes."
-                touch "${OVERLAY_MERGED_FLAG}"
+                touch "${OVERLAY_MERGED_FLAG}" > /dev/null
                 break
                 ;;
             [Nn] ) echo "Overlays not merged.";
@@ -69,9 +69,9 @@ merge_overlays() {
 install_libretech_wiring_tool() {
     if [ ! -d "${PROJECT_DIR}/libretech-wiring-tool" ]; then
         echo "Installing libretech-wiring-tool..."
-        git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "${PROJECT_DIR}/libretech-wiring-tool" || { echo "Git clone failed"; exit 1; }
+        git clone https://github.com/libre-computer-project/libretech-wiring-tool.git "${PROJECT_DIR}/libretech-wiring-tool" > /dev/null
         set_custom_dts
-        bash "${PROJECT_DIR}/libretech-wiring-tool/install.sh" || { echo "Install script failed"; exit 1; }
+        bash "${PROJECT_DIR}/libretech-wiring-tool/install.sh" > /dev/null
         echo -e "${OK_MSG} Installed libretech-wiring-tool"
     else
         echo -e "${WARNING_MSG} Already installed libretech-wiring-tool."

@@ -22,14 +22,14 @@ create_fifo_pipes() {
     if [ -p "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then
         echo -e "${WARNING_MSG} FIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' already exists."
     else
-        mkfifo "${TOUCH_SENSOR_TO_SCREEN_PIPE}"
+        mkfifo "${TOUCH_SENSOR_TO_SCREEN_PIPE}" > /dev/null
         echo -e "${OK_MSG} FIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' created."
     fi
              
     if [ -p "${NFC_TO_SCREEN_PIPE}" ]; then
         echo -e "${WARNING_MSG} FIFO pipe '${NFC_TO_SCREEN_PIPE}' already exists."
     else
-        mkfifo "${NFC_TO_SCREEN_PIPE}"
+        mkfifo "${NFC_TO_SCREEN_PIPE}" > /dev/null
         echo -e "${OK_MSG} FIFO pipe '${NFC_TO_SCREEN_PIPE}' created."
     fi
 }

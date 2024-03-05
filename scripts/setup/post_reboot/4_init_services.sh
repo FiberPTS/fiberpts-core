@@ -27,7 +27,7 @@ process_service_files() {
         # BUG: Service file is not created on line 26
         if [ ! -f "${SYSTEMD_DIR}/${service_filename}" ]; then
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
-            systemctl enable "${service_filename}"
+            systemctl enable "${service_filename}" > /dev/null
             
             if [ "$?" -eq 0 ]; then
                 echo -e "${OK_MSG} '${service_filename}' enabled"
@@ -36,8 +36,8 @@ process_service_files() {
             fi
         else
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
-            systemctl daemon-reload
-            systemctl restart "${service_filename}"
+            systemctl daemon-reload > /dev/null
+            systemctl restart "${service_filename}" > /dev/null
 
             if [ "$?" -eq 0 ]; then
                 echo -e "${OK_MSG} '${service_filename}' updated"
