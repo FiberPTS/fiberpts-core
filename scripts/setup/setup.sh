@@ -25,15 +25,17 @@ run_scripts() {
     readonly target_dir
     shift
 
+    set +e
     for script in "${target_dir}"/*.sh; do
         # TODO: Add name script name 
-        # TODO: 
+        # TODO: Test whether the script exiting with non-zero status will be caught by set -e (We don't want this to happen)
         if ! bash "${script}" 2>&1; then
             echo -e "${FAIL_MSG} ${script##*/}"
             exit 2
         fi
         echo -e "${OK_MSG} ${script##*/}"
     done
+    set -e
 }
 
 run_pre_reboot_tasks() {
