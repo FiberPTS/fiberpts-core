@@ -31,5 +31,5 @@ init_display(){
 if [ -e "${DISPLAY_FRAME_BUFFER_PATH}" ]; then
     init_display
 else
-    echo "WARNING: ${DISPLAY_FRAME_BUFFER_PATH} does not exist."
+    echo -e "\t${WARNING} ${DISPLAY_FRAME_BUFFER_PATH} does not exist."
 fi

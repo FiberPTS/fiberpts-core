@@ -26,11 +26,11 @@ else
 fi
 
 dmesg --follow | while read line; do
-    if echo "$line" | grep -q -E "${DISPLAY_ERROR_MESSAGE}"; then
-        new_error_timestamp=$(echo "$line" | grep -oP '\[\s*\K\d+\.\d+')
-        if (( $(echo "$new_error_timestamp > $last_error_timestamp" | bc -l) )); then
+    if echo "${line}" | grep -q -E "${DISPLAY_ERROR_MESSAGE}"; then
+        new_error_timestamp=$(echo "${line}" | grep -oP '\[\s*\K\d+\.\d+')
+        if (( $(echo "${new_error_timestamp} > ${last_error_timestamp}" | bc -l) )); then
             ((error_count++))
-            if [ "$error_count" -gt "${DISPLAY_ERROR_COUNT_THRESHOLD}" ]; then
+            if [ "${error_count}" -gt "${DISPLAY_ERROR_COUNT_THRESHOLD}" ]; then
                 flock -x 200
                 rmmod ili9341     # Unload ili9341 driver
                 sleep 0.5

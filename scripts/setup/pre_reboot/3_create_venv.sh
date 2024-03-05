@@ -3,12 +3,12 @@
 assert_conditions() {
     # Root check
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "\t${WARNING_MSG} This script must be run as root. Please use sudo."
+        echo -e "\t${WARNING} This script must be run as root. Please use sudo."
         exit 1
     fi
 
     if [ -z "${PROJECT_PATH}" ]; then
-        echo -e "\t${WARNING_MSG} Required environment variable PROJECT_PATH is not set."
+        echo -e "\t${WARNING} Required environment variable PROJECT_PATH is not set."
         exit 1
     fi
 }
@@ -17,7 +17,7 @@ create_virtual_environment() {
     if [ ! -d "${PROJECT_PATH}/venv" ]; then
         sudo apt install python3.11-venv python3-pip -y || { echo "Failed to create virtual environment."; exit 1; }
         python3 -m venv "${PROJECT_PATH}/venv" || { echo "Failed to create virtual environment."; exit 1; }
-        echo -e "\t${OK_MSG} Virtual environment created at '${PROJECT_PATH}/venv'"
+        echo -e "\t${OK} Virtual environment created at '${PROJECT_PATH}/venv'"
     fi
 }
 
@@ -31,7 +31,7 @@ add_path_to_pth_file() {
         echo "${PROJECT_PATH}" > "${pth_file_path}"
         echo "Path added to ${pth_file_path}"
     else
-        echo -e "\t${FAIL_MSG} Virtual environment directory not found."
+        echo -e "\t${FAIL} Virtual environment directory not found."
         exit 1
     fi
 }

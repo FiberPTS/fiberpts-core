@@ -25,15 +25,17 @@ else
 fi
 
 # Status Messages
-OK_MSG="${GREEN}[OK]     ${RESET}"
-WARNING_MSG="${YELLOW}[WARNING]${RESET}"
-FAIL_MSG="${RED}[FAIL]   ${RESET}"
+OK="${GREEN}[OK]     ${RESET}"
+WARNING="${YELLOW}[WARNING]${RESET}"
+FAIL="${RED}[FAIL]   ${RESET}"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE BOLD RESET
+
 assert_root() {
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "${WARNING_MSG} This script must be run as root. Please use sudo."
+        echo -e "${WARNING} This script must be run as root. Please use sudo."
         exit 1
     fi
 }
@@ -55,10 +57,10 @@ run_scripts() {
         # TODO: Add name script name 
         # TODO: 
         if ! bash "${script}" 2>&1; then
-            echo -e "${FAIL_MSG} ${script##*/}"
+            echo -e "${FAIL} ${script##*/}"
             exit 2
         fi
-        echo -e "${OK_MSG} ${script##*/}"
+        echo -e "${OK} ${script##*/}"
     done
 }
 
@@ -69,9 +71,9 @@ run_pre_reboot_tasks() {
         run_scripts "${SCRIPT_DIR}/pre_reboot"
         echo -e "Pre-reboot tasks completed."
     elif [ -f "${REBOOT_HALTED_FLAG}" ]; then
-        echo -e "${WARNING_MSG} Pre-reboot setup already completed"
+        echo -e "${WARNING} Pre-reboot setup already completed"
     elif [ -f "${PRE_REBOOT_FLAG}" ]; then
-        echo -e "${WARNING_MSG} Pre-reboot setup already completed"
+        echo -e "${WARNING} Pre-reboot setup already completed"
         exit 0
     fi
         
@@ -93,7 +95,7 @@ run_pre_reboot_tasks() {
                 ;;
             [Nn])
                 touch "${REBOOT_HALTED_FLAG}"
-                echo -e "${WARNING_MSG} Post-reboot setup won't begin until system is rebooted"
+                echo -e "${WARNING} Post-reboot setup won't begin until system is rebooted"
                 break
                 ;;
             *)
@@ -107,13 +109,13 @@ run_pre_reboot_tasks() {
 run_post_reboot_tasks() {
     echo "Checking post-reboot requirements..."
     if [ ! -f "${PRE_REBOOT_FLAG}" ]; then
-        echo -e "${WARNING_MSG} Pre-reboot dependencies missing"
+        echo -e "${WARNING} Pre-reboot dependencies missing"
         exit 1
     elif [ -f "${POST_REBOOT_FLAG}" ]; then
-        echo -e "${WARNING_MSG} Post-reboot setup already completed"
+        echo -e "${WARNING} Post-reboot setup already completed"
         exit 0
     fi
-    echo -e "${OK_MSG} All requirements satisfied"
+    echo -e "${OK} All requirements satisfied"
 
     echo -e "\nInitiating post-reboot setup..."
     run_scripts "${SCRIPT_DIR}/post_reboot"
