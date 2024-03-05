@@ -6,7 +6,7 @@ readonly COLUMNS=device_id,allocated
 # TODO: Add support for race conditions
 get_new_device_id() {
     local response=$(
-        curl "${SUPABASE_URL}/rest/v1/${TABLE}?select=${COLUMNS}" \
+        curl "${DATABASE_URL}/rest/v1/${TABLE}?select=${COLUMNS}" \
         -H "apikey: ${DATABASE_API_KEY}" \
         -H "Authorization: Bearer ${DATABASE_API_KEY}" \
         -H "Content-Type: application/json"
@@ -36,7 +36,7 @@ get_new_device_id() {
 insert_device_id() {
     local device_id=$1
     local response=$(
-        curl -X POST "${SUPABASE_URL}/rest/v1/${TABLE}" \
+        curl -X POST "${DATABASE_URL}/rest/v1/${TABLE}" \
         -H "apikey: ${DATABASE_API_KEY}" \
         -H "Authorization: Bearer ${DATABASE_API_KEY}" \
         -H "Content-Type: application/json" \
