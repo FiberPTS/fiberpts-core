@@ -5,7 +5,8 @@ readonly COLUMNS=device_id,allocated
 
 # TODO: Add support for race conditions
 get_new_device_id() {
-    local response=$(
+    local response
+    response=$(
         curl "${DATABASE_URL}/rest/v1/${TABLE}?select=${COLUMNS}" \
         -H "apikey: ${DATABASE_API_KEY}" \
         -H "Authorization: Bearer ${DATABASE_API_KEY}" \
@@ -14,8 +15,9 @@ get_new_device_id() {
 
     local device_id="fpts-"
     local count=0
-    while read record; do
-        local is_allocated=$(echo "${record}" | jq -r '.allocated')
+    while read -r record; do
+        local is_allocated
+        is_allocated=$(echo "${record}" | jq -r '.allocated')
 
         if [[ "${is_allocated}" == false ]]; then
             # Assumes correct formatting is used in table records
@@ -35,7 +37,8 @@ get_new_device_id() {
 
 insert_device_id() {
     local device_id=$1
-    local response=$(
+    local response
+    response=$(
         curl -X POST "${DATABASE_URL}/rest/v1/${TABLE}" \
         -H "apikey: ${DATABASE_API_KEY}" \
         -H "Authorization: Bearer ${DATABASE_API_KEY}" \
@@ -43,14 +46,16 @@ insert_device_id() {
         -H "Prefer: return=minimal" \
         -d "{ \"device_id\": \"${device_id}\", \"allocated\": true }"
     )
-    echo ${response}
+    echo "${response}"
 }
 
 main() {
-    local device_id=$(get_new_device_id)
+    local device_id
+    device_id=$(get_new_device_id)
     readonly device_id
+    
     insert_device_id "${device_id}"
-    hostnamectl set-hostname ${device_id}
+    hostnamectl set-hostname "${device_id}"
     return 0
 }
 
