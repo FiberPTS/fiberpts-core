@@ -13,7 +13,7 @@ connect_wifi() {
     local max_attempts=5
     local success=false
 
-    systemctl start NetworkManager.service > /dev/null
+    systemctl start NetworkManager.service
     sleep 5
 
     input_credentials
@@ -48,7 +48,7 @@ connect_wifi() {
     if [ "${success}" = false ]; then
         echo -e "${FAIL_MSG} Failed to connect after ${max_attempts} attempts."
     else
-        nmcli connection modify "${WIFI_NAME}" connection.autoconnect yes > /dev/null
+        nmcli connection modify "${WIFI_NAME}" connection.autoconnect yes
     fi
 }
 

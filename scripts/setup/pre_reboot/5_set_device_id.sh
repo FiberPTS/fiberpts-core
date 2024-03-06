@@ -57,7 +57,7 @@ main() {
     readonly device_id
     
     insert_device_id "${device_id}"
-    hostnamectl set-hostname "${device_id}" > /dev/null
+    hostnamectl set-hostname "${device_id}"
     return 0
 }
 
