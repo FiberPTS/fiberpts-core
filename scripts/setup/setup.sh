@@ -1,5 +1,7 @@
 # !/bin/bash
 
+set -e
+
 # Color Support
 if [ -t 1 ] && [ -n "$(tput colors)" ]; then
     RED="$(tput setaf 1)"
@@ -43,8 +45,8 @@ assert_root() {
 load_env_variables() {
     local project_path="${SCRIPT_DIR}/../../"
     set -a
-    source "${project_path}/scripts/paths.sh" || return 1
-    source "${project_path}/.env" || return 1
+    source "${project_path}/scripts/paths.sh"
+    source "${project_path}/.env"
     set +a
 }
 
@@ -53,27 +55,28 @@ run_scripts() {
     readonly target_dir
     shift
 
+    set +e
     for script in "${target_dir}"/*.sh; do
-        # TODO: Add name script name 
-        # TODO: 
+        # TODO: Add name script name
         if ! bash "${script}" 2>&1; then
-            echo -e "${FAIL} ${script##*/}"
+            echo "${FAIL} ${script##*/}"
             exit 2
         fi
-        echo -e "${OK} ${script##*/}"
+        echo "${OK} ${script##*/}"
     done
+    set -e
 }
 
 run_pre_reboot_tasks() {
     if [ ! -f "${PRE_REBOOT_FLAG}" ] && [ ! -f "${REBOOT_HALTED_FLAG}" ]; then
         # TODO: Bold it
-        echo -e "Initiating pre-reboot setup..."
+        echo "Initiating pre-reboot setup..."
         run_scripts "${SCRIPT_DIR}/pre_reboot"
-        echo -e "Pre-reboot tasks completed."
+        echo "Pre-reboot tasks completed."
     elif [ -f "${REBOOT_HALTED_FLAG}" ]; then
-        echo -e "${WARNING} Pre-reboot setup already completed"
+        echo "${WARNING} Pre-reboot setup already completed"
     elif [ -f "${PRE_REBOOT_FLAG}" ]; then
-        echo -e "${WARNING} Pre-reboot setup already completed"
+        echo "${WARNING} Pre-reboot setup already completed"
         exit 0
     fi
         
@@ -95,7 +98,7 @@ run_pre_reboot_tasks() {
                 ;;
             [Nn])
                 touch "${REBOOT_HALTED_FLAG}"
-                echo -e "${WARNING} Post-reboot setup won't begin until system is rebooted"
+                echo "${WARNING} Post-reboot setup won't begin until system is rebooted"
                 break
                 ;;
             *)
@@ -109,13 +112,13 @@ run_pre_reboot_tasks() {
 run_post_reboot_tasks() {
     echo "Checking post-reboot requirements..."
     if [ ! -f "${PRE_REBOOT_FLAG}" ]; then
-        echo -e "${WARNING} Pre-reboot dependencies missing"
+        echo "${WARNING} Pre-reboot dependencies missing"
         exit 1
     elif [ -f "${POST_REBOOT_FLAG}" ]; then
-        echo -e "${WARNING} Post-reboot setup already completed"
+        echo "${WARNING} Post-reboot setup already completed"
         exit 0
     fi
-    echo -e "${OK} All requirements satisfied"
+    echo "${OK} All requirements satisfied"
 
     echo -e "\nInitiating post-reboot setup..."
     run_scripts "${SCRIPT_DIR}/post_reboot"
@@ -139,11 +142,6 @@ print_usage() {
 main() {
     assert_root
     load_env_variables
-
-    if [ "$#" -ne 1 ]; then
-        print_usage
-        exit 1
-    fi
 
     make_app_directories
     case "$1" in

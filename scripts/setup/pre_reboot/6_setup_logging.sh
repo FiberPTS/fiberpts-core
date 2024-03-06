@@ -1,7 +1,8 @@
 #!/bin/bash
 
-source ${PROJECT_PATH}/scripts/paths.sh
+set -e
 
+# Setup logrotate config file
 touch ${LOGROTATE_PATH}/${LOGCONF_FILENAME}
 envsubst < ${PROJECT_PATH}/templates/${LOGCONF_FILENAME} > ${LOGROTATE_PATH}/${LOGCONF_FILENAME}
 
