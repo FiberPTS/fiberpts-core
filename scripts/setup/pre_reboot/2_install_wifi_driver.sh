@@ -5,12 +5,12 @@ set -e
 assert_conditions() {
     # Root check
     if [ "$(id -u)" -ne 0 ]; then
-        echo -e "${WARNING_MSG} This script must be run as root. Please use sudo."
+        echo "${WARNING_MSG} This script must be run as root. Please use sudo."
         exit 1
     fi
     
     if [ -z "${PROJECT_DIR}" ]; then
-        echo -e "${WARNING_MSG} Required environment variable PROJECT_DIR is not set."
+        echo "${WARNING_MSG} Required environment variable PROJECT_DIR is not set."
         exit 1
     fi
 }
