@@ -1,9 +1,15 @@
 from enum import Enum
 import fcntl
 import subprocess
+import logging
+import os
 
+from src.utils.paths import PROJECT_DIR
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
+
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logger = logging.getLogger(os.path.basename(__file__))
 
 class SelfReleasingLock:
     def __init__(self, lockfile_path):
@@ -45,5 +51,4 @@ def get_device_id() -> str:
         process = subprocess.run(['hostname'], capture_output=True, text=True, check=True)
         return process.stdout.strip()
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred while fetching the hostname: {e}")
-        raise
+        logger.error(f"An error occurred while fetching the hostname: {e}")
