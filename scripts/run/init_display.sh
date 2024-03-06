@@ -1,35 +1,35 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PATHS="${SCRIPT_DIR}/../../scripts/paths.sh"
+readonly SCRIPT_DIR PATHS
 
-env_file="${SCRIPT_DIR}/../../scripts/paths.sh"
+init_display() {
+  flock -x 200
 
-source "${env_file}"
+  local framebuffer_number="${DISPLAY_FRAME_BUFFER_PATH: -1}"
 
-exec 200>"${DISPLAY_FRAME_BUFFER_LOCK_PATH}" # Open the lock file for writing and assign file descriptor 200
+  # Map the console to the framebuffer
+  con2fbmap 1 "${framebuffer_number}"
+  sleep 0.5
 
-trap 'flock -u 200' EXIT # Trap EXIT signal to ensure lock release on script exit
+  # Unmap the console
+  con2fbmap 1 0
 
-init_display(){
-    flock -x 200 # Wait until lock is acquired
-
-    # Extract the last character of DISPLAY_FRAME_BUFFER_PATH
-    local framebuffer_number="${DISPLAY_FRAME_BUFFER_PATH: -1}"
-
-    # Map the console to the framebuffer
-    con2fbmap 1 "${framebuffer_number}"
-    # Wait for a moment
-    sleep 0.5
-    # Unmap the console
-    con2fbmap 1 0
-    # Not needed to clear the screen since screen.py takes care of that
-    # sudo dd if=/dev/zero of="$DISPLAY_FRAME_BUFFER_PATH" bs=1 count=153600
-    flock -u 200 # Release the lock
+  flock -u 200
 }
 
-# Check if DISPLAY_FRAME_BUFFER_PATH exists
-if [ -e "${DISPLAY_FRAME_BUFFER_PATH}" ]; then
+main() {
+  source "${PATHS}"
+
+  exec 200> "${DISPLAY_FRAME_BUFFER_LOCK_PATH}" 
+  trap 'flock -u 200' EXIT
+
+  if [ -e "${DISPLAY_FRAME_BUFFER_PATH}" ]; then
     init_display
-else
-    echo -e "\t${WARNING} ${DISPLAY_FRAME_BUFFER_PATH} does not exist."
-fi
+  else
+    echo -e "${WARNING} ${DISPLAY_FRAME_BUFFER_PATH} does not exist."
+  fi
+}
+
+main

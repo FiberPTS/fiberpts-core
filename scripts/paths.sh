@@ -23,4 +23,3 @@ OVERLAY_MERGED_FLAG=${PROJECT_PATH}/.app/flags/overlay_merged.flag
 LOGROTATE_PATH=/etc/logrotate.d
 LOG_FILENAME=fpts.log
 LOGCONF_FILENAME=fpts_log.conf
-
