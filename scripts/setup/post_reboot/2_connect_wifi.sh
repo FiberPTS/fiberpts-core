@@ -9,6 +9,7 @@ input_credentials() {
 connect_wifi() {
     local attempt=0
     local max_attempts=5
+    readonly max_attempts
     local success=false
 
     systemctl start NetworkManager.service
@@ -30,7 +31,7 @@ connect_wifi() {
 
         if [ ${status} -eq 0 ]; then
             success=true
-            echo -e "\t${OK} Connected successfully to ${WIFI_NAME}."
+            echo "${OK} Connected successfully to ${WIFI_NAME}."
         elif [ ${status} -eq 1 ]; then
             echo "Incorrect password. Please enter credentials again."
             input_credentials
@@ -38,13 +39,13 @@ connect_wifi() {
             echo "Please enter credentials again."
             input_credentials
         else
-            echo -e "\t${FAIL} An unexpected error occurred. Unable to connect."
+            echo "${FAIL} An unexpected error occurred. Unable to connect."
             exit 1
         fi
     done
 
     if [ "${success}" = false ]; then
-        echo -e "\t${FAIL} Failed to connect after ${max_attempts} attempts."
+        echo "${FAIL} Failed to connect after ${max_attempts} attempts."
     else
         nmcli connection modify "${WIFI_NAME}" connection.autoconnect yes
     fi
