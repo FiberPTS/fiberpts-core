@@ -35,8 +35,8 @@ process_service_files() {
             fi
         else
             envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
-            systemctl daemon-reload > /dev/null
-            systemctl restart "${service_filename}" > /dev/null
+            systemctl daemon-reload
+            systemctl restart "${service_filename}"
 
             if [ "$?" -eq 0 ]; then
                 echo -e "${OK_MSG} '${service_filename}' updated"
