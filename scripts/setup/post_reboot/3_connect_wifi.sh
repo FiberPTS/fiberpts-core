@@ -11,6 +11,7 @@ input_credentials() {
 connect_wifi() {
     local attempt=0
     local max_attempts=5
+    readonly max_attempts
     local success=false
 
     systemctl start NetworkManager.service
