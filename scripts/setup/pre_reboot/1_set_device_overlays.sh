@@ -45,7 +45,7 @@ function assert_conditions() {
 function set_custom_dts() {
   local source="${PROJECT_PATH}/custom/spi-cc-1cs-ili9341.dts"
   local dest="${PROJECT_DIR}/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt"
-  cp "${source} ${dest}"
+  cp "${source}" "${dest}"
 }
 
 #######################################
