@@ -77,8 +77,8 @@ function insert_device_id() {
 }
 
 #######################################
-# Main function to orchestrate fetching a new or unallocated device ID, marking
-# it as allocated in the database, and setting the system's hostname to this ID.
+# Fetches a new or unallocated device ID, marks it as allocated in the database,
+# and setting the system's hostname to this ID.
 # Globals:
 #   None
 # Arguments:
@@ -93,7 +93,6 @@ function main() {
 
   insert_device_id "${device_id}"
   hostnamectl set-hostname "${device_id}"
-  exit 0
 }
 
 main
