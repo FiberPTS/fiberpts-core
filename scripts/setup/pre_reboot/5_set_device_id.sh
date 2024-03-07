@@ -1,11 +1,23 @@
 #!/bin/bash
+#
+# This script interacts with Supabase to fetch an unallocated device ID, mark
+# it as allocated, and then set the system's hostname to this new device ID.
 
 set -e
 
 readonly TABLE=devices
 readonly COLUMNS=device_id,allocated
 
-# TODO: Add support for race conditions
+#######################################
+# Fetches a new device ID from the database that has not been allocated. If all
+# IDs are allocated, generates a new ID based on the count of devices.
+# Globals:
+#   TABLE, COLUMNS, DATABASE_URL, DATABASE_API_KEY
+# Arguments:
+#   None
+# Outputs:
+#   Prints the new or found unallocated device ID to STDOUT.
+#######################################
 function get_new_device_id() {
   local response
   response=$(
@@ -24,7 +36,7 @@ function get_new_device_id() {
     readonly is_allocated
 
     if [[ "${is_allocated}" == false ]]; then
-      # Assumes correct formatting is used in table records
+      # Retrieves the first unallocated device ID
       device_id=$(echo "${record}" | jq -r '.device_id')
       break
     fi
@@ -33,13 +45,24 @@ function get_new_device_id() {
   done < <(echo "${response}" | jq -c '.[]')
 
   if [[ ${device_id} == "fpts-" ]]; then
+    # Generates a new device ID if all existing IDs are allocated
     device_id+=$((count + 1))
   fi
 
   echo "${device_id}"
 }
 
+#######################################
+# Inserts the given device ID into the database and marks it as allocated.
+# Globals:
+#   TABLE, DATABASE_URL, DATABASE_API_KEY
+# Arguments:
+#   device_id - The device ID to be marked as allocated in the database.
+# Outputs:
+#   Response from the database after inserting the device ID.
+#######################################
 function insert_device_id() {
+  # TODO: Add support for handling race conditions when allocating new device IDs
   local device_id=$1
   local response
   response=$(
@@ -53,6 +76,16 @@ function insert_device_id() {
   echo "${response}"
 }
 
+#######################################
+# Main function to orchestrate fetching a new or unallocated device ID, marking
+# it as allocated in the database, and setting the system's hostname to this ID.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   Changes the system's hostname to the new or unallocated device ID.
+#######################################
 function main() {
   local device_id
   device_id=$(get_new_device_id)

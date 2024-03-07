@@ -1,8 +1,13 @@
-# !/bin/bash
+#!/bin/bash
+#
+# This script facilitates the setup of FiberPTS, including pre-reboot and 
+# post-reboot configurations. It load environment variables required during the
+# setup, creates necessary directories, and executes scripts for both
+# pre-reboot and post-reboot tasks based on the command-line argument passed.
 
 set -e
 
-# Color Support
+# Setup color support for status messages if terminal supports colors
 if [ -t 1 ] && [ -n "$(tput colors)" ]; then
   RED="$(tput setaf 1)"
   GREEN="$(tput setaf 2)"
@@ -14,7 +19,7 @@ if [ -t 1 ] && [ -n "$(tput colors)" ]; then
   BOLD="$(tput bold)"
   RESET="$(tput sgr0)"
 else
-  # stdout does not support colors
+  # Fallback to no color if stdout does not support it
   RED=""
   GREEN=""
   YELLOW=""
@@ -25,6 +30,7 @@ else
   BOLD=""
   RESET=""
 fi
+export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE BOLD RESET
 
 # Status Messages
 OK="${GREEN}[OK]     ${RESET}"
@@ -33,16 +39,33 @@ FAIL="${RED}[FAIL]   ${RESET}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export RED GREEN YELLOW BLUE MAGENTA CYAN WHITE BOLD RESET
-
-assert_root() {
+#######################################
+# Ensures the script is run with root privileges, exiting with an error
+# if it's not.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   Error message to stdout and exits with status 1 if not run as root.
+#######################################
+function assert_root() {
   if [ "$(id -u)" -ne 0 ]; then
     echo -e "${WARNING} This script must be run as root. Please use sudo."
     exit 1
   fi
 }
 
-load_env_variables() {
+#######################################
+# Loads environment variables from specified files in the project directory.
+# Globals:
+#   SCRIPT_DIR
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
+function load_env_variables() {
   local project_path="${SCRIPT_DIR}/../../"
   set -a
   source "${project_path}/scripts/paths.sh"
@@ -50,7 +73,17 @@ load_env_variables() {
   set +a
 }
 
-run_scripts() {
+#######################################
+# Executes all shell scripts in the given directory.
+# Globals:
+#   None
+# Arguments:
+#   target_dir - Directory containing scripts to execute.
+# Outputs:
+#   Status messages for each script executed.
+# TODO: Add script name to output messages for clarity.
+#######################################
+function run_scripts() {
   local target_dir="$1"
   readonly target_dir
   shift
@@ -67,16 +100,25 @@ run_scripts() {
   set -e
 }
 
-run_pre_reboot_tasks() {
+#######################################
+# Manages pre-reboot tasks, including running scripts and handling user prompts
+# for rebooting the system.
+# Globals:
+#   SCRIPT_DIR, PRE_REBOOT_FLAG, REBOOT_HALTED_FLAG
+# Arguments:
+#   None
+# Outputs:
+#   Status messages for pre-reboot tasks and prompts the user for reboot.
+#######################################
+function run_pre_reboot_tasks() {
   if [ ! -f "${PRE_REBOOT_FLAG}" ] && [ ! -f "${REBOOT_HALTED_FLAG}" ]; then
-    # TODO: Bold it
-    echo "Initiating pre-reboot setup..."
+    echo "${BOLD}Initiating pre-reboot setup...${RESET}"
     run_scripts "${SCRIPT_DIR}/pre_reboot"
-    echo "Pre-reboot tasks completed."
+    echo "${GREEN}${BOLD}Pre-reboot tasks completed.${RESET}"
   elif [ -f "${REBOOT_HALTED_FLAG}" ]; then
-    echo "${WARNING} Pre-reboot setup already completed"
+    echo "${WARNING} Pre-reboot setup already completed."
   elif [ -f "${PRE_REBOOT_FLAG}" ]; then
-    echo "${WARNING} Pre-reboot setup already completed"
+    echo "${WARNING} Pre-reboot setup already completed."
     exit 0
   fi
 
@@ -87,7 +129,6 @@ run_pre_reboot_tasks() {
         # Create file flags and locks required during post-reboot setup
         touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
         touch "${PRE_REBOOT_FLAG}"
-
         if [ -f "${REBOOT_HALTED_FLAG}" ]; then
           rm -f "${REBOOT_HALTED_FLAG}"
         fi
@@ -97,7 +138,7 @@ run_pre_reboot_tasks() {
         ;;
       [Nn])
         touch "${REBOOT_HALTED_FLAG}"
-        echo "${WARNING} Post-reboot setup won't begin until system is rebooted"
+        echo "${WARNING} Post-reboot setup won't begin until system is rebooted."
         break
         ;;
       *)
@@ -108,18 +149,29 @@ run_pre_reboot_tasks() {
   exit 0
 }
 
-run_post_reboot_tasks() {
+#######################################
+# Manages post-reboot tasks, including verifying prerequisites and executing
+# scripts for post-reboot configuration.
+# Globals:
+#   SCRIPT_DIR, PRE_REBOOT_FLAG, POST_REBOOT_FLAG
+# Arguments:
+#   None
+# Outputs:
+#   Status messages for post-reboot tasks and initiates a reboot upon completion.
+#######################################
+function run_post_reboot_tasks() {
   echo "Checking post-reboot requirements..."
   if [ ! -f "${PRE_REBOOT_FLAG}" ]; then
-    echo "${WARNING} Pre-reboot dependencies missing"
+    echo "${FAIL} Pre-reboot dependencies missing."
     exit 1
   elif [ -f "${POST_REBOOT_FLAG}" ]; then
-    echo "${WARNING} Post-reboot setup already completed"
+    echo "${WARNING} Post-reboot setup already completed."
     exit 0
   fi
-  echo "${OK} All requirements satisfied"
+  echo "${OK} All requirements satisfied."
 
-  echo -e "\nInitiating post-reboot setup..."
+  echo
+  echo "Initiating post-reboot setup..."
   run_scripts "${SCRIPT_DIR}/post_reboot"
   touch "${POST_REBOOT_FLAG}"
 
@@ -127,18 +179,47 @@ run_post_reboot_tasks() {
   reboot
 }
 
-make_app_directories() {
+#######################################
+# Creates necessary application directories for flags, locks, logs, and pipe
+# folders.
+# Globals:
+#   PROJECT_PATH, PIPE_FOLDER_PATH
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
+function make_app_directories() {
   mkdir -p ${PROJECT_PATH}/.app/flags
   mkdir -p ${PROJECT_PATH}/.app/locks
   mkdir -p ${PROJECT_PATH}/.app/logs
   mkdir -p ${PIPE_FOLDER_PATH}
 }
 
-print_usage() {
+#######################################
+# Displays usage information for the script.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   Usage information to stdout.
+#######################################
+function print_usage() {
   echo "Usage: $0 --pre | --post"
 }
 
-main() {
+#######################################
+# Orchestrates the script's execution flow based on command-line arguments,
+# facilitating either pre-reboot or post-reboot setup.
+# Globals:
+#   None
+# Arguments:
+#   Command-line arguments specifying setup phase (--pre or --post).
+# Outputs:
+#   Calls functions to perform setup tasks based on the specified phase.
+#######################################
+function main() {
   assert_root
   load_env_variables
 
@@ -156,7 +237,6 @@ main() {
       exit 1
       ;;
   esac
-  exit 0
 }
 
 main "$@"

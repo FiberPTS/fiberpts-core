@@ -1,9 +1,23 @@
 #!/bin/bash
+#
+# This script checks for necessary privileges and environment variables, then
+# processes systemd service files from templates, enabling or updating services
+# as needed.
 
 set -e
   
 readonly TEMPLATES_DIR="${PROJECT_PATH}/templates"
 
+#######################################
+# Verifies script is run as root and required environment variables are set.
+# Globals:
+#   PROJECT_PATH
+#   SYSTEMD_DIR
+# Arguments:
+#   None
+# Outputs:
+#   Writes warnings to stdout and exits with status 1 on failure.
+#######################################
 function assert_conditions() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
@@ -17,6 +31,17 @@ function assert_conditions() {
   fi
 }
 
+#######################################
+# Processes .service templates, enabling new services or updating existing
+# ones.
+# Globals:
+#   TEMPLATES_DIR
+#   SYSTEMD_DIR
+# Arguments:
+#   None
+# Outputs:
+#   Status messages regarding service enabling or updating.
+#######################################
 function process_service_files() {
   for template in "${TEMPLATES_DIR}"/*.service; do
     local service_filename
@@ -46,6 +71,15 @@ function process_service_files() {
   done
 }
 
+#######################################
+# Main function to orchestrate script execution.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   None directly, but calls functions that produce outputs.
+#######################################
 function main() {
   assert_conditions
   process_service_files
