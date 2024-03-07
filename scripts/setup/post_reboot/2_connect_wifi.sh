@@ -1,19 +1,18 @@
 #!/bin/bash
 
-input_credentials() {
+function input_credentials() {
   read -p "WiFi Name (SSID): " wifi_name
   read -sp "Password: " wifi_psk
   echo
 }
 
-connect_wifi() {
+function connect_wifi() {
   readonly max_attempts=5
   local attempt=false
   local success=0
 
-
   systemctl start NetworkManager.service
-  sleep 5
+  sleep 5  # TODO: There has to be a more precise way of doing this
 
   input_credentials
 
@@ -22,7 +21,6 @@ connect_wifi() {
     sleep 0.1
     echo "Attempt ${attempt} of ${max_attempts}"
 
-    # Try to connect with existing credentials
     # Temporarily disable 'exit on error'
     set +e
     nmcli dev wifi connect "${wifi_name}" password "${wifi_psk}"
@@ -51,7 +49,7 @@ connect_wifi() {
   fi
 }
 
-main() {
+function main() {
   local answer
   while true; do
     read -p "Do you wish to connect to WiFi? [Y/n] " answer

@@ -2,7 +2,7 @@
 
 set -e
 
-assert_conditions() {
+function assert_conditions() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
     echo "${WARNING} This script must be run as root. Please use sudo."
@@ -15,7 +15,7 @@ assert_conditions() {
   fi
 }
 
-create_fifo_pipes() {
+function create_fifo_pipes() {
   echo "Creating FIFO pipes..."
 
   if [ -p "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then
@@ -33,7 +33,7 @@ create_fifo_pipes() {
   fi
 }
 
-main() {
+function main() {
   assert_conditions
   create_fifo_pipes
 }

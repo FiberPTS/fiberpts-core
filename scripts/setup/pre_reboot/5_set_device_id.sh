@@ -6,7 +6,7 @@ readonly TABLE=devices
 readonly COLUMNS=device_id,allocated
 
 # TODO: Add support for race conditions
-get_new_device_id() {
+function get_new_device_id() {
   local response
   response=$(
     curl "${DATABASE_URL}/rest/v1/${TABLE}?select=${COLUMNS}" \
@@ -39,7 +39,7 @@ get_new_device_id() {
   echo "${device_id}"
 }
 
-insert_device_id() {
+function insert_device_id() {
   local device_id=$1
   local response
   response=$(
@@ -53,7 +53,7 @@ insert_device_id() {
   echo "${response}"
 }
 
-main() {
+function main() {
   local device_id
   device_id=$(get_new_device_id)
   readonly device_id

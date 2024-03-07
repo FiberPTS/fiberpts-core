@@ -4,7 +4,7 @@ set -e
   
 readonly TEMPLATES_DIR="${PROJECT_PATH}/templates"
 
-assert_conditions() {
+function assert_conditions() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
     echo "${WARNING} This script must be run as root. Please use sudo."
@@ -17,14 +17,14 @@ assert_conditions() {
   fi
 }
 
-process_service_files() {
-  for service_template in "${TEMPLATES_DIR}"/*.service; do
+function process_service_files() {
+  for template in "${TEMPLATES_DIR}"/*.service; do
     local service_filename
-    service_filename=$(basename "${service_template}")
+    service_filename=$(basename "${template}")
 
     # BUG: Service file is not created on line 26
     if [ ! -f "${SYSTEMD_DIR}/${service_filename}" ]; then
-      envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
+      envsubst < "${template}" > "${SYSTEMD_DIR}/${service_filename}"
       systemctl enable "${service_filename}" > /dev/null
 
       if [ "$?" -eq 0 ]; then
@@ -33,7 +33,7 @@ process_service_files() {
         echo "${FAIL} Failed to enable '${service_filename}'"
       fi
     else
-      envsubst < "${service_template}" > "${SYSTEMD_DIR}/${service_filename}"
+      envsubst < "${template}" > "${SYSTEMD_DIR}/${service_filename}"
       systemctl daemon-reload
       systemctl restart "${service_filename}"
 
@@ -46,7 +46,7 @@ process_service_files() {
   done
 }
 
-main() {
+function main() {
   assert_conditions
   process_service_files
 }

@@ -4,13 +4,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PATHS="${SCRIPT_DIR}/../../scripts/paths.sh"
 readonly SCRIPT_DIR PATHS
 
-init_display() {
+function init_display() {
   flock -x 200
 
-  local framebuffer_number="${DISPLAY_FRAME_BUFFER_PATH: -1}"
+  local fb_number="${DISPLAY_FRAME_BUFFER_PATH: -1}"
 
   # Map the console to the framebuffer
-  con2fbmap 1 "${framebuffer_number}"
+  con2fbmap 1 "${fb_number}"
   sleep 0.5
 
   # Unmap the console
@@ -19,7 +19,7 @@ init_display() {
   flock -u 200
 }
 
-main() {
+function main() {
   source "${PATHS}"
 
   exec 200> "${DISPLAY_FRAME_BUFFER_LOCK_PATH}" 

@@ -2,7 +2,7 @@
 
 set -e
 
-assert_conditions() {
+function assert_conditions() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
     echo "${WARNING} This script must be run as root. Please use sudo."
@@ -15,13 +15,13 @@ assert_conditions() {
   fi
 }
 
-set_custom_dts() {
+function set_custom_dts() {
   local source="${PROJECT_PATH}/custom/spi-cc-1cs-ili9341.dts"
   local dest="${PROJECT_DIR}/libretech-wiring-tool/libre-computer/aml-s905x-cc/dt"
   cp "${source} ${dest}"
 }
 
-reset_overlays() {
+function reset_overlays() {
   while true; do
     read -p "Do you want to reset the overlays [Y/n] ?" answer
     echo
@@ -45,7 +45,7 @@ reset_overlays() {
   done
 }
 
-merge_overlays() {
+function merge_overlays() {
   while true; do
     read -p "Do you want to merge the overlays [Y/n] ?" answer
     echo
@@ -69,7 +69,7 @@ merge_overlays() {
   done
 }
 
-install_libretech_wiring_tool() {
+function install_libretech_wiring_tool() {
   local github_url=https://github.com/libre-computer-project/libretech-wiring-tool.git
   readonly github_url
 
@@ -90,7 +90,7 @@ install_libretech_wiring_tool() {
   fi
 }
 
-main() {
+function main() {
   assert_conditions
   install_libretech_wiring_tool
 }

@@ -2,7 +2,7 @@
 
 set -e
 
-assert_conditions() {
+function assert_conditions() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
     echo "${WARNING} This script must be run as root. Please use sudo."
@@ -15,7 +15,7 @@ assert_conditions() {
   fi
 }
 
-create_virtual_environment() {
+function create_virtual_environment() {
   if [ ! -d "${PROJECT_PATH}/venv" ]; then
     apt install python3.11-venv python3-pip -y > /dev/null
     python3 -m venv "${PROJECT_PATH}/venv" > /dev/null
@@ -24,7 +24,7 @@ create_virtual_environment() {
 }
 
 # TODO: Fix implicit importing of FiberPTS modules without needing .pth file by sourcing in service files
-add_path_to_pth_file() {
+function add_path_to_pth() {
   local venv_dir="${PROJECT_PATH}/venv"
   local pth_file_name="fiberpts.pth"
   local pth_file_path="${venv_dir}/lib/python3.11/site-packages/${pth_file_name}"
@@ -38,10 +38,10 @@ add_path_to_pth_file() {
   fi
 }
 
-main() {
+function main() {
   assert_conditions
   create_virtual_environment
-  add_path_to_pth_file
+  add_path_to_pth
 }
 
 main

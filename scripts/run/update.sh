@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SETUP_DIR="${SCRIPT_DIR}/../setup"
 
-assert_conditions() {
+function assert_conditions() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
     echo "This script must be run as root. Please use sudo."
@@ -11,7 +11,7 @@ assert_conditions() {
   fi
 }
 
-load_env_variables() {
+function load_env_variables() {
   set -a
   source "${SCRIPT_DIR}/../../scripts/paths.sh" || return 1
   source "${SCRIPT_DIR}/../../.env" || return 1
@@ -19,7 +19,7 @@ load_env_variables() {
 }
 
 # TODO: Test if this works since may need to do a hard reset first
-pull_latest_changes() {
+function pull_latest_changes() {
   echo "Pulling latest changes from ${GIT_BRANCH} branch..."
   git -C "${PROJECT_PATH}" pull origin "${GIT_BRANCH}" || {
     echo "Git pull failed" >&2
@@ -27,7 +27,7 @@ pull_latest_changes() {
   }
 }
 
-run_scripts() {
+function run_scripts() {
   local scripts=("${@:1}")
 
   for script in "${scripts[@]}"; do
@@ -47,7 +47,7 @@ print_usage() {
   exit 1
 }
 
-parse_arguments() {
+function parse_arguments() {
   while getopts ":b:" opt; do
     case ${opt} in
       b)
@@ -65,7 +65,7 @@ parse_arguments() {
   done
 }
 
-main() {
+function main() {
   local scripts=("post-reboot/set_user_permissions.sh" "pre-reboot/create_services.sh")
 
   assert_conditions
