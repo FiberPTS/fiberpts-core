@@ -50,7 +50,7 @@ function install_rtl8812au_driver() {
     git clone -b "${version}" "${repo_url}" "${PROJECT_DIR}/rtl8812au" > /dev/null
     make -C "${PROJECT_DIR}/rtl8812au" dkms_install > /dev/null
   else
-    echo "Driver already installed."
+    echo "${WARNING} Driver already installed."
   fi
 }
 
