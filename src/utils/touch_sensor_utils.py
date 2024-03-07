@@ -1,12 +1,7 @@
-from datetime import timedelta
 import time
 from typing import NamedTuple
 
-import gpiod
-from gpiod.line import Bias, Edge
-
 from src.utils.utils import TapStatus
-
 
 class Tap(NamedTuple):
     """Stores information describing a tap event.

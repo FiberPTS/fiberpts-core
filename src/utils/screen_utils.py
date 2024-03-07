@@ -2,17 +2,21 @@ import json
 import os
 import time
 from typing import Dict, Any, NamedTuple
-import fcntl
-import struct
 import mmap
+import logging
+import logging.config
 
 from PIL import Image
 import numpy as np
 
 from config.screen_config import *
-from src.utils.paths import DISPLAY_FRAME_BUFFER_PATH, DISPLAY_FRAME_BUFFER_LOCK_PATH
+from src.utils.paths import (DISPLAY_FRAME_BUFFER_PATH,
+                             DISPLAY_FRAME_BUFFER_LOCK_PATH,
+                             PROJECT_DIR)
 from src.utils.utils import SelfReleasingLock
 
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logger = logging.getLogger(os.path.basename(__file__))
 
 class DisplayAttributes(NamedTuple):
     """Represents display-related attributes.
@@ -130,12 +134,15 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
         FileNotFoundError: If the specified JSON file path does not exist.
         JSONDecodeError: If there is an error decoding the JSON data from the file.
     """
+    logging.info('Reading device state')
     try:
         with open(path_to_device_state, 'r') as file:
             device_state = json.load(file)
     except FileNotFoundError:
+        logging.error('Device state file not found')
         raise FileNotFoundError # TODO: Determine error message format
     except json.JSONDecodeError:
+        logging.error('JSON Decode Error occurred reading from device state')
         raise json.JSONDecodeError # TODO: Determine error message format
     saved_timestamp = device_state['saved_timestamp']
     current_time = time.time()
@@ -158,13 +165,16 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str) 
         FileNotFoundError: If the specified JSON file path does not exist.
         IOError: If there is an error writing to the file.
     """
+    logging.info('Writing device state')
     device_state['saved_timestamp'] = time.time()
     try:
         with open(path_to_device_state, 'w') as file:
             json.dump(device_state, file, indent=4)
     except FileNotFoundError:
+        logging.error('Device state file not found')
         raise FileNotFoundError # TODO: Determine error message format
     except IOError as e:
+        logging.error(f"An error occurred while writing to device state: {e}")
         raise IOError # TODO: Determine error message format
 
 
@@ -188,6 +198,7 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
                 return json.loads(raw_data)
         return {}
     except FileNotFoundError:
+        logging.error(f"Could not find {path_to_pipe} while reading from the pipe")
         raise FileNotFoundError  # TODO: Determine error message format
 
 
@@ -262,6 +273,8 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
 
             os.close(fbfd)
     except FileNotFoundError:
+        logging.error(f"Could not find {path_to_fb} while writing to framebuffer")
         raise FileNotFoundError  # TODO: Determine error message format
     except IOError as e:
+        logging.error(f"An error occurred while writing to framebuffer: {e}")
         raise IOError  # TODO: Determine error message format

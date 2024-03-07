@@ -1,5 +1,7 @@
 import os
 import time
+import logging
+import logging.config
 
 from dotenv import load_dotenv
 import supabase
@@ -7,11 +9,11 @@ from postgrest import APIResponse
 
 from src.utils.touch_sensor_utils import Tap
 from src.utils.utils import TIMESTAMP_FORMAT
+from src.utils.paths import PROJECT_DIR
 
-script_path = os.path.abspath(__file__)
-script_dir = os.path.dirname(script_path)
-
-load_dotenv(f"{script_dir}/../../.env")
+load_dotenv(f"{PROJECT_DIR}/.env")
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logger = logging.getLogger(os.path.basename(__file__))
 
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API."""
@@ -40,12 +42,13 @@ class CloudDBClient:
         # TODO: Implement data validation.
         # TODO: Implement handling for non-existent table.
         # TODO: Implement handling for non-existent device record.
-
+        logger.info('Insertting tap record to Supabase')
         tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'device_id': tap.device_id
         }
         response = self.client.table('tap_data').insert(tap_record).execute()
+        logger.info(response)  # TODO: Correctly print response (need to test)
         return response
 
     def insert_device_data(self, device_id: str) -> APIResponse:
@@ -60,6 +63,7 @@ class CloudDBClient:
         Returns:
             An APIResponse object representing the result of the database operation.
         """
+        logger.info('Insertting device record to Supabase')  # TODO: Correctly print response (need to test)
         # TODO: Check if device_id already exists
         # TODO: How can I check whether the device id was created based on the response
         device_record = {
@@ -67,6 +71,7 @@ class CloudDBClient:
             'name': ''
         }
         response = self.client.table('devices').insert(device_record).execute()
+        logger.info(response)  # TODO: Correctly print response (need to test)
         return response
 
     def get_new_device_id(self):

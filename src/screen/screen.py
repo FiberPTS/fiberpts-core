@@ -1,11 +1,14 @@
 import time
 import os
+import logging
+import logging.config
 
 from PIL import Image, ImageDraw, ImageFont
 
 from config.screen_config import *
 from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE,
-                             DEVICE_STATE_FILE_PATH)
+                             DEVICE_STATE_FILE_PATH,
+                             PROJECT_DIR)
 from src.utils.screen_utils import (DisplayAttributes,
                                     DashboardAttributes,
                                     PopupAttributes,
@@ -19,6 +22,8 @@ from src.utils.utils import TapStatus
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logger = logging.getLogger(os.path.basename(__file__))
 
 class Screen:
     """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.
@@ -130,6 +135,7 @@ class Screen:
         """Handle data received from the touch sensor pipe. Updates device state and draws popups based on the received data."""
         tap_data = read_pipe(self.touch_sensor_pipe)
         if tap_data:
+            logger.info('Tap received by screen')
             # TODO: We may decide to store this data from a stopwatch time.
             # timestamp = tap_data["timestamp"]
             status = TapStatus[tap_data['status']]
@@ -146,6 +152,7 @@ class Screen:
 
     def run(self) -> None:
         """Start the main loop of the screen, updating the display at the set frame rate and handling incoming pipe data."""
+        logger.info('Running main loop')
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
         self.draw_dashboard()
         while True:
@@ -155,5 +162,6 @@ class Screen:
 
 
 if __name__ == "__main__":
+    logger.info('Starting screen.py')
     screen = Screen()
     screen.run()
