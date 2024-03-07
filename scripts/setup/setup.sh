@@ -169,8 +169,7 @@ function run_post_reboot_tasks() {
   fi
   echo "${OK} All requirements satisfied."
 
-  echo
-  echo "Initiating post-reboot setup..."
+  echo -e "\n${BOLD}Initiating post-reboot setup...${RESET}"
   run_scripts "${SCRIPT_DIR}/post_reboot"
   touch "${POST_REBOOT_FLAG}"
 
