@@ -15,8 +15,8 @@
 #   Prompts for user input on stdout.
 #######################################
 function input_credentials() {
-  read -p "WiFi Name (SSID): " wifi_name
-  read -sp "Password: " wifi_psk
+  read -p "WiFi Name (SSID): " WIFI_NAME
+  read -sp "Password: " WIFI_PSK
   echo
 }
 
@@ -24,8 +24,8 @@ function input_credentials() {
 # Attempts to connect to the specified WiFi network using credentials
 # provided by the user. Retries up to a maximum number of attempts.
 # Globals:
-#   wifi_name - The SSID of the WiFi network.
-#   wifi_psk - The password for the WiFi network.
+#   WIFI_NAME - The SSID of the WiFi network.
+#   WIFI_PSK - The password for the WiFi network.
 # Arguments:
 #   None
 # Outputs:
@@ -50,28 +50,33 @@ function connect_wifi() {
 
     # Temporarily disable 'exit on error' for nmcli command
     set +e
-    nmcli dev wifi connect "${wifi_name}" password "${wifi_psk}"
+    nmcli dev wifi connect "${WIFI_NAME}" password "${WIFI_PSK}"
     local status=$?
     set -e
 
-    if [ ${status} -eq 0 ]; then
-      success=true
-      echo "${OK} Connected successfully to ${wifi_name}."
-    elif [ ${status} -eq 1 ]; then
-      echo "Incorrect password. Please enter credentials again."
-      input_credentials
-    elif [ ${status} -eq 10 ]; then
-      echo "Please enter credentials again."
-      input_credentials
-    else
-      echo "${FAIL} An unexpected error occurred. Unable to connect."
-      exit 1
-    fi
+    case ${status} in
+      0)
+        success=true
+        echo "${OK} Connected successfully to ${WIFI_NAME}."
+        ;;
+      1)
+        echo "Incorrect password. Please enter credentials again."
+        input_credentials
+        ;;
+      10)
+        echo "Please enter credentials again."
+        input_credentials
+        ;;
+      *)
+        echo "${FAIL} An unexpected error occurred. Unable to connect."
+        exit 1
+        ;;
+    esac
   done
 
   # Enable autoconnect for the WiFi connection
   if [ "${success}" = true ]; then
-    nmcli connection modify "${wifi_name}" connection.autoconnect yes
+    nmcli connection modify "${WIFI_NAME}" connection.autoconnect yes
   else
     echo "${FAIL} Failed to connect after ${max_attempts} attempts."
   fi
