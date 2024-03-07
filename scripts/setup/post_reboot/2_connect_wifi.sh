@@ -87,17 +87,16 @@ function connect_wifi() {
 #   Prompts for user decision and calls connect_wifi on affirmative.
 #######################################
 function main() {
-  local answer
   while true; do
     read -p "Do you wish to connect to WiFi? [Y/n] " answer
     echo
     case "${answer}" in
-      [Yy])
+      [Yy]*)
         echo "Connecting to WiFi..."
         connect_wifi
         break
         ;;
-      [Nn])
+      [Nn]*)
         echo "Run this script if you wish to connect to WiFi. Exiting..."
         break
         ;;

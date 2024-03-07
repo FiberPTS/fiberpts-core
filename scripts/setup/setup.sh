@@ -125,8 +125,7 @@ function run_pre_reboot_tasks() {
   while true; do
     read -p "Do you wish to reboot now? [Y/n] " response
     case "${response}" in
-      [Yy])
-        # Create file flags and locks required during post-reboot setup
+      [Yy]*)
         touch "${DISPLAY_FRAME_BUFFER_LOCK_PATH}"
         touch "${PRE_REBOOT_FLAG}"
         if [ -f "${REBOOT_HALTED_FLAG}" ]; then
@@ -136,7 +135,7 @@ function run_pre_reboot_tasks() {
         reboot --no-wall
         break
         ;;
-      [Nn])
+      [Nn]*)
         touch "${REBOOT_HALTED_FLAG}"
         echo "${WARNING} Post-reboot setup won't begin until system is rebooted."
         break

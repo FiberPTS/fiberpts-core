@@ -64,14 +64,14 @@ function reset_overlays() {
     echo
 
     case "${answer}" in
-      [Yy])
+      [Yy]*)
         echo "Resetting overlays..."
         rm -f "${OVERLAY_MERGED_FLAG}"
         /opt/libretech-wiring-tool/ldto reset > /dev/null
         echo "Overlays reset. Reboot to apply changes."
         break
         ;;
-      [Nn])
+      [Nn]*)
         echo "Overlays not reset."
         break
         ;;
@@ -97,19 +97,19 @@ function merge_overlays() {
     echo
 
     case "${answer}" in
-      [Yy])
+      [Yy]*)
         echo "Merging overlays..."
         /opt/libretech-wiring-tool/ldto merge uart-a spi-cc-cs1 spi-cc-1cs-ili9341 > /dev/null
         echo "Overlays merged. Reboot to apply changes."
         touch "${OVERLAY_MERGED_FLAG}"
         break
         ;;
-      [Nn])
+      [Nn]*)
         echo "Overlays not merged."
         break
         ;;
       *)
-        echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)"
+        echo "Invalid input. Please answer 'Y' (yes) or 'n' (no)."
         ;;
     esac
   done
