@@ -90,7 +90,7 @@ function run_scripts() {
 
   set +e
   for script in "${target_dir}"/*.sh; do
-    # TODO: Add name script name
+    echo "Running $(basename ${script})..."
     if ! bash "${script}" 2>&1; then
       echo "${FAIL} ${script##*/}"
       exit 2
