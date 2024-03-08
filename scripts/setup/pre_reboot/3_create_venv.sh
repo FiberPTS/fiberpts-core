@@ -8,8 +8,7 @@
 set -e
 
 #######################################
-# Verifies that the script is run with root privileges and that the required
-# PROJECT_PATH environment variable is set.
+# Verifies that the required PROJECT_PATH environment variable is set.
 # Globals:
 #   None
 # Arguments:
@@ -17,13 +16,7 @@ set -e
 # Outputs:
 #   Writes warning to stdout and exits with status 1 on failure.
 #######################################
-function assert_conditions() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "${WARNING} This script must be run as root. Please use sudo."
-    exit 1
-  fi
-
+function assert_variables() {
   # Checks if PROJECT_PATH is set.
   if [ -z "${PROJECT_PATH}" ]; then
     echo "${WARNING} Required environment variable PROJECT_PATH is not set."
@@ -88,7 +81,7 @@ function add_path_to_pth() {
 #   None directly, but calls functions that produce outputs.
 #######################################
 function main() {
-  assert_conditions
+  assert_variables
   create_virtual_environment
   add_path_to_pth
 }

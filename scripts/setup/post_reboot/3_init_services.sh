@@ -9,7 +9,7 @@ set -e
 readonly TEMPLATES_DIR="${PROJECT_PATH}/templates"
 
 #######################################
-# Verifies script is run as root and required environment variables are set.
+# Verifies required environment variables are set.
 # Globals:
 #   PROJECT_PATH
 #   SYSTEMD_DIR
@@ -18,15 +18,16 @@ readonly TEMPLATES_DIR="${PROJECT_PATH}/templates"
 # Outputs:
 #   Writes warnings to stdout and exits with status 1 on failure.
 #######################################
-function assert_conditions() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "${WARNING} This script must be run as root. Please use sudo."
-    exit 1
+function assert_variables() {
+  local missing_env_variables
+  if [ -z "${PROJECT_PATH}" ]; then
+    missing_env_variables+=("PROJECT_PATH")
   fi
-
-  if [ -z "${PROJECT_PATH}" ] || [ -z "${SYSTEMD_DIR}" ]; then
-    echo "${WARNING} Required environment variables PROJECT_PATH or SYSTEMD_DIR are not set."
+  if [ -z "${SYSTEM_DIR}" ]; then
+    missing_env_variables+=("SYSTEM_DIR")
+  fi
+  if [ ${#missing_variables[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing_variables[*]} are not set."
     exit 1
   fi
 }
@@ -85,6 +86,6 @@ function process_service_files() {
 #   None directly, but calls functions that produce outputs.
 #######################################
 function main() {
-  assert_conditions
+  assert_variables
   process_service_files
 }
