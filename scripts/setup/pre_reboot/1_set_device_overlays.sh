@@ -30,8 +30,8 @@ function assert_variables() {
   if [ -z "${OVERLAY_MERGED_FLAG}" ]; then
     missing_env_variables+=("OVERLAY_MERGED_FLAG")
   fi
-  if [ ${#missing_variables[@]} -gt 0 ]; then
-    echo "${WARNING} Required environment variables ${missing_variables[*]} are not set."
+  if [ ${#missing_env_variables[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing_env_variables[*]} are not set."
     exit 1
   fi
 }

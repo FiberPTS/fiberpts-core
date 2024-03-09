@@ -28,8 +28,8 @@ function assert_variables() {
   if [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
     missing_env_variables+=("NFC_TO_SCREEN_PIPE")
   fi
-  if [ ${#missing_variables[@]} -gt 0 ]; then
-    echo "${WARNING} Required environment variables ${missing_variables[*]} are not set."
+  if [ ${#missing_env_variables[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing_env_variables[*]} are not set."
     exit 1
   fi
 }

@@ -26,8 +26,8 @@ function assert_variables() {
   if [ -z "${SYSTEM_DIR}" ]; then
     missing_env_variables+=("SYSTEM_DIR")
   fi
-  if [ ${#missing_variables[@]} -gt 0 ]; then
-    echo "${WARNING} Required environment variables ${missing_variables[*]} are not set."
+  if [ ${#missing_env_variables[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing_env_variables[*]} are not set."
     exit 1
   fi
 }
