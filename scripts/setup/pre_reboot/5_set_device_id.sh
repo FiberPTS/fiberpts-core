@@ -5,8 +5,8 @@
 
 set -e
 
-readonly TABLE=devices
-readonly COLUMNS=device_id,allocated
+TABLE=devices
+COLUMNS=device_id,allocated
 
 #######################################
 # Fetches a new device ID from the database that has not been allocated. If all
@@ -33,7 +33,6 @@ function get_new_device_id() {
   while read -r record; do
     local is_allocated
     is_allocated=$(echo "${record}" | jq -r '.allocated')
-    readonly is_allocated
 
     if [[ "${is_allocated}" == false ]]; then
       # Retrieves the first unallocated device ID
