@@ -47,7 +47,8 @@ function install_rtl8812au_driver() {
 
   if [ ! -d "${PROJECT_DIR}/rtl8812au" ]; then
     echo "Installing rtl8812au driver..."
-    git clone -b "${version}" "${repo_url}" "${PROJECT_DIR}/rtl8812au" > /dev/null
+    # TODO: Add spinner animation. 
+    git clone -b "${version}" "${repo_url}" "${PROJECT_DIR}/rtl8812au" > /dev/null # TODO, same as in script 1 of pre_reboot
     make -C "${PROJECT_DIR}/rtl8812au" dkms_install > /dev/null
   else
     echo "${WARNING} Driver already installed."

@@ -174,7 +174,7 @@ function run_post_reboot_tasks() {
   touch "${POST_REBOOT_FLAG}"
 
   echo -e "\n${BOLD}FiberPTS${RESET} setup is done. System will reboot now."
-  reboot
+  reboot > /dev/null
 }
 
 #######################################

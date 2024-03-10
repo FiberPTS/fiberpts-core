@@ -132,7 +132,7 @@ function install_libretech_wiring_tool() {
 
   if [ ! -d "${PROJECT_DIR}/libretech-wiring-tool" ]; then
     echo "Installing libretech-wiring-tool..."
-    git clone ${github_url} "${PROJECT_DIR}/libretech-wiring-tool" > /dev/null
+    git clone ${github_url} "${PROJECT_DIR}/libretech-wiring-tool" > /dev/null #TODO: Bug, output was printed.
     set_custom_dts
     bash "${PROJECT_DIR}/libretech-wiring-tool/install.sh" > /dev/null
     echo "${OK} Installed libretech-wiring-tool"

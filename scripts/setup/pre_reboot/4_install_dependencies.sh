@@ -52,6 +52,7 @@ function install_python_packages() {
 
   if [ -f "${requirements}" ]; then
     echo "Installing Python packages..."
+    # TODO: Add a spinner 
     "${PROJECT_PATH}/venv/bin/pip3" install -r "${requirements}" > /dev/null
   else
     echo "${WARNING} Python requirements file not found: ${requirements}"

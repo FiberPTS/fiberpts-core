@@ -88,3 +88,5 @@ function main() {
   assert_conditions
   process_service_files
 }
+
+main
