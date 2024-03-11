@@ -6,8 +6,8 @@
 set -e
 
 #######################################
-# Checks if the script is run as root and verifies that all required
-# environment variables are set. Exits if any condition is not met.
+# Verifies that all required environment variables are set. 
+# Exits if any condition is not met.
 # Globals:
 #   PIPE_FOLDER_PATH
 #   TOUCH_SENSOR_TO_SCREEN_PIPE
@@ -15,17 +15,21 @@ set -e
 # Arguments:
 #   None
 # Outputs:
-#   Writes warning to stdout and exits with status 1 on failure.
+#   Writes warning to stdout exits with status 1 on failure.
 #######################################
-function assert_conditions() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "${WARNING} This script must be run as root. Please use sudo."
-    exit 1
+function assert_variables() {
+  local missing
+  if [ -z "${PIPE_FOLDER_PATH}" ]; then
+    missing+=("PIPE_FOLDER_PATH")
   fi
-
-  if [ -z "${PIPE_FOLDER_PATH}" ] || [ -z "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ] || [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
-    echo "${WARNING} Required environment variables PIPE_FOLDER_PATH, TOUCH_SENSOR_TO_SCREEN_PIPE, or NFC_TO_SCREEN_PIPE are not set."
+  if [ -z "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then
+    missing+=("TOUCH_SENSOR_TO_SCREEN_PIPE")
+  fi
+  if [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
+    missing+=("NFC_TO_SCREEN_PIPE")
+  fi
+  if [ ${#missing[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing[*]} are not set."
     exit 1
   fi
 }
@@ -69,7 +73,7 @@ function create_fifo_pipes() {
 #   None directly, but calls functions that produce outputs.
 #######################################
 function main() {
-  assert_conditions
+  assert_variables
   create_fifo_pipes
 }
 

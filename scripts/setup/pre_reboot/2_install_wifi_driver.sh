@@ -7,27 +7,22 @@
 set -e
 
 #######################################
-# Checks if the script is run as root and if the PROJECT_DIR environment
-# variable is set, exiting with an error if any condition is not met.
+# Checks if the PROJECT_DIR environment variable is set, 
+# exiting with an error if any condition is not met.
 # Globals:
 #   None
 # Arguments:
 #   None
 # Outputs:
-#   Error message to stdout and exits with status 1 on failure.
+#   Writes warning to stdout and exits with status 1 on failure.
 #######################################
-function assert_conditions() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "${WARNING} This script must be run as root. Please use sudo."
-    exit 1
-  fi
-
+function assert_variables() {
   # Checks if PROJECT_DIR is set.
   if [ -z "${PROJECT_DIR}" ]; then
     echo "${WARNING} Required environment variable PROJECT_DIR is not set."
     exit 1
   fi
+  
 }
 
 #######################################
@@ -65,7 +60,7 @@ function install_rtl8812au_driver() {
 #   None directly, but calls functions that produce outputs.
 #######################################
 function main() {
-  assert_conditions
+  assert_variables
   install_rtl8812au_driver
 }
 

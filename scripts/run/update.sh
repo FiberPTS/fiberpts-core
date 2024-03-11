@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SETUP_DIR="${SCRIPT_DIR}/../setup"
 
-function assert_conditions() {
+function assert_root() {
   # Root check
   if [ "$(id -u)" -ne 0 ]; then
     echo "This script must be run as root. Please use sudo."
@@ -68,7 +68,7 @@ function parse_arguments() {
 function main() {
   local scripts=("post-reboot/set_user_permissions.sh" "pre-reboot/create_services.sh")
 
-  assert_conditions
+  assert_root
   parse_arguments
   load_env_variables
   pull_latest_changes || exit 1

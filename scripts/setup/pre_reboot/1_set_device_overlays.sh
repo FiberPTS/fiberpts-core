@@ -8,8 +8,8 @@
 set -e
 
 #######################################
-# Checks if the script is run as root and verifies that all required
-# environment variables are set. Exits if any condition is not met.
+# Verifies that all required environment variables are set. 
+# Exits if any condition is not met.
 # Globals:
 #   PROJECT_DIR
 #   PROJECT_PATH
@@ -19,15 +19,19 @@ set -e
 # Outputs:
 #   Writes warning to stdout and exits with status 1 on failure.
 #######################################
-function assert_conditions() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "${WARNING} This script must be run as root. Please use sudo."
-    exit 1
+function assert_variables() {
+  local missing
+  if [ -z "${PROJECT_DIR}" ]; then
+    missing+=("PROJECT_DIR")
   fi
-
-  if [ -z "${PROJECT_DIR}" ] || [ -z "${PROJECT_PATH}" ] || [ -z "${OVERLAY_MERGED_FLAG}" ]; then
-    echo "${WARNING} Required environment variables PROJECT_DIR, PROJECT_PATH, and OVERLAY_MERGED_FLAG are not all set."
+  if [ -z "${PROJECT_PATH}" ]; then
+    missing+=("PROJECT_PATH")
+  fi
+  if [ -z "${OVERLAY_MERGED_FLAG}" ]; then
+    missing+=("OVERLAY_MERGED_FLAG")
+  fi
+  if [ ${#missing[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing[*]} are not set."
     exit 1
   fi
 }
@@ -157,7 +161,7 @@ function install_libretech_wiring_tool() {
 #   None directly, but calls functions that produce outputs.
 #######################################
 function main() {
-  assert_conditions
+  assert_variables
   install_libretech_wiring_tool
 }
 

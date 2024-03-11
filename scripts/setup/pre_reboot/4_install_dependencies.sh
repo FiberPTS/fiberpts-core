@@ -6,9 +6,8 @@
 set -e
 
 #######################################
-# Verifies the script is executed with root privileges, checks if the required
-# PROJECT_PATH environment variable is set, and if the virtual environment
-# directory exists.
+# Checks if the required PROJECT_PATH environment variable is set,
+# and if the virtual environment directory exists.
 # Globals:
 #   None
 # Arguments:
@@ -16,13 +15,7 @@ set -e
 # Outputs:
 #   Error messages to stdout and exits with status 1 on failure.
 #######################################
-function assert_conditions() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "${WARNING} This script must be run as root. Please use sudo."
-    exit 1
-  fi
-
+function assert_variables() {
   # Verifies PROJECT_PATH is set
   if [ -z "${PROJECT_PATH}" ]; then
     echo "${WARNING} Required environment variable PROJECT_PATH is not set."
@@ -84,7 +77,7 @@ function install_unix_packages() {
 #   None directly, but calls functions that produce outputs.
 #######################################
 function main() {
-  assert_conditions
+  assert_variables
   install_unix_packages
   install_python_packages
 }
