@@ -18,18 +18,18 @@ set -e
 #   Writes warning to stdout exits with status 1 on failure.
 #######################################
 function assert_variables() {
-  local missing_env_variables
+  local missing
   if [ -z "${PIPE_FOLDER_PATH}" ]; then
-    missing_env_variables+=("PIPE_FOLDER_PATH")
+    missing+=("PIPE_FOLDER_PATH")
   fi
   if [ -z "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then
-    missing_env_variables+=("TOUCH_SENSOR_TO_SCREEN_PIPE")
+    missing+=("TOUCH_SENSOR_TO_SCREEN_PIPE")
   fi
   if [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
-    missing_env_variables+=("NFC_TO_SCREEN_PIPE")
+    missing+=("NFC_TO_SCREEN_PIPE")
   fi
-  if [ ${#missing_env_variables[@]} -gt 0 ]; then
-    echo "${WARNING} Required environment variables ${missing_env_variables[*]} are not set."
+  if [ ${#missing[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing[*]} are not set."
     exit 1
   fi
 }

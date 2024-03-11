@@ -19,15 +19,15 @@ readonly TEMPLATES_DIR="${PROJECT_PATH}/templates"
 #   Writes warnings to stdout and exits with status 1 on failure.
 #######################################
 function assert_variables() {
-  local missing_env_variables
+  local missing
   if [ -z "${PROJECT_PATH}" ]; then
-    missing_env_variables+=("PROJECT_PATH")
+    missing+=("PROJECT_PATH")
   fi
   if [ -z "${SYSTEM_DIR}" ]; then
-    missing_env_variables+=("SYSTEM_DIR")
+    missing+=("SYSTEM_DIR")
   fi
-  if [ ${#missing_env_variables[@]} -gt 0 ]; then
-    echo "${WARNING} Required environment variables ${missing_env_variables[*]} are not set."
+  if [ ${#missing[@]} -gt 0 ]; then
+    echo "${WARNING} Required environment variables ${missing[*]} are not set."
     exit 1
   fi
 }
