@@ -22,7 +22,7 @@ from src.utils.utils import TapStatus
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class Screen:

@@ -12,7 +12,7 @@ from src.utils.utils import TIMESTAMP_FORMAT
 from src.utils.paths import PROJECT_DIR
 
 load_dotenv(f"{PROJECT_DIR}/.env")
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 suppressed_loggers = ['httpx', 'concurrent', 'dotenv.main', 'dotenv', 'concurrent.futures',

@@ -15,7 +15,7 @@ from src.utils.paths import (DISPLAY_FRAME_BUFFER_PATH,
                              PROJECT_DIR)
 from src.utils.utils import SelfReleasingLock
 
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class DisplayAttributes(NamedTuple):
