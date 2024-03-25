@@ -15,6 +15,7 @@ load_dotenv(f"{PROJECT_DIR}/.env")
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
+# Suppress third-party library loggers (This is a temporary hard-coded solution)
 suppressed_loggers = ['httpx', 'concurrent', 'dotenv.main', 'dotenv', 'concurrent.futures',
                       'httpcore.http11', 'httpcore', 'httpcore.connection','httpcore.proxy',
                       'asyncio'
