@@ -15,6 +15,17 @@ load_dotenv(f"{PROJECT_DIR}/.env")
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
 logger = logging.getLogger(os.path.basename(__file__))
 
+
+suppressed_loggers = ['httpx', 'concurrent', 'dotenv.main', 'dotenv', 'concurrent.futures',
+                      'httpcore.http11', 'httpcore', 'httpcore.connection','httpcore.proxy',
+                      'asyncio'
+                      ]
+null_handler = logging.NullHandler()
+for name in suppressed_loggers:
+    suppress_logger = logging.getLogger(name)
+    suppress_logger.addHandler(null_handler)
+
+
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API."""
 
