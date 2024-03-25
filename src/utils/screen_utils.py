@@ -11,12 +11,12 @@ import numpy as np
 
 from config.screen_config import *
 from src.utils.paths import (DISPLAY_FRAME_BUFFER_PATH,
-                             DISPLAY_FRAME_BUFFER_LOCK_PATH,
-                             PROJECT_DIR)
+                             DISPLAY_FRAME_BUFFER_LOCK_PATH, PROJECT_DIR)
 from src.utils.utils import SelfReleasingLock
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
 logger = logging.getLogger(os.path.basename(__file__))
+
 
 class DisplayAttributes(NamedTuple):
     """Represents display-related attributes.
@@ -31,7 +31,7 @@ class DisplayAttributes(NamedTuple):
     display_fb_lock_path: str = DISPLAY_FRAME_BUFFER_LOCK_PATH
     display_height: str = DISPLAY_HEIGHT
     display_width: str = DISPLAY_WIDTH
-    display_frame_rate:str = DISPLAY_FRAME_RATE
+    display_frame_rate: str = DISPLAY_FRAME_RATE
 
 
 class DashboardAttributes(NamedTuple):
@@ -140,10 +140,10 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
             device_state = json.load(file)
     except FileNotFoundError:
         logging.error('Device state file not found')
-        raise FileNotFoundError # TODO: Determine error message format
+        raise FileNotFoundError  # TODO: Determine error message format
     except json.JSONDecodeError:
         logging.error('JSON Decode Error occurred reading from device state')
-        raise json.JSONDecodeError # TODO: Determine error message format
+        raise json.JSONDecodeError  # TODO: Determine error message format
     saved_timestamp = device_state['saved_timestamp']
     current_time = time.time()
 
@@ -154,7 +154,8 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
     return device_state
 
 
-def write_device_state(device_state: Dict[str, Any], path_to_device_state: str) -> None:
+def write_device_state(device_state: Dict[str, Any],
+                       path_to_device_state: str) -> None:
     """Write the updated device state to a JSON file.
 
     Args:
@@ -172,10 +173,10 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str) 
             json.dump(device_state, file, indent=4)
     except FileNotFoundError:
         logging.error('Device state file not found')
-        raise FileNotFoundError # TODO: Determine error message format
+        raise FileNotFoundError  # TODO: Determine error message format
     except IOError as e:
         logging.error(f"An error occurred while writing to device state: {e}")
-        raise IOError # TODO: Determine error message format
+        raise IOError  # TODO: Determine error message format
 
 
 def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
@@ -193,13 +194,14 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
     # TODO: Consider using user space os.open command instead of built-in open
     try:
         with open(path_to_pipe, 'r') as pipein:
-            raw_data = pipein.read()
+            raw_data = pipein.readline()
             if raw_data:
                 return json.loads(raw_data)
         return {}
     except FileNotFoundError:
-        logging.error(f"Could not find {path_to_pipe} while reading from the pipe")
-        raise FileNotFoundError  # TODO: Determine error message format
+        logging.error(
+            f"Could not find {path_to_pipe} while reading from the pipe")
+        raise FileNotFoundError
 
 
 def get_image_center(image: Image) -> tuple[int, int]:
@@ -210,9 +212,9 @@ def get_image_center(image: Image) -> tuple[int, int]:
     """
     if image:
         width, height = image.size
-        center_x, center_y = width//2, height//2
+        center_x, center_y = width // 2, height // 2
         return (center_x, center_y)
-    return (-1,-1)
+    return (-1, -1)
 
 
 def image_to_raw_rgb565(image: Image) -> np.ndarray:
@@ -241,7 +243,8 @@ def image_to_raw_rgb565(image: Image) -> np.ndarray:
     return raw_rgb565
 
 
-def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> None:
+def write_image_to_fb(image: Image, path_to_fb: str,
+                      path_to_fb_lock: str) -> None:
     """Write a PIL image to a framebuffer device in RGB565 format.
 
     Args:
@@ -263,17 +266,20 @@ def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> No
             screensize = width * height * 2
 
             if len(raw_bytes) != screensize:
-                raise ValueError('Size mismatch: Data size does not match buffer size')
+                raise ValueError(
+                    'Size mismatch: Data size does not match buffer size')
 
             fbfd = os.open(path_to_fb, os.O_RDWR)
-
-            fbp = mmap.mmap(fbfd, screensize, flags=mmap.MAP_SHARED, prot=mmap.PROT_WRITE)
+            fbp = mmap.mmap(fbfd,
+                            screensize,
+                            flags=mmap.MAP_SHARED,
+                            prot=mmap.PROT_WRITE)
             fbp[:] = raw_bytes
             fbp.flush()
-
             os.close(fbfd)
     except FileNotFoundError:
-        logging.error(f"Could not find {path_to_fb} while writing to framebuffer")
+        logging.error(
+            f"Could not find {path_to_fb} while writing to framebuffer")
         raise FileNotFoundError  # TODO: Determine error message format
     except IOError as e:
         logging.error(f"An error occurred while writing to framebuffer: {e}")

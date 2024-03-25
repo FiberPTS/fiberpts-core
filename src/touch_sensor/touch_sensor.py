@@ -7,13 +7,13 @@ import gpiod
 
 from src.cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
-from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, 
-                             PROJECT_DIR)
+from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, PROJECT_DIR)
 from src.utils.touch_sensor_utils import *
 from src.utils.utils import get_device_id, TapStatus
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
 logger = logging.getLogger(os.path.basename(__file__))
+
 
 class TouchSensor:
     """Represents a touch sensor.
@@ -61,19 +61,23 @@ class TouchSensor:
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD
 
-        tap = Tap(device_id=self.device_id, timestamp=timestamp, status=tap_status)
-        logger.info(f"Device Id: {tap.device_id}, Timestamp: {tap.timestamp}, Is Valid: {tap.status == TapStatus.GOOD}")
+        tap = Tap(device_id=self.device_id,
+                  timestamp=timestamp,
+                  status=tap_status)
+        logger.info(
+            f"Device Id: {tap.device_id}, \
+              Timestamp: {tap.timestamp}, \
+              Is Valid: {tap.status == TapStatus.GOOD}"
+        )
 
         self.pipe_tap_data(tap)
 
         is_valid_tap = tap.status == TapStatus.GOOD
-
         if is_valid_tap:
             # TODO: Implement child process creation for record handling.
             self.cloud_db.insert_tap_data(tap)
 
         self.last_tap = tap
-
         return is_valid_tap
 
     def pipe_tap_data(self, tap: Tap) -> None:
@@ -89,8 +93,10 @@ class TouchSensor:
         tap_data = dict(tap)
 
         try:
-            with open(self.screen_pipe, 'w') as pipeout:
+            with open(self.screen_pipe, 'a') as pipeout:
                 json.dump(tap_data, pipeout)
+                pipeout.write('\n')
+                pipeout.flush()
         except FileNotFoundError:
             logger.error('Named pipe not found')
             raise FileNotFoundError('Named pipe not found')
@@ -109,7 +115,10 @@ class TouchSensor:
         with gpiod.request_lines(
                 self.chip_path,
                 consumer="get-line-value",
-                config={self.line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
+                config={
+                    self.line_offset:
+                        gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)
+                },
         ) as request:
             released = True
             while True:
