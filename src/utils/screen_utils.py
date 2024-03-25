@@ -16,7 +16,7 @@ from src.utils.paths import (DISPLAY_FRAME_BUFFER_PATH,
 from src.utils.utils import SelfReleasingLock
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class DisplayAttributes(NamedTuple):
     """Represents display-related attributes.

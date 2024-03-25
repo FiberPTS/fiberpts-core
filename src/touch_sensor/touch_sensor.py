@@ -13,7 +13,7 @@ from src.utils.touch_sensor_utils import *
 from src.utils.utils import get_device_id, TapStatus
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class TouchSensor:
     """Represents a touch sensor.
