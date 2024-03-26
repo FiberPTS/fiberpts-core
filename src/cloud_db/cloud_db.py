@@ -15,17 +15,6 @@ load_dotenv(f"{PROJECT_DIR}/.env")
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
-# Suppress third-party library loggers (This is a temporary hard-coded solution)
-suppressed_loggers = ['httpx', 'concurrent', 'dotenv.main', 'dotenv', 'concurrent.futures',
-                      'httpcore.http11', 'httpcore', 'httpcore.connection','httpcore.proxy',
-                      'asyncio'
-                      ]
-null_handler = logging.NullHandler()
-for name in suppressed_loggers:
-    suppress_logger = logging.getLogger(name)
-    suppress_logger.addHandler(null_handler)
-
-
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API."""
 
