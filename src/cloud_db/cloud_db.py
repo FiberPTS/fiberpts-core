@@ -42,7 +42,7 @@ class CloudDBClient:
         # TODO: Implement data validation.
         # TODO: Implement handling for non-existent table.
         # TODO: Implement handling for non-existent device record.
-        logger.info('Insertting tap record to Supabase')
+        logger.info('Inserting tap record to Supabase')
         tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'device_id': tap.device_id
