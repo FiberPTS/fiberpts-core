@@ -11,8 +11,8 @@ from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, PROJECT_DIR)
 from src.utils.touch_sensor_utils import *
 from src.utils.utils import get_device_id, TapStatus
 
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 
 class TouchSensor:

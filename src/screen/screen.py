@@ -24,8 +24,8 @@ from src.utils.utils import TapStatus
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class Screen:
     """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.

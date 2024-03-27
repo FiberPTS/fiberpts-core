@@ -8,8 +8,8 @@ from src.utils.paths import PROJECT_DIR
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
 
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class SelfReleasingLock:
     def __init__(self, lockfile_path):
