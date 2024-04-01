@@ -6,6 +6,7 @@ import logging.config
 from dotenv import load_dotenv
 import supabase
 from postgrest import APIResponse
+import httpx
 
 from src.utils.touch_sensor_utils import Tap
 from src.utils.utils import TIMESTAMP_FORMAT
@@ -28,14 +29,14 @@ class CloudDBClient:
         key = os.getenv('DATABASE_API_KEY')
         self.client = supabase.create_client(url, key)
 
-    def insert_tap_data(self, tap: Tap) -> APIResponse:
+    def insert_tap_data(self, tap: Tap) -> int:
         """Inserts a new tap data record into the `tap_data` table.
 
         Args:
             tap: An instance of Tap containing the data to be inserted
 
         Returns:
-            An APIResponse object representing the result of the database operation.
+            An int value representing the success (0) or failure (-1) of the database operation.
         """
         # TODO: Implement handling for connection issues.
         # TODO: Implement handling for authentication issues.
@@ -47,9 +48,13 @@ class CloudDBClient:
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'device_id': tap.device_id
         }
-        response = self.client.table('tap_data').insert(tap_record).execute()
-        logger.info(response)  # TODO: Correctly print response (need to test)
-        return response
+        try:
+            response = self.client.table('tap_data').insert(tap_record).execute()
+            logger.info(response)  # TODO: Correctly print response (need to test)
+        except httpx.NetworkError as e:
+            logger.error(f"Network Error: {e}")
+            return -1
+        return 0
 
     def insert_device_data(self, device_id: str) -> APIResponse:
         """Inserts a new device record into the 'devices' table.
