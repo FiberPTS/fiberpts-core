@@ -5,9 +5,6 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# TODO: Decide where to put this configuration.
-SHUTDOWN_TIME="19:00:00"
-
 #######################################
 # Checks that the script is run as root.
 # Globals:
@@ -40,6 +37,7 @@ function assert_root() {
 #######################################
 function load_env_variables() {
   source "${SCRIPT_DIR}/../../scripts/paths.sh" || return 1
+  source "${SCRIPT_DIR}/../../config/config.sh" || return 1
 }
 
 #######################################
