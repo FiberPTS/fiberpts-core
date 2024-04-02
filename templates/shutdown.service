@@ -1,0 +1,13 @@
+[Unit]
+Description=Monitor and restart shutdown.sh
+
+[Service]
+Type=simple
+ExecStart=bash "${PROJECT_PATH}"/scripts/run/shutdown.sh
+PIDFile=/var/run/shutdown.pid
+ExecStop=/bin/kill -15 \${MAINPID}
+TimeoutSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
