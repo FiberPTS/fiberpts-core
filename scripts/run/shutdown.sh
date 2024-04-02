@@ -92,13 +92,13 @@ function main() {
     assert_root
     load_env_variables
     while true; do
+        sleep 60
         if check_time "$SHUTDOWN_TIME"; then
             echo "Shutdown Initiated"
             if cleanup; then
                 shutdown now -h
             fi
         fi
-        sleep 60
     done
 }
 
