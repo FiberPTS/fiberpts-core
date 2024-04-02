@@ -91,6 +91,8 @@ function cleanup() {
 #   1 when cleanup fails, otherwise 0 on success.
 #######################################
 function main() {
+    assert_root
+    load_env_variables
     while true; do
         if check_time "$SHUTDOWN_TIME"; then
             echo "Shutdown Initiated"
