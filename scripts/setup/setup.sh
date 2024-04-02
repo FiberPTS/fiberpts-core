@@ -197,6 +197,10 @@ function setup_app_directory() {
   mkdir -p "${PIPE_FOLDER_PATH}"
 }
 
+function set_timezone(){
+  timedatectl set-timezone America/New_York
+}
+
 #######################################
 # Displays usage information for the script.
 # Globals:
@@ -212,7 +216,8 @@ function print_usage() {
 
 #######################################
 # Orchestrates the script's execution flow based on command-line arguments,
-# facilitating either pre-reboot or post-reboot setup.
+# facilitating either pre-reboot or post-reboot setup. Sets timezone during
+# pre-reboot setup. 
 # Globals:
 #   None
 # Arguments:
@@ -227,6 +232,7 @@ function main() {
   make_app_directories
   case "$1" in
     --pre)
+      set_timezone
       run_pre_reboot_tasks
       ;;
     --post)
