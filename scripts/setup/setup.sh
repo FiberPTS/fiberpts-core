@@ -197,7 +197,17 @@ function setup_app_directory() {
   mkdir -p "${PIPE_FOLDER_PATH}"
 }
 
+#######################################
+# Sets the timezone of the device.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
 function set_timezone(){
+  # TODO: Consider making this configurable
   timedatectl set-timezone America/New_York
 }
 
