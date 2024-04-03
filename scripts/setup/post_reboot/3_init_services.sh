@@ -23,8 +23,8 @@ function assert_variables() {
   if [ -z "${PROJECT_PATH}" ]; then
     missing+=("PROJECT_PATH")
   fi
-  if [ -z "${SYSTEM_DIR}" ]; then
-    missing+=("SYSTEM_DIR")
+  if [ -z "${SYSTEMD_DIR}" ]; then
+    missing+=("SYSTEMD_DIR")
   fi
   if [ ${#missing[@]} -gt 0 ]; then
     echo "${WARNING} Required environment variables ${missing[*]} are not set."
