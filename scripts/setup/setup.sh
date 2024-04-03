@@ -239,7 +239,7 @@ function main() {
   assert_root
   load_env_variables
 
-  make_app_directories
+  setup_app_directory
   case "$1" in
     --pre)
       set_timezone
