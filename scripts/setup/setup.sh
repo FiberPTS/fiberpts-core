@@ -198,6 +198,20 @@ function setup_app_directory() {
 }
 
 #######################################
+# Sets the timezone of the device.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
+function set_timezone(){
+  # TODO: Consider making this configurable
+  timedatectl set-timezone America/New_York
+}
+
+#######################################
 # Displays usage information for the script.
 # Globals:
 #   None
@@ -212,7 +226,8 @@ function print_usage() {
 
 #######################################
 # Orchestrates the script's execution flow based on command-line arguments,
-# facilitating either pre-reboot or post-reboot setup.
+# facilitating either pre-reboot or post-reboot setup. Sets timezone during
+# pre-reboot setup. 
 # Globals:
 #   None
 # Arguments:
@@ -227,6 +242,7 @@ function main() {
   make_app_directories
   case "$1" in
     --pre)
+      set_timezone
       run_pre_reboot_tasks
       ;;
     --post)
