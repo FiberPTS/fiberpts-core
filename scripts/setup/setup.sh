@@ -71,6 +71,7 @@ function load_env_variables() {
   source "${project_path}/scripts/paths.sh"
   source "${project_path}/.env"
   set +a
+  source "${project_path}/config/config.sh" || return 1
 }
 
 #######################################
@@ -200,15 +201,14 @@ function setup_app_directory() {
 #######################################
 # Sets the timezone of the device.
 # Globals:
-#   None
+#   TIMEZONE - The timezone to set the device to.
 # Arguments:
 #   None
 # Outputs:
 #   None
 #######################################
 function set_timezone(){
-  # TODO: Consider making this configurable
-  timedatectl set-timezone America/New_York
+  timedatectl set-timezone "${TIMEZONE}"
 }
 
 #######################################
