@@ -1,0 +1,1 @@
+SHUTDOWN_TIME = "19:00:00"
