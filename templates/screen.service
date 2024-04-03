@@ -4,8 +4,8 @@ After=init_display.service
 
 [Service]
 Type=simple
-ExecStart=${PROJECT_PATH}/venv/bin/python3 ${PROJECT_PATH}/src/screen/screen.py
-WorkingDirectory=${PROJECT_PATH}
+ExecStart="${PROJECT_PATH}/venv/bin/python3" "${PROJECT_PATH}/src/screen/screen.py"
+WorkingDirectory="${PROJECT_PATH}"
 PIDFile=/var/run/screen.pid
 ExecStop=/bin/kill -15 \${MAINPID}
 TimeoutSec=5
