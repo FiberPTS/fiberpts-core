@@ -190,7 +190,7 @@ function run_post_reboot_tasks() {
 #######################################
 function setup_app_directory() {
   mkdir -p "${PROJECT_PATH}"/.app/data
-  touch "${DEVICE_STATE_PATH}"
+  echo "{}" > "${DEVICE_STATE_PATH}"
 
   mkdir -p "${PROJECT_PATH}"/.app/flags
   mkdir -p "${PROJECT_PATH}"/.app/locks
