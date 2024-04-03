@@ -1,5 +1,5 @@
 [Unit]
-Description=Initialize the device
+Description=Initialize the display
 
 [Service]
 ExecStart=/bin/bash "${PROJECT_PATH}/scripts/run/init_display.sh"
