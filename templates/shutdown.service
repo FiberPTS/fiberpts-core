@@ -5,7 +5,6 @@ Description=Monitor and restart shutdown.sh
 Type=simple
 ExecStart=/bin/bash "${PROJECT_PATH}/scripts/run/shutdown.sh"
 PIDFile=/var/run/shutdown.pid
-ExecStop=/bin/kill -15 \${MAINPID}
 TimeoutSec=5
 Restart=always
 
