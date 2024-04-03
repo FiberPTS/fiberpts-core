@@ -2,6 +2,8 @@ import time
 import os
 import logging
 import logging.config
+import threading
+from queue import Queue
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -22,8 +24,8 @@ from src.utils.utils import TapStatus
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class Screen:
     """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.
@@ -34,6 +36,7 @@ class Screen:
         popup_attributes (PopupAttributes): Attributes for configuring popups, including fonts, colors, and duration.
         touch_sensor_pipe (str): Path to the named pipe for reading touch sensor data.
         device_state_path (str): Path to the file where the device state is stored.
+        popup_queue (Queue): A queue for all popup data.
         device_state (dict): State of the device as read from the device state file.
         image: Current image being displayed on the screen.
     """
@@ -48,6 +51,7 @@ class Screen:
         self.touch_sensor_pipe = TOUCH_SENSOR_TO_SCREEN_PIPE
         self.device_state_path = DEVICE_STATE_PATH
         # Initialize screen
+        self.popup_queue = Queue()
         self.device_state = read_device_state(DEVICE_STATE_PATH)
         self.image = None
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
@@ -132,33 +136,47 @@ class Screen:
         time.sleep(self.popup_attributes.popup_duration)
 
     def handle_pipe_data(self) -> None:
-        """Handle data received from the touch sensor pipe. Updates device state and draws popups based on the received data."""
+        """Handle data received from the touch sensor pipe. Updates device state and queues popups based on the received data."""
         tap_data = read_pipe(self.touch_sensor_pipe)
         if tap_data:
             logger.info('Tap received by screen')
             # TODO: We may decide to store this data from a stopwatch time.
             # timestamp = tap_data["timestamp"]
+            popup_item = None
             status = TapStatus[tap_data['status']]
             if status == TapStatus.GOOD:
                 self.device_state['unit_count'] += 1
                 write_device_state(self.device_state, self.device_state_path)
-                self.draw_popup(self.popup_attributes.message_attributes.tap_event_message,
-                                self.popup_attributes.event_attributes.tap_event_bg_color)
+                popup_item = (self.popup_attributes.message_attributes.tap_event_message,
+                              self.popup_attributes.event_attributes.tap_event_bg_color)
             elif status == TapStatus.BAD:
-                self.draw_popup(self.popup_attributes.message_attributes.popup_warning_message,
-                                self.popup_attributes.event_attributes.popup_warning_bg_color)
-            return True
-        return False
+                popup_item = (self.popup_attributes.message_attributes.popup_warning_message,
+                              self.popup_attributes.event_attributes.popup_warning_bg_color)
+            if popup_item:
+                self.popup_queue.put(popup_item)
 
-    def run(self) -> None:
-        """Start the main loop of the screen, updating the display at the set frame rate and handling incoming pipe data."""
-        logger.info('Running main loop')
+    def manage_display(self) -> None:
+        """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup."""
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
         self.draw_dashboard()
         while True:
+            text, bg_color = self.popup_queue.get()
+            self.draw_popup(text, bg_color)
+            self.draw_dashboard()
             time.sleep(frame_duration)
-            if self.handle_pipe_data():
-                self.draw_dashboard()
+
+    def start_display_thread(self) -> None:
+        """Creates and starts the thread that manages the display."""
+        display_thread = threading.Thread(target=self.manage_display)
+        display_thread.daemon = True # Exit display thread when main process exits
+        display_thread.start()
+
+    def run(self) -> None:
+        """Starts the main loop of the screen and handles incoming pipe data for the display thread."""
+        logger.info('Running main loop')
+        self.start_display_thread()
+        while True:
+            self.handle_pipe_data()
 
 
 if __name__ == "__main__":

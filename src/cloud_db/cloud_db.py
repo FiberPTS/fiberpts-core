@@ -12,8 +12,8 @@ from src.utils.utils import TIMESTAMP_FORMAT
 from src.utils.paths import PROJECT_DIR
 
 load_dotenv(f"{PROJECT_DIR}/.env")
-logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf")
-logger = logging.getLogger(os.path.basename(__file__))
+logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API."""
@@ -42,7 +42,7 @@ class CloudDBClient:
         # TODO: Implement data validation.
         # TODO: Implement handling for non-existent table.
         # TODO: Implement handling for non-existent device record.
-        logger.info('Insertting tap record to Supabase')
+        logger.info('Inserting tap record to Supabase')
         tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'device_id': tap.device_id
