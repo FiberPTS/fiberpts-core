@@ -1,78 +1,61 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SETUP_DIR="${SCRIPT_DIR}/../setup"
+CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly CWD
 
-function assert_root() {
-  # Root check
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "This script must be run as root. Please use sudo."
-    exit 1
-  fi
-}
+source "${CWD}/../globals.sh"
 
-function load_env_variables() {
-  set -a
-  source "${SCRIPT_DIR}/../../scripts/paths.sh" || return 1
-  source "${SCRIPT_DIR}/../../.env" || return 1
-  set +a
-}
+function connect_network() {
+  declare ssid pwd
 
-# TODO: Test if this works since may need to do a hard reset first
-function pull_latest_changes() {
-  echo "Pulling latest changes from ${GIT_BRANCH} branch..."
-  git -C "${PROJECT_PATH}" pull origin "${GIT_BRANCH}" || {
-    echo "Git pull failed" >&2
-    return 1
-  }
-}
-
-function run_scripts() {
-  local scripts=("${@:1}")
-
-  for script in "${scripts[@]}"; do
-    echo "Running script: ${script}"
-    if ! bash "${SETUP_DIR}/${script}" 2>&1; then
-      echo -e "\nError executing ${script}. Exiting." >&2
-      exit 1
-    fi
-    echo "Completed.\n"
-  done
-
-  echo -e "\nFinished update"
-}
-
-print_usage() {
-  echo "Usage: $0 [-b branch_name]"
-  exit 1
-}
-
-function parse_arguments() {
-  while getopts ":b:" opt; do
-    case ${opt} in
-      b)
-        GIT_BRANCH="${OPTARG}"
-        ;;
-      \?)
-        echo "Invalid option: -${OPTARG}" >&2
-        print_usage
-        ;;
-      :)
-        echo "Option -${OPTARG} requires an argument." >&2
-        print_usage
-        ;;
-    esac
-  done
+  read -rp "SSID: " ssid
+  read -rps "Password: " pwd
+  nmcli device wifi connect "${ssid}" password "${pwd}"
+  return $?
 }
 
 function main() {
-  local scripts=("post-reboot/set_user_permissions.sh" "pre-reboot/create_services.sh")
+  if wget -q --spider "https://google.com"; then
+    echo "${OK}${GREEN}Network connection successful.${RESET}"
+  else
+    echo "${WARNING}${YELLOW}Network connection failed.${RESET}"
 
-  assert_root
-  parse_arguments
-  load_env_variables
-  pull_latest_changes || exit 1
-  run_scripts "${scripts[@]}"
+    declare response
+    while true; do
+      read -rp "Do you wish to connect to WiFi? [Y/n] " response
+      case "${response}" in
+        [Yy])
+          break;
+          ;;
+        [Nn])
+          return 1;
+          ;;
+        *)
+          echo "Invalid input: Answer either 'y' (yes) or 'n' (no)."
+          echo
+          ;;
+      esac
+    done
+
+    declare -r max_attempts=3
+    for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+      echo "Attempt ${attempt} of ${max_attempts}:"
+      if connect_network; then
+        echo "${OK}${GREEN}Network connection successful.${RESET}"
+        break
+      fi
+      echo -e "Retrying...\n"
+    done
+
+    if ((attempt > max_attempts)); then
+      echo "${FAIL}${RED}Network connection failed: Max retry attempts reached.${RESET}"
+      return 1
+    fi
+  fi
+
+  echo -e "\nUpdating..."
+
+  return 0
 }
 
 main
