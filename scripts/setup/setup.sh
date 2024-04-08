@@ -71,6 +71,7 @@ function load_env_variables() {
   source "${project_path}/scripts/paths.sh"
   source "${project_path}/.env"
   set +a
+  source "${project_path}/config/config.sh" || return 1
 }
 
 #######################################
@@ -198,6 +199,19 @@ function setup_app_directory() {
 }
 
 #######################################
+# Sets the timezone of the device.
+# Globals:
+#   TIMEZONE - The timezone to set the device to.
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
+function set_timezone(){
+  timedatectl set-timezone "${TIMEZONE}"
+}
+
+#######################################
 # Displays usage information for the script.
 # Globals:
 #   None
@@ -212,7 +226,8 @@ function print_usage() {
 
 #######################################
 # Orchestrates the script's execution flow based on command-line arguments,
-# facilitating either pre-reboot or post-reboot setup.
+# facilitating either pre-reboot or post-reboot setup. Sets timezone during
+# pre-reboot setup. 
 # Globals:
 #   None
 # Arguments:
@@ -227,6 +242,7 @@ function main() {
   make_app_directories
   case "$1" in
     --pre)
+      set_timezone
       run_pre_reboot_tasks
       ;;
     --post)

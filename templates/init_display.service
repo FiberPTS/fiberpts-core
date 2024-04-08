@@ -1,8 +1,8 @@
 [Unit]
-Description=Initialize the device
+Description=Initialize the display
 
 [Service]
-ExecStart=bash "${PROJECT_PATH}"/scripts/run/init_display.sh
+ExecStart=/bin/bash "${PROJECT_PATH}/scripts/run/init_display.sh"
 
 [Install]
 WantedBy=multi-user.target

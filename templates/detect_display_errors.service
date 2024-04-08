@@ -2,9 +2,8 @@
 Description=Detects display errors
 
 [Service]
-ExecStart=bash "${PROJECT_PATH}"/scripts/run/detect_display_errors.sh
+ExecStart=/bin/bash "${PROJECT_PATH}/scripts/run/detect_display_errors.sh"
 PIDFile=/var/run/detect_display_errors.pid
-ExecStop=/bin/kill -15 \${MAINPID}
 TimeoutSec=5
 Restart=always
 
