@@ -16,6 +16,7 @@ POPUP_FONT_COLOR = 'white'
 POPUP_ERROR_BG_COLOR = 'red'
 POPUP_WARNING_BG_COLOR = 'goldenrod'
 POPUP_DURATION = 1.5
+POPUP_LIMIT = 4
 
 # Tap event pop-up configurations
 TAP_EVENT_BG_COLOR = 'green'
