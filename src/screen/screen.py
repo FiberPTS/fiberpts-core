@@ -149,7 +149,7 @@ class Screen:
                 write_device_state(self.device_state, self.device_state_path)
                 popup_item = (self.popup_attributes.message_attributes.tap_event_message,
                               self.popup_attributes.event_attributes.tap_event_bg_color)
-            elif status == TapStatus.BAD:
+            elif status == TapStatus.BAD and self.popup_queue.qsize() < POPUP_LIMIT:
                 popup_item = (self.popup_attributes.message_attributes.popup_warning_message,
                               self.popup_attributes.event_attributes.popup_warning_bg_color)
             if popup_item:
