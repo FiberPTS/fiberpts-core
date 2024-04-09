@@ -15,6 +15,23 @@ source "${CWD}"/../paths.sh || return 1
 set -a
 
 #######################################
+# Ensures the script is run with root privileges, exiting with an error
+# if it's not.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   Error message to stdout and exits with status 1 if not run as root.
+#######################################
+function assert_root() {
+  if [ "$(id -u)" -ne 0 ]; then
+    echo -e "${WARNING} ${YELLOW}This script must be run as root. Please use sudo.${RESET}"
+    exit 1
+  fi
+}
+
+#######################################
 # Connects to a WiFi network using NetworkManager CLI (nmcli).
 # Globals:
 #   None
@@ -181,6 +198,8 @@ function rollback_changes() {
 #   file updates, and system status checks.
 #######################################
 function main() {
+  assert_root
+
   if wget -q --spider "https://google.com"; then
     echo "${OK} ${GREEN}Network connection successful.${RESET}"
   else
