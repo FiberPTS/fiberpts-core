@@ -3,7 +3,10 @@
 CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly CWD
 
-source "${CWD}/../globals.sh"
+set +a
+source "${CWD}"/../globals.sh || return 1
+source "${CWD}"/../paths.sh || return 1
+set -a
 
 function connect_network() {
   declare ssid pwd
@@ -19,6 +22,42 @@ function pull_latest_changes() {
     return 1
   fi
   
+  return 0
+}
+
+function update_services() {
+  echo "Updating service files..."
+
+  for template in "${CWD}"/../../templates/*.service; do
+    declare -r servname=$(basename "${template}")
+    declare -r oldserv="${SYSTEM_DIR}/${servname}"
+    declare -r newserv="${CWD}/${servname}.tmp"
+    
+    envsubst < "${template}" > "${newserv}"
+    if ! diff "${newserv}" "${oldserv}"; then
+      if cp "${newserv}" "${oldserv}"; then
+        echo "'${servname}' updated"
+      fi
+    fi
+    rm "${newserv}"
+  done
+
+  return $(restart_services)
+}
+
+function restart_services() {
+  # Apply changes
+  if ! systemctl daemon-reload; then
+    return 1
+  fi
+
+  for template in "${CWD}"/../../templates/*.service; do
+    declare -r service="${SYSTEM_DIR}/$(basename "${template}")"
+    if ! systemctl restart "${service}"; then
+      return 2
+    fi
+  done
+
   return 0
 }
 
@@ -73,8 +112,17 @@ function main() {
     echo "${FAIL}${RED}Unable to pull changes from '${branch}'${RESET}"
     return 1
   fi
-  echo "${OK}${GREEN}Pulled all changes from '${branch}'.${RESET}"
-  echo
+  echo -e "${OK}${GREEN}Pulled all changes from '${branch}'.${RESET}\n"
+
+  update_services
+  if [ $? -eq 1 ]; then
+    echo "${FAIL} ${RED}Unable to reload the daemon.${RESET}"
+    exit 1
+  else if [ $? -eq 2 ]; then
+    echo "${FAIL} ${RED}Unable to restart the services.${RESET}"
+    exit 1
+  fi
+  echo -e "${OK} ${GREEN}Updated all service files${RESET}\n"
 
   return 0
 }
