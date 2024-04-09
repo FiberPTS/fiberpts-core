@@ -18,7 +18,10 @@ function connect_network() {
 }
 
 function pull_latest_changes() {
+  echo "Pulling latest changes from $1..."
+
   if ! git pull origin $1; then
+    echo "${FAIL}${RED}Unable to pull changes from '${branch}'${RESET}"
     return 1
   fi
   
@@ -48,12 +51,15 @@ function update_services() {
 function restart_services() {
   # Apply changes
   if ! systemctl daemon-reload; then
+    echo "${FAIL} ${RED}Unable to reload the daemon.${RESET}"
     return 1
   fi
 
   for template in "${CWD}"/../../templates/*.service; do
-    declare -r service="${SYSTEM_DIR}/$(basename "${template}")"
+    declare -r servname=$(basename "${template}")
+    declare -r service="${SYSTEM_DIR}/${servname}"
     if ! systemctl restart "${service}"; then
+      echo "${FAIL} ${RED}Unable to restart '${servname}'.${RESET}"
       return 2
     fi
   done
@@ -107,21 +113,10 @@ function main() {
     branch="main"
   fi
 
-  echo "Pulling latest changes from ${branch}..."
-  if ! pull_latest_changes "${branch}"; then
-    echo "${FAIL}${RED}Unable to pull changes from '${branch}'${RESET}"
-    return 1
-  fi
+  pull_latest_changes "${branch}" || return 1
   echo -e "${OK}${GREEN}Pulled all changes from '${branch}'.${RESET}\n"
 
-  update_services
-  if [ $? -eq 1 ]; then
-    echo "${FAIL} ${RED}Unable to reload the daemon.${RESET}"
-    exit 1
-  else if [ $? -eq 2 ]; then
-    echo "${FAIL} ${RED}Unable to restart the services.${RESET}"
-    exit 1
-  fi
+  update_services || return $?  # two kinds of errors can be reported
   echo -e "${OK} ${GREEN}Updated all service files${RESET}\n"
 
   return 0
