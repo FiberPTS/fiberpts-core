@@ -144,6 +144,7 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
     except json.JSONDecodeError:
         logger.error('JSON Decode Error occurred reading from device state')
         raise json.JSONDecodeError # TODO: Determine error message format
+    
     saved_timestamp = device_state['saved_timestamp']
     current_time = time.time()
 
@@ -167,7 +168,15 @@ def write_device_state(device_state: Dict[str, Any],
         IOError: If there is an error writing to the file.
     """
     logger.info('Writing device state')
+
+    saved_timestamp = device_state['saved_timestamp']
+    current_time = time.time()
+
+    if is_at_least_next_day(saved_timestamp, current_time):
+        device_state['unit_count'] = 0
+
     device_state['saved_timestamp'] = time.time()
+    
     try:
         with open(path_to_device_state, 'w') as file:
             json.dump(device_state, file, indent=4)
