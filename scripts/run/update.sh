@@ -14,6 +14,14 @@ function connect_network() {
   return $?
 }
 
+function pull_latest_changes() {
+  if ! git pull origin $1; then
+    return 1
+  fi
+  
+  return 0
+}
+
 function main() {
   if wget -q --spider "https://google.com"; then
     echo "${OK}${GREEN}Network connection successful.${RESET}"
@@ -52,8 +60,21 @@ function main() {
       return 1
     fi
   fi
+  echo
 
-  echo -e "\nUpdating..."
+  declare branch;
+  read -rp "Specify target branch (default: main): " branch
+  if [ -z "${branch}" ]; then
+    branch="main"
+  fi
+
+  echo "Pulling latest changes from ${branch}..."
+  if ! pull_latest_changes "${branch}"; then
+    echo "${FAIL}${RED}Unable to pull changes from '${branch}'${RESET}"
+    return 1
+  fi
+  echo "${OK}${GREEN}Pulled all changes from '${branch}'.${RESET}"
+  echo
 
   return 0
 }
