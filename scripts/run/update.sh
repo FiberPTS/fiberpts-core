@@ -103,7 +103,6 @@ function restart_services() {
 
   for template in "${CWD}"/../../templates/*.service; do
     declare -r servname=$(basename "${template}")
-    declare -r service="${SYSTEM_DIR}/${servname}"
     if ! systemctl restart "${servname}"; then
       echo "${FAIL} ${RED}Unable to restart '${servname}'.${RESET}"
       return 2
