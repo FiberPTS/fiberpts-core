@@ -12,7 +12,7 @@ function connect_network() {
   declare ssid pwd
 
   read -rp "SSID: " ssid
-  read -rps "Password: " pwd
+  read -rsp "Password: " pwd
   nmcli device wifi connect "${ssid}" password "${pwd}"
   return $?
 }
@@ -20,8 +20,8 @@ function connect_network() {
 function pull_latest_changes() {
   echo "Pulling latest changes from $1..."
 
-  if ! git pull origin $1; then
-    echo "${FAIL}${RED}Unable to pull changes from '${branch}'${RESET}"
+  if ! git pull origin "$1"; then
+    echo "${FAIL}${RED}Unable to pull changes from '$1'${RESET}"
     return 1
   fi
   
@@ -45,7 +45,7 @@ function update_services() {
     rm "${newserv}"
   done
 
-  return $(restart_services)
+  return "$(restart_services)"
 }
 
 function restart_services() {
@@ -58,13 +58,45 @@ function restart_services() {
   for template in "${CWD}"/../../templates/*.service; do
     declare -r servname=$(basename "${template}")
     declare -r service="${SYSTEM_DIR}/${servname}"
-    if ! systemctl restart "${service}"; then
+    if ! systemctl restart "${servname}"; then
       echo "${FAIL} ${RED}Unable to restart '${servname}'.${RESET}"
       return 2
     fi
   done
 
   return 0
+}
+
+function check_system_status() {
+  echo "Checking system status..."
+
+  for template in "${CWD}"/../../templates/*.service; do
+    declare -r servname=$(basename "${template}")
+    
+    status=$(systemctl is-active "${servname}")
+    if [ "${status}" != "active" ]; then
+      echo "${WARNING} ${YELLOW}'${servname}' is not active.${RESET}"
+      
+      echo "Attempting to start..."
+      systemctl start "${servname}"
+
+      if ! systemctl is-active --quiet "${servname}"; then
+        echo "${FAIL} ${RED}Unable to start '${servname}'${RESET}"
+        rollback_changes || echo "${CRITICAL} ${RED}Unable to rollback changes!${RESET}" 
+        return 1
+      fi
+    fi
+    echo "${OK} '${servname}' is active."
+  done
+
+  return 0
+}
+
+function rollback_changes() {
+  echo "${WARNING} ${YELLOW}Rolling back changes...${RESET}"
+
+  git reset --hard HEAD~1
+  return "$(update_services)"
 }
 
 function main() {
@@ -116,8 +148,11 @@ function main() {
   pull_latest_changes "${branch}" || return 1
   echo -e "${OK}${GREEN}Pulled all changes from '${branch}'.${RESET}\n"
 
-  update_services || return $?  # two kinds of errors can be reported
+  update_services || return  # two kinds of errors can be reported through $?
   echo -e "${OK} ${GREEN}Updated all service files${RESET}\n"
+
+  check_system_status || return 1
+  echo -e "${BOLD}${OK} ${GREEN}Successful update. FiberPTS is up and running.${RESET}"
 
   return 0
 }
