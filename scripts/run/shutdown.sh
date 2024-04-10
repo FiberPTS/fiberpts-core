@@ -55,10 +55,10 @@ function check_time() {
     local target_time="$1"
     local current_time=$(date +"%H:%M:%S")
     
-    local target_secs=$(date -d "$target_time" +%s)
-    local current_secs=$(date -d "$current_time" +%s)
+    local target_secs=$(date -d "${target_time}" +%s)
+    local current_secs=$(date -d "${current_time}" +%s)
     
-    if [ "$current_secs" -ge "$target_secs" ]; then
+    if [ "${current_secs}" -ge "${target_secs}" ]; then
         return 0
     else
         return 1
@@ -96,7 +96,7 @@ function main() {
     load_env_variables
     while true; do
         sleep 60
-        if check_time "$SHUTDOWN_TIME"; then
+        if check_time "${SHUTDOWN_TIME}"; then
             echo "Shutdown Initiated"
             if cleanup; then
                 shutdown now -h
