@@ -61,7 +61,7 @@ function connect_network() {
 function pull_latest_changes() {
   echo "Pulling latest changes from $1..."
 
-  if ! git pull origin "$1"; then
+  if ! git -C "${PROJECT_PATH}" pull origin "$1"; then
     echo "${FAIL}${RED}Unable to pull changes from '$1'${RESET}"
     return 1
   fi
