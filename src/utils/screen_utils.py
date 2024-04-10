@@ -121,8 +121,25 @@ def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
     return to_day_start > from_day_start
 
 
+def check_and_reset_device_state(device_state: Dict[str, Any], path_to_device_state: str) -> None:
+    """Initializes device state if it is empty.
+    Otherwise, resets the unit count if the time since the last save is at least the next day.
+
+    Args:
+        device_state (Dict[str, Any]): The device state to reset.
+        path_to_device_state (str): Path to the JSON file containing the device state.
+    """
+    saved_timestamp = device_state.get('saved_timestamp') if device_state else None
+    current_time = time.time()
+
+    if not saved_timestamp or is_at_least_next_day(saved_timestamp, current_time):
+        device_state['unit_count'] = 0
+        write_device_state(device_state, path_to_device_state)
+
+    return device_state
+
 def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
-    """Read the device state from a JSON file. Reset the unit count if the saved timestamp is from the previous day.
+    """Read the device state from a JSON file.
 
     Args:
         path_to_device_state (str): Path to the JSON file containing the device state.
@@ -144,15 +161,8 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
     except json.JSONDecodeError:
         logger.error('JSON Decode Error occurred reading from device state')
         raise json.JSONDecodeError # TODO: Determine error message format
-    
-    saved_timestamp = device_state.get('saved_timestamp') if device_state else None
-    current_time = time.time()
 
-    if not saved_timestamp or is_at_least_next_day(saved_timestamp, current_time):
-        device_state['unit_count'] = 0
-        write_device_state(device_state, path_to_device_state)
-
-    return device_state
+    return check_and_reset_device_state(device_state, path_to_device_state)
 
 
 def write_device_state(device_state: Dict[str, Any],
