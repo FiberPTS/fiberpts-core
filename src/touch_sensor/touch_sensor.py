@@ -19,29 +19,20 @@ class TouchSensor:
     """Represents a touch sensor.
 
     Attributes:
-        debounce_time: Minimum time interval (in seconds) to consider consecutive taps as distinct.
-        screen_pipe: File path to the FIFO used for IPC with the screen module.
         cloud_db: An instance of CloudDBClient for database interactions.
         last_tap: The last recorded tap.
     """
 
-    def __init__(self,
-                 debounce_time: int = DEBOUNCE_TIME,
-                 line_offset: int = TOUCH_SENSOR_LINE_OFFSET,
-                 chip: int = TOUCH_SENSOR_CHIP,
-                 screen_pipe: str = TOUCH_SENSOR_TO_SCREEN_PIPE) -> None:
-        """
-        Initializes the TouchSensor with specified debounce time and pipe path.
-
+    def __init__(self) -> None:
+        """Initializes the TouchSensor with specified debounce time and pipe path.
+        
         Args:
-            debounce_time: An integer specifying the debounce time in seconds.
-            screen_pipe: File path to the screen FIFO.
+            None
+
+        Returns:
+            None
         """
-        self.debounce_time = debounce_time
-        self.line_offset = line_offset
-        self.chip_path = f"/dev/gpiochip{chip}"
         self.device_id = get_device_id()
-        self.screen_pipe = screen_pipe
         self.cloud_db = CloudDBClient()
         self.last_tap = Tap()
 
@@ -61,7 +52,7 @@ class TouchSensor:
         timestamp = time.time()
         tap_status = TapStatus.BAD
 
-        if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
+        if (timestamp - self.last_tap.timestamp) >= DEBOUNCE_TIME:
             tap_status = TapStatus.GOOD
 
         tap = Tap(device_id=self.device_id, timestamp=timestamp, status=tap_status)
@@ -95,7 +86,7 @@ class TouchSensor:
         tap_data = dict(tap)
 
         try:
-            with open(self.screen_pipe, 'a') as pipeout:
+            with open(TOUCH_SENSOR_TO_SCREEN_PIPE, 'a') as pipeout:
                 json.dump(tap_data, pipeout)
                 pipeout.write('\n')
                 pipeout.flush()
@@ -121,16 +112,13 @@ class TouchSensor:
         """
         logger.info('Running main loop')
         with gpiod.request_lines(
-                self.chip_path,
+                f"/dev/gpiochip{TOUCH_SENSOR_CHIP}",
                 consumer="get-line-value",
-                config={
-                    self.line_offset:
-                        gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)
-                },
+                config={TOUCH_SENSOR_LINE_OFFSET: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
             released = True
             while True:
-                value = request.get_value(self.line_offset)
+                value = request.get_value(TOUCH_SENSOR_LINE_OFFSET)
                 if released:
                     if value == gpiod.line.Value.ACTIVE:
                         logger.info('Touch Sensor Tap Registered')

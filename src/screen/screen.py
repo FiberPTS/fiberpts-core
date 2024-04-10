@@ -38,8 +38,6 @@ class Screen:
         display_attributes (DisplayAttributes): Attributes related to display properties like framebuffer path, height, width, and frame rate.
         dashboard_attributes (DashboardAttributes): Attributes related to dashboard appearance such as font family, size, color, and background color.
         popup_attributes (PopupAttributes): Attributes for configuring popups, including fonts, colors, and duration.
-        touch_sensor_pipe (str): Path to the named pipe for reading touch sensor data.
-        device_state_path (str): Path to the file where the device state is stored.
         popup_queue (Queue): A queue for all popup data.
         device_state (dict): State of the device as read from the device state file.
         image: Current image being displayed on the screen.
@@ -58,9 +56,6 @@ class Screen:
         self.display_attributes = DisplayAttributes()
         self.dashboard_attributes = DashboardAttributes()
         self.popup_attributes = PopupAttributes()
-        # File paths
-        self.touch_sensor_pipe = TOUCH_SENSOR_TO_SCREEN_PIPE
-        self.device_state_path = DEVICE_STATE_PATH
         # Initialize screen
         self.popup_queue = Queue()
         self.device_state = read_device_state(DEVICE_STATE_PATH)
@@ -170,7 +165,6 @@ class Screen:
         time.sleep(self.popup_attributes.popup_duration)
 
     def handle_pipe_data(self) -> None:
-        tap_data = read_pipe(self.touch_sensor_pipe)
         """Handle data received from the touch sensor pipe. Updates device state and queues popups based on the received data.
         
         Args:
@@ -179,6 +173,7 @@ class Screen:
         Returns:
             None
         """
+        tap_data = read_pipe(TOUCH_SENSOR_TO_SCREEN_PIPE)
         if tap_data:
             logger.info('Tap received by screen')
             # TODO: We may decide to store this data from a stopwatch time.
@@ -187,7 +182,7 @@ class Screen:
             status = TapStatus[tap_data['status']]
             if status == TapStatus.GOOD:
                 self.device_state['unit_count'] += 1
-                write_device_state(self.device_state, self.device_state_path)
+                write_device_state(self.device_state, DEVICE_STATE_PATH)
                 popup_item = (self.popup_attributes.message_attributes.tap_event_message,
                               self.popup_attributes.event_attributes.tap_event_bg_color)
             elif status == TapStatus.BAD:
