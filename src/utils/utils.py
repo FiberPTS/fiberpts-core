@@ -97,18 +97,39 @@ class SelfReleasingLock:
 
 
 class TapStatus(Enum):
-    """Represents the status of a tap."""
+    """Represents the status of a tap.
+    
+    Attributes:
+        GOOD: A tap that is valid.
+        BAD: A tap that is invalid.
+    """
     GOOD = 0
     BAD = 1
 
-    def __repr__(self):
-        return f'{self.value}'
+    def __repr__(self) -> str:
+        """Returns the string representation of the TapStatus object.
+        
+        Args:
+            None
+        
+        Returns:
+            A string representing the TapStatus object.
+        """
+        return f"{self.value}"
 
-    def to_json(self):
+    def to_json(self) -> str:
+        """Returns the JSON representation of the TapStatus object.
+
+        Args:
+            None
+
+        Returns:
+            A string representing the JSON representation of the TapStatus object.
+        """
         return self.value
 
 
-def get_device_id() -> str:
+def get_device_id() -> Optional[str]:
     """Retrieves the device's hostname and uses it as a device ID.
 
     Returns:
@@ -122,3 +143,4 @@ def get_device_id() -> str:
         return process.stdout.strip()
     except subprocess.CalledProcessError as e:
         logger.error(f"An error occurred while fetching the hostname: {e}")
+        return None

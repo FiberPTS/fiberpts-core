@@ -27,8 +27,12 @@ SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
+
 class Screen:
-    """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.
+    """This class handles drawing text, images, and popups to a screen. 
+    
+    Additionally, it handles functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, 
+    reading touch sensor data through a named pipe, and updating the display based on the incoming data.
 
     Attributes:
         display_attributes (DisplayAttributes): Attributes related to display properties like framebuffer path, height, width, and frame rate.
@@ -42,7 +46,14 @@ class Screen:
     """
 
     def __init__(self) -> None:
-        """Initialize the Screen instance with the specified display properties, font settings, and file paths."""
+        """Initialize the Screen instance with the specified display properties and settings.
+        
+        Args:
+            None
+
+        Returns:
+            None
+        """
         # Configurations
         self.display_attributes = DisplayAttributes()
         self.dashboard_attributes = DashboardAttributes()
@@ -61,12 +72,22 @@ class Screen:
 
         Args:
             bg_color (str): Background color for the image.
+
+        Returns:
+            None
         """
         self.image = Image.new('RGB', (self.display_attributes.display_height, self.display_attributes.display_width),
                                bg_color)
 
     def draw_image(self) -> None:
-        """Draw the current image to the display (assumes the screen needs 90 degree rotation)."""
+        """Draw the current image to the display (assumes the screen needs 90 degree rotation).
+        
+        Args:
+            None
+        
+        Returns:
+            None
+        """
         if self.image:
             self.image = self.image.rotate(90, expand=True)
             write_image_to_fb(self.image, self.display_attributes.display_fb_path,
@@ -88,6 +109,9 @@ class Screen:
             font_size (int): The font size of the text.
             font_color (str): The color of the text.
             centered (bool): If True, centers the text at the given position.
+        
+        Returns:
+            None
         """
         if self.image:
             draw = ImageDraw.Draw(self.image)
@@ -100,7 +124,14 @@ class Screen:
             draw.text(position, text, font=font, fill=font_color)
 
     def draw_dashboard(self) -> None:
-        """Draw the dashboard interface on the screen."""
+        """Draw the dashboard interface on the screen.
+        
+        Args:
+            None
+
+        Returns:
+            None
+        """
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
         image_center = get_image_center(self.image)
         date_str = time.strftime(SAVED_TIMESTAMP_FORMAT, time.localtime(time.time()))
@@ -123,6 +154,9 @@ class Screen:
         Args:
             text (str): The message text to display in the popup.
             bg_color (str): The background color for the popup.
+        
+        Returns:
+            None
         """
         self.create_image(bg_color)
         image_center = get_image_center(self.image)
@@ -136,8 +170,15 @@ class Screen:
         time.sleep(self.popup_attributes.popup_duration)
 
     def handle_pipe_data(self) -> None:
-        """Handle data received from the touch sensor pipe. Updates device state and queues popups based on the received data."""
         tap_data = read_pipe(self.touch_sensor_pipe)
+        """Handle data received from the touch sensor pipe. Updates device state and queues popups based on the received data.
+        
+        Args:
+            None
+
+        Returns:
+            None
+        """
         if tap_data:
             logger.info('Tap received by screen')
             # TODO: We may decide to store this data from a stopwatch time.
@@ -156,7 +197,14 @@ class Screen:
                 self.popup_queue.put(popup_item)
 
     def manage_display(self) -> None:
-        """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup."""
+        """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
         self.draw_dashboard()
         while True:
@@ -166,13 +214,27 @@ class Screen:
             time.sleep(frame_duration)
 
     def start_display_thread(self) -> None:
-        """Creates and starts the thread that manages the display."""
+        """Creates and starts the thread that manages the display.
+        
+        Args:
+            None
+        
+        Returns:
+            None
+        """
         display_thread = threading.Thread(target=self.manage_display)
         display_thread.daemon = True # Exit display thread when main process exits
         display_thread.start()
 
     def run(self) -> None:
-        """Starts the main loop of the screen and handles incoming pipe data for the display thread."""
+        """Starts the main loop of the screen and handles incoming pipe data for the display thread.
+        
+        Args:
+            None
+        
+        Returns:
+            None
+        """
         logger.info('Running main loop')
         self.start_display_thread()
         while True:

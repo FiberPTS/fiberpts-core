@@ -16,14 +16,24 @@ load_dotenv(f"{PROJECT_DIR}/.env")
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
+
 class CloudDBClient:
-    """Client for interacting with a cloud database using the Supabase API."""
+    """Client for interacting with a cloud database using the Supabase API.
+    
+    Attributes:
+        url: A string representing the URL of the database.
+        key: A string representing the API key for the database.
+        client: Supabase Client instance.
+    """
 
     def __init__(self):
         """Initializes the client with database credentials.
 
-        Attributes:
-            client: Supabase Client instance.
+        Args:
+            None
+        
+        Returns:
+            None
         """
         url = os.getenv('DATABASE_URL')
         key = os.getenv('DATABASE_API_KEY')
@@ -68,18 +78,15 @@ class CloudDBClient:
         Returns:
             An APIResponse object representing the result of the database operation.
         """
-        logger.info('Insertting device record to Supabase')  # TODO: Correctly print response (need to test)
+        logger.info('Inserting device record to Supabase')  # TODO: Correctly print response (need to test)
         # TODO: Check if device_id already exists
         # TODO: How can I check whether the device id was created based on the response
-        device_record = {
-            'device_id': device_id,
-            'name': ''
-        }
+        device_record = {'device_id': device_id, 'name': ''}
         response = self.client.table('devices').insert(device_record).execute()
         logger.info(response)  # TODO: Correctly print response (need to test)
         return response
 
-    def get_new_device_id(self):
+    def get_new_device_id(self) -> str:
         """Generates a new, unique device ID for a new device.
 
         The function retrieves the highest current device ID from the 'devices'
@@ -87,6 +94,9 @@ class CloudDBClient:
         structure. If no device IDs are present in the table, it starts
         numbering from 'fpts-001'.
 
+        Args:
+            None
+    
         Returns:
             A string representing the newly generated device ID.
         """
@@ -95,7 +105,7 @@ class CloudDBClient:
             .order('device_id', desc=True) \
             .limit(1) \
             .execute()
-
+        # TODO: Find a better way to handle this since assuming the first record is unallocated is risky
         device_id = ''
         if not response:
             device_id = 'fpts-001'

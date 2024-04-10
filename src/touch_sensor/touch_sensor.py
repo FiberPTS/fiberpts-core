@@ -51,6 +51,9 @@ class TouchSensor:
         The method records the tap event, validates it based on the debounce time,
         sends valid tap data to both the scren FIFO and the cloud database,
         and updates the last tap event.
+        
+        Args:
+            None
 
         Returns:
             A boolean indicating whether the tap was valid (True) or not (False).
@@ -61,14 +64,10 @@ class TouchSensor:
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD
 
-        tap = Tap(device_id=self.device_id,
-                  timestamp=timestamp,
-                  status=tap_status)
-        logger.info(
-            f"Device Id: {tap.device_id}, \
+        tap = Tap(device_id=self.device_id, timestamp=timestamp, status=tap_status)
+        logger.info(f"Device Id: {tap.device_id}, \
               Timestamp: {tap.timestamp}, \
-              Is Valid: {tap.status == TapStatus.GOOD}"
-        )
+              Is Valid: {tap.status == TapStatus.GOOD}")
 
         self.pipe_tap_data(tap)
 
@@ -86,6 +85,9 @@ class TouchSensor:
         Args:
             tap: A Tap instance containing the tap data.
         
+        Returns:
+            None
+
         Raises:
             FileNotFoundError: If the pipeline path does not exist.
         """
@@ -110,6 +112,12 @@ class TouchSensor:
 
         Continuously checks a specific GPIO line for voltage changes. If a change is detected,
         interprets it as a tap event and triggers the tap handling process.
+        
+        Args:
+            None
+
+        Returns:
+            None
         """
         logger.info('Running main loop')
         with gpiod.request_lines(

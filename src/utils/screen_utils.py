@@ -144,7 +144,7 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
     except json.JSONDecodeError:
         logger.error('JSON Decode Error occurred reading from device state')
         raise json.JSONDecodeError # TODO: Determine error message format
-    
+
     saved_timestamp = device_state.get('saved_timestamp') if device_state else None
     current_time = time.time()
 
@@ -155,14 +155,16 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
     return device_state
 
 
-def write_device_state(device_state: Dict[str, Any],
-                       path_to_device_state: str) -> None:
+def write_device_state(device_state: Dict[str, Any], path_to_device_state: str) -> None:
     """Write the updated device state to a JSON file.
 
     Args:
         device_state (Dict[str, Any]): The device state to write.
         path_to_device_state (str): Path to the JSON file where the device state will be saved.
     
+    Returns:
+        None
+
     Raises:
         FileNotFoundError: If the specified JSON file path does not exist.
         IOError: If there is an error writing to the file.
@@ -257,7 +259,6 @@ def write_image_to_fb(image: Image, path_to_fb: str,
         IOError: If there is an error writing to the framebuffer.
     """
     try:
-        # TODO: Check if this lock is necessary
         with SelfReleasingLock(path_to_fb_lock):
             raw_data = image_to_raw_rgb565(image)
             raw_bytes = raw_data.tobytes()
