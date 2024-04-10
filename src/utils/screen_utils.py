@@ -159,7 +159,7 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
         logger.error('Device state file not found')
         raise FileNotFoundError
     except json.JSONDecodeError:
-        logger.error('JSON Decode Error occurred reading from device state')
+        logger.error('Unable to parse device state: Invalid JSON format')
         raise json.JSONDecodeError
 
     return check_and_reset_device_state(device_state, path_to_device_state)
