@@ -27,16 +27,17 @@ static void stop_polling(int sig)
     }
 }
 
-void uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
+bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
     // Ensure input pointers are not NULL
     if (!uid || !uid_str) {
-        return;
+        return false;
     }
 
     for (size_t i = 0; i < uid_len; i++) {
         sprintf(uid_str + 2 * i, "%02X", uid[i]);
     }
     uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
+    return true;
 }
 
 void poll(char *uid_str, size_t buffer_size) {
