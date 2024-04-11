@@ -45,17 +45,20 @@ function load_env_variables() {
 # Globals:
 #   None
 # Arguments:
-#   timestamp - A timestamp in the form "hh:mm:ss" to be checked against the current time.
+#   $1 - A timestamp in the form "hh:mm:ss" to be checked against the current time.
 # Outputs:
 #   None
 # Returns:
 #   1 when time has not passed, and 0 otherwise.
 #######################################
 function check_time() {
-    local timestamp="$1"
-    readonly timestamp
-    local now=$(date +"%T")
-    if [[ "$now" > "$timestamp" ]] || [[ "$timestamp" == "$now" ]]; then
+    local target_time="$1"
+    local current_time=$(date +"%H:%M:%S")
+    
+    local target_secs=$(date -d "${target_time}" +%s)
+    local current_secs=$(date -d "${current_time}" +%s)
+    
+    if [ "${current_secs}" -ge "${target_secs}" ]; then
         return 0
     else
         return 1
@@ -93,7 +96,7 @@ function main() {
     load_env_variables
     while true; do
         sleep 60
-        if check_time "$SHUTDOWN_TIME"; then
+        if check_time "${SHUTDOWN_TIME}"; then
             echo "Shutdown Initiated"
             if cleanup; then
                 shutdown now -h
