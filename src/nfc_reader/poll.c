@@ -39,7 +39,7 @@ void uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
     uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
 }
 
-char[] poll(){
+char* poll(){
     signal(SIGINT, stop_polling);
 
     // Define poll number and period for NFC device polling
