@@ -87,7 +87,7 @@ uint8_t poll(){
     {
         nfc_close(pnd);
         nfc_exit(context);
-        return nt.nti.nai.abtUid;
+        return *nt.nti.nai.abtUid;
     }
     else
     {
