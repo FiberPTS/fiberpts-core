@@ -39,7 +39,7 @@ void uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
     uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
 }
 
-char* poll(){
+void poll(char *uid_str, size_t buffer_size) {
     signal(SIGINT, stop_polling);
 
     // Define poll number and period for NFC device polling
@@ -91,7 +91,7 @@ char* poll(){
         nfc_perror(pnd, "nfc_initiator_poll_target");
         nfc_close(pnd);
         nfc_exit(context);
-        return NULL;
+        exit(EXIT_FAILURE);
     }
 
     // Handle polling result
@@ -99,10 +99,9 @@ char* poll(){
     {
         nfc_close(pnd);
         nfc_exit(context);
-        char uid_str[2 * nt.nti.nai.szUidLen + 1];
-        if (uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
+        if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
         {
-            return &uid_str;
+            exit(EXIT_FAILURE);
         }
     }
     else
@@ -121,7 +120,6 @@ char* poll(){
     // Cleanup
     nfc_close(pnd);
     nfc_exit(context);
-    return NULL;
 }
 
 int main(int argc, const char *argv[])
