@@ -44,8 +44,8 @@ void poll(char *uid_str, size_t buffer_size) {
     signal(SIGINT, stop_polling);
 
     // Define poll number and period for NFC device polling
-    const uint8_t uiPollNr = 20;
-    const uint8_t uiPeriod = 2;
+    const uint8_t uiPollNr = 2;
+    const uint8_t uiPeriod = 1;
     // Define modulation settings for polling
     const nfc_modulation nmModulations[5] = {
         {.nmt = NMT_ISO14443A, .nbr = NBR_106},
@@ -85,29 +85,16 @@ void poll(char *uid_str, size_t buffer_size) {
         exit(EXIT_FAILURE);
     }
 
-    // TODO: Make this a loop to poll indefinitely, so use passive polling
     // Start polling for NFC targets
-    if ((res = nfc_initiator_poll_target(pnd, nmModulations, szModulations, uiPollNr, uiPeriod, &nt)) < 0)
+    while ((res = nfc_initiator_poll_target(pnd, nmModulations, szModulations, uiPollNr, uiPeriod, &nt)) < 0)
     {
-        nfc_perror(pnd, "nfc_initiator_poll_target");
+    }
+    
+    if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
+    {
         nfc_close(pnd);
         nfc_exit(context);
         exit(EXIT_FAILURE);
-    }
-
-    // Handle polling result
-    if (res > 0)
-    {
-        if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
-        {
-            nfc_close(pnd);
-            nfc_exit(context);
-            exit(EXIT_FAILURE);
-        }
-    }
-    else
-    {
-        printf("No target found.\n");
     }
 
     // Wait for card removal
