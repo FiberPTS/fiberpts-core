@@ -98,10 +98,10 @@ void poll(char *uid_str, size_t buffer_size) {
     // Handle polling result
     if (res > 0)
     {
-        nfc_close(pnd);
-        nfc_exit(context);
         if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
         {
+            nfc_close(pnd);
+            nfc_exit(context);
             exit(EXIT_FAILURE);
         }
     }
