@@ -27,7 +27,19 @@ static void stop_polling(int sig)
     }
 }
 
-uint8_t poll(){
+void uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
+    // Ensure input pointers are not NULL
+    if (!uid || !uid_str) {
+        return;
+    }
+
+    for (size_t i = 0; i < uid_len; i++) {
+        sprintf(uid_str + 2 * i, "%02X", uid[i]);
+    }
+    uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
+}
+
+char[] poll(){
     signal(SIGINT, stop_polling);
 
     // Define poll number and period for NFC device polling
@@ -87,7 +99,12 @@ uint8_t poll(){
     {
         nfc_close(pnd);
         nfc_exit(context);
-        return *nt.nti.nai.abtUid;
+        char uid_str[2 * nt.nti.nai.szUidLen + 1];
+        if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
+        {
+            return 1;
+        }
+        return uid_str;
     }
     else
     {
