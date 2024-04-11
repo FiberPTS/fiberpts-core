@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-I/opt/libnfc-1.8.0/include -I/opt/libnfc-1.8.0
 LDFLAGS=-lnfc
-SRC_DIR=src/nfc_reader
+SRC_DIR=/opt/FiberPTS/src/nfc_reader
 UTILS_DIR=/opt/libnfc-1.8.0/utils
 EXEC=nfc_reader
 
