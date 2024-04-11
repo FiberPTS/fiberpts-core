@@ -91,7 +91,7 @@ char* poll(){
         nfc_perror(pnd, "nfc_initiator_poll_target");
         nfc_close(pnd);
         nfc_exit(context);
-        return 1;
+        return NULL;
     }
 
     // Handle polling result
@@ -100,11 +100,10 @@ char* poll(){
         nfc_close(pnd);
         nfc_exit(context);
         char uid_str[2 * nt.nti.nai.szUidLen + 1];
-        if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
+        if (uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
         {
-            return 1;
+            return &uid_str;
         }
-        return uid_str;
     }
     else
     {
@@ -122,7 +121,7 @@ char* poll(){
     // Cleanup
     nfc_close(pnd);
     nfc_exit(context);
-    return 1;
+    return NULL;
 }
 
 int main(int argc, const char *argv[])
