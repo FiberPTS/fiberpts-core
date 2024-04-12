@@ -1,24 +1,15 @@
-# Compiler and linker configurations
 CC := gcc
 CFLAGS := -I/opt/libnfc-1.8.0/include -I/opt/libnfc-1.8.0 -fPIC
-LDFLAGS := -L/opt/libnfc-1.8.0/lib -lnfc -shared
-SRC_DIR := /opt/FiberPTS/src/nfc_reader
-UTILS_DIR := /opt/libnfc-1.8.0/utils
-LIB_NAME := poll.so
+LDFLAGS := -L/opt/libnfc-1.8.0/utils -lnfc
+TARGET := /opt/FiberPTS/src/nfc_reader/libpoll.so
+SOURCE := /opt/FiberPTS/src/nfc_reader/poll.c
 
-# Define the source file and the utility object file
-SRC := $(SRC_DIR)/poll.c
-UTILS_OBJ := $(UTILS_DIR)/nfc-utils.o
+all: $(TARGET)
 
-# Default target
-all: $(LIB_NAME)
+$(TARGET): $(SOURCE)
+	$(CC) $(CFLAGS) -shared -o $@ $< $(LDFLAGS)
 
-# Link the program into a shared library
-$(LIB_NAME): $(SRC) $(UTILS_OBJ)
-	$(CC) -o $@ $(SRC) $(UTILS_OBJ) $(CFLAGS) $(LDFLAGS)
-
-# Clean the build
 clean:
-	rm -f $(LIB_NAME)
+	rm -f $(TARGET)
 
 .PHONY: all clean
