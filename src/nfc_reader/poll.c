@@ -54,18 +54,11 @@ bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
 void poll(char *uid_str, size_t buffer_size) {
     signal(SIGINT, stop_polling);
 
-    // Define poll number and period for NFC device polling
-    const uint8_t uiPollNr = 1;
-    const uint8_t uiPeriod = 2;
     // Define modulation settings for polling
-    const nfc_modulation nmModulations[5] = {
-        {.nmt = NMT_ISO14443A, .nbr = NBR_106},
-        {.nmt = NMT_ISO14443B, .nbr = NBR_106},
-        {.nmt = NMT_FELICA, .nbr = NBR_212},
-        {.nmt = NMT_FELICA, .nbr = NBR_424},
-        {.nmt = NMT_JEWEL, .nbr = NBR_106},
+    const nfc_modulation nmMifare = {
+        .nmt = NMT_ISO14443A,
+        .nbr = NBR_106,
     };
-    const size_t szModulations = 5; // Number of modulations
 
     nfc_target nt; // NFC target structure
     nt.nti.nai.szUidLen = 0; // Initialize UID length to 0
@@ -98,8 +91,9 @@ void poll(char *uid_str, size_t buffer_size) {
     }
 
     // Start polling for NFC targets
-    while ((res = nfc_initiator_poll_target(pnd, nmModulations, szModulations, uiPollNr, uiPeriod, &nt)) < 0)
+    while ((res = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt)) < 0)
     {
+        sleep(0.1);
     }
 
     if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
