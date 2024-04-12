@@ -40,6 +40,8 @@ bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
         return false;
     }
 
+    printf("uid_len = %zu, uid_str address = %p\n", uid_len, (void*)uid_str);
+
     memset(uid_str, 0, 2 * uid_len + 1);
 
     for (size_t i = 0; i < uid_len; i++) {
