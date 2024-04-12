@@ -68,6 +68,7 @@ void poll(char *uid_str, size_t buffer_size) {
     const size_t szModulations = 5; // Number of modulations
 
     nfc_target nt; // NFC target structure
+    nt.nti.nai.szUidLen = 0; // Initialize UID length to 0
     int res = 0;   // Result of NFC operations
 
     // Initialize libnfc context
