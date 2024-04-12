@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
+#include <unistd.h>
 #include <nfc/nfc.h>
 #include <nfc/nfc-types.h>
 #include "utils/nfc-utils.h"
