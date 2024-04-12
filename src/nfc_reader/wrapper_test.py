@@ -31,6 +31,7 @@ def main():
         uid_str = create_string_buffer(uid_len)  # Create a buffer for the UID
         lib.poll(uid_str, uid_len)  # Call the C function to fill the buffer with the UID string
         print("UID String:", uid_str.value.decode('utf-8'))  # Decode and display the UID string
+        print('Tag detected: ', lib.is_tag_present())
 
 if __name__ == "__main__":
     main()
