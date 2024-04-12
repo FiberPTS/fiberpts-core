@@ -103,6 +103,8 @@ void poll(char *uid_str, size_t buffer_size) {
 
     // Wait for card removal
     printf("Waiting for card removing...");
+    // Invalid argument(s) is expected when no card was ever found during polling
+    // This is due to the NULL argument indicating to look at the most recent target (which doesn't exist) 
     while (0 == nfc_initiator_target_is_present(pnd, NULL))
     {
     }
