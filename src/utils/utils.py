@@ -37,6 +37,17 @@ class TapStatus(Enum):
     def to_json(self):
         return self.value
 
+class NFCType(Enum):
+    """Represents the type of an NFC Tag."""
+    ORDER = 0
+    EMPLOYEE = 1
+
+    def __repr__(self):
+        return f'{self.value}'
+
+    def to_json(self):
+        return self.value
+
 
 def get_device_id() -> str:
     """Retrieves the device's hostname and uses it as a device ID.

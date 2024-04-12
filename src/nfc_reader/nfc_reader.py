@@ -4,69 +4,59 @@ import logging
 import logging.config
 import time
 
-from src.nfc_reader.poll import poll
+from ctypes import CDLL, c_bool, c_char_p, c_size_t, create_string_buffer
 from src.cloud_db.cloud_db import CloudDBClient
+from src.utils.nfc_reader_utils import NFCTag
 from src.utils.paths import (NFC_READER_TO_SCREEN_PIPE, PROJECT_DIR)
-from src.utils.utils import get_device_id, TapStatus
+from src.utils.utils import get_device_id
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
+
 class NFCReader:
-    """Represents a NFC Reader.
+    """Represents an NFC Reader.
 
     Attributes:
-        debounce_time: Minimum time interval (in seconds) to consider consecutive taps as distinct.
-        screen_pipe: File path to the FIFO used for IPC with the screen module.
         cloud_db: An instance of CloudDBClient for database interactions.
     """
 
-    def __init__(self,
-                 debounce_time: int = DEBOUNCE_TIME,
-                 screen_pipe: str = NFC_READER_TO_SCREEN_PIPE) -> None:
+    def __init__(self) -> None:
         """
-        Initializes the NFC Reader with specified debounce time and pipe path.
+        Initializes the NFC Reader with Supabase client.
 
-        Args:
-            debounce_time: An integer specifying the debounce time in seconds.
-            screen_pipe: File path to the screen FIFO.
         """
-        self.debounce_time = debounce_time
-        self.screen_pipe = screen_pipe
         self.cloud_db = CloudDBClient()
-        self.last_tap = 0.0
+        self.lib = self.init_poll()
+        self.device_id = get_device_id()
 
 
-    def handle_tap(self, tag_id) -> bool:
+    def handle_nfc_tap(self, uid) -> None:
         """Handles a tap event.
 
-        The method records the tap event, validates it based on the debounce time,
-        looks up the tag_id in the cloud database and then sends the result the screen FIFO.
-
-        Returns:
-            A boolean indicating whether the tap was valid (True) or not (False).
+        The method records the tap event, looks up the unique ID in the cloud database 
+        and then sends the result the screen FIFO if it is a valid unique ID.
+            
         """
         timestamp = time.time()
-        tap_status = TapStatus.BAD
-
-        if (timestamp - self.last_tap) >= self.debounce_time:
-            tap_status = TapStatus.GOOD
-
         logger.info(
-            f"NFC Id: {self.device_id}, \
+            f"Device Id: {self.device_id}, \
               Timestamp: {timestamp}, \
-              Is Valid: {tap_status == TapStatus.GOOD}"
+              NFC ID: {uid}"
         )
+        result, tag_type = self.cloud_db.lookup_tag(uid)
+        if result:
+            logger.info(f"Lookup Result Value: {result}, \
+                        Type: {tag_type}")
+            tag = NFCTag(device_id=self.device_id,
+                type=tag_type,
+                value=result,
+                tag_id = uid)
+            self.pipe_nfc_data(tag)
+        else:
+            logger.error("Lookup did not find a matching id in the cloud database.")
 
-        is_valid_tap = tap_status == TapStatus.GOOD
-        if is_valid_tap:
-            result = self.cloud_db.lookup_tag(tag_id)
-
-        self.pipe_tap_data(result)
-        self.last_tap = timestamp
-        return is_valid_tap
-
-    def pipe_tap_data(self, lookup_result) -> None:
+    def pipe_nfc_data(self, tag) -> None:
         """Sends NFC tag lookup results to named pipe for IPC with screen module.
 
         Args:
@@ -76,9 +66,10 @@ class NFCReader:
             FileNotFoundError: If the pipeline path does not exist.
         """
         logger.info('Sending NFC lookup result to screen')
+        nfc_data = dict(tag)
         try:
-            with open(self.screen_pipe, 'a') as pipeout:
-                pipeout.write(lookup_result)
+            with open(NFC_READER_TO_SCREEN_PIPE, 'a') as pipeout:
+                json.dump(nfc_data, pipeout)
                 pipeout.write('\n')
                 pipeout.flush()
         except FileNotFoundError:
@@ -88,6 +79,22 @@ class NFCReader:
             logger.error('Cannot write to pipe - broken pipe')
         except Exception as e:
             logger.error(f"Error writing to pipe: {e}")
+            
+    def init_poll(self):
+        """
+        Initializes and returns a CDLL object for interacting with the 'libpoll.so' shared library.
+
+        Sets the argument types and return type for the 'poll' function within the shared library.
+        
+        Returns:
+            CDLL: Configured library object ready to use for calling the 'poll' function.
+        """
+        lib = CDLL("./libpoll.so")
+        lib.poll.argtypes = [c_char_p, c_size_t]
+        lib.poll.restype = None
+        lib.is_tag_present.argtypes = None
+        lib.is_tag_present.restype = c_bool
+        return lib
 
     def run(self) -> None:
         """Monitors the polling function for tap events and processes them.
@@ -96,9 +103,15 @@ class NFCReader:
         interprets it as a tap event and triggers the tap handling process.
         """
         logger.info('Running main loop')
+        uid_len = 64  # Define the buffer size for the UID string
         while True:
-            tag_id = poll()
-            self.handle_tap(tag_id)
+            uid_buf = create_string_buffer(uid_len)  # Create a buffer for the UID
+            self.lib.poll(uid_buf, uid_len)  # Call the C function to fill the buffer with the UID string
+            uid_str = uid_buf.value.decode('utf-8')
+            self.handle_tap(uid_str)
+            while self.lib.is_tag_present():
+                pass
+            logger.info("Tag has been removed.")
 
 
 if __name__ == "__main__":
