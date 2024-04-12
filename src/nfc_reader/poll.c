@@ -14,6 +14,9 @@
 static nfc_device *pnd = NULL;
 static nfc_context *context;
 
+
+// TODO: Need to compile this such that it can be called from python
+
 // Function to handle the stop signal (SIGINT)
 static void stop_polling(int sig)
 {
