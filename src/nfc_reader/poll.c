@@ -35,17 +35,17 @@ static void stop_polling(int sig)
 }
 
 bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
-    // // Ensure input pointers are not NULL
-    // if (uid == NULL || uid_str == NULL) {
-    //     return false;
-    // }
+    // Ensure input pointers are not NULL
+    if (uid == NULL || uid_str == NULL) {
+        return false;
+    }
 
-    // memset(uid_str, 0, sizeof(uid_str));
+    memset(uid_str, 0, 2 * uid_len + 1);
 
-    // for (size_t i = 0; i < uid_len; i++) {
-    //     snprintf(uid_str + 2 * i, 3, "%02X", uid[i]);
-    // }
-    // uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
+    for (size_t i = 0; i < uid_len; i++) {
+        snprintf(uid_str + 2 * i, 3, "%02X", uid[i]);
+    }
+    uid_str[2 * uid_len] = '\0';  // Null-terminate the resulting string
     return true;
 }
 
