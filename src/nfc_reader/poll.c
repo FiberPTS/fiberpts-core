@@ -29,7 +29,7 @@ static void stop_polling(int sig)
 
 bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
     // Ensure input pointers are not NULL
-    if (!uid || !uid_str) {
+    if (uid == NULL || uid_str == NULL) {
         return false;
     }
 
@@ -92,6 +92,7 @@ void poll(char *uid_str, size_t buffer_size) {
 
     if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
     {
+        printf("Error converting UID to string\n")
         nfc_close(pnd);
         nfc_exit(context);
         exit(EXIT_FAILURE);
@@ -108,6 +109,7 @@ void poll(char *uid_str, size_t buffer_size) {
     // Cleanup
     nfc_close(pnd);
     nfc_exit(context);
+
 }
 
 void main(void)
