@@ -92,7 +92,7 @@ void poll(char *uid_str, size_t buffer_size) {
 
     if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
     {
-        printf("Error converting UID to string\n")
+        printf("Error converting UID to string\n");
         nfc_close(pnd);
         nfc_exit(context);
         exit(EXIT_FAILURE);
