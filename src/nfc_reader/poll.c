@@ -41,8 +41,6 @@ bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
         return false;
     }
 
-    printf("uid_len = %zu, uid_str address = %p\n", uid_len, (void*)uid_str);
-
     memset(uid_str, 0, 2 * uid_len + 1);
 
     for (size_t i = 0; i < uid_len; i++) {
@@ -91,10 +89,20 @@ void poll(char *uid_str, size_t buffer_size) {
         exit(EXIT_FAILURE);
     }
 
+    // Wait for previous card removal
+    printf("Waiting for card removing...");
+    // Invalid argument(s) is expected when no card was ever found during polling
+    // This is due to the NULL argument indicating to look at the most recent target (which doesn't exist) 
+    while (0 == nfc_initiator_target_is_present(pnd, NULL))
+    {
+    }
+    nfc_perror(pnd, "nfc_initiator_target_is_present");
+    printf("done.\n");
+
     // Start polling for NFC targets
     while ((res = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt)) < 0)
     {
-        sleep(0.1);
+        sleep(0.25);
     }
 
     if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
@@ -104,16 +112,6 @@ void poll(char *uid_str, size_t buffer_size) {
         nfc_exit(context);
         exit(EXIT_FAILURE);
     }
-
-    // Wait for card removal
-    printf("Waiting for card removing...");
-    // Invalid argument(s) is expected when no card was ever found during polling
-    // This is due to the NULL argument indicating to look at the most recent target (which doesn't exist) 
-    while (0 == nfc_initiator_target_is_present(pnd, NULL))
-    {
-    }
-    nfc_perror(pnd, "nfc_initiator_target_is_present");
-    printf("done.\n");
 
     // Cleanup
     nfc_close(pnd);
