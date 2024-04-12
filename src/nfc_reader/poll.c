@@ -109,6 +109,38 @@ void poll(char *uid_str, size_t buffer_size) {
     }
 }
 
+bool is_tag_present()
+{
+    signal(SIGINT, stop_polling);
+
+    nfc_init(&context);
+    if (context == NULL) {
+        ERR("Unable to init libnfc (malloc)");
+        exit(EXIT_FAILURE);
+    }
+
+    pnd = nfc_open(context, NULL);
+    if (pnd == NULL) {
+        ERR("Unable to open NFC device.");
+        nfc_exit(context);
+        exit(EXIT_FAILURE);
+    }
+
+    if (nfc_initiator_init(pnd) < 0) {
+        nfc_perror(pnd, "nfc_initiator_init");
+        nfc_close(pnd);
+        nfc_exit(context);
+        exit(EXIT_FAILURE);
+    }
+
+    bool is_detected = 0 != nfc_initiator_target_is_present(pnd, NULL);
+
+    nfc_close(pnd);
+    nfc_exit(context);
+
+    return is_detected;
+}
+
 /**
  * @brief Main function that initializes a buffer for the UID string, calls poll to fill it,
  * and prints the UID string.
