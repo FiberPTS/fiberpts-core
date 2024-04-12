@@ -17,6 +17,9 @@ static nfc_device *pnd = NULL;
 static nfc_context *context;
 
 // TODO: Need to compile this such that it can be called from python
+// TODO: Fix the Makefile so that it not only compiles the linked files correctly,
+// but also correctly cleans up the compiled files 
+// (i.e. removes the .o files except for the libnfc ones)
 
 // Function to handle the stop signal (SIGINT)
 static void stop_polling(int sig)
