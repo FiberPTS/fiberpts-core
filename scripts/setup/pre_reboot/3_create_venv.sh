@@ -37,7 +37,7 @@ function assert_variables() {
 function create_virtual_environment() {
   if [ ! -d "${PROJECT_PATH}/venv" ]; then
     # Installs necessary packages for virtual environment creation.
-    apt install python3.11-venv python3-pip -y > /dev/null
+    apt-get install python3.11-venv python3-pip -y > /dev/null
     # Creates the virtual environment.
     python3 -m venv "${PROJECT_PATH}/venv" > /dev/null
     echo "${OK} Virtual environment created at '${PROJECT_PATH}/venv'"
