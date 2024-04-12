@@ -114,6 +114,18 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=True)
+        if self.device_state['employee_id']:
+            self.add_text(self.device_state['employee_id'], (0, self.display_attributes.display_height - 20),
+                          self.dashboard_attributes.dashboard_font_family,
+                          self.dashboard_attributes.dashboard_font_size,
+                          self.dashboard_attributes.dashboard_font_color,
+                          centered=False)
+        if self.device_state['order_id']:
+            self.add_text(self.device_state['order_id'], (self.display_attributes.display_width - 100, 0),
+                          self.dashboard_attributes.dashboard_font_family,
+                          self.dashboard_attributes.dashboard_font_size,
+                          self.dashboard_attributes.dashboard_font_color,
+                          centered=False)
         self.draw_image()
 
     def draw_popup(self, text: str, bg_color: str) -> None:
