@@ -109,6 +109,12 @@ void poll(char *uid_str, size_t buffer_size) {
     }
 }
 
+
+/**
+ * @brief Polls for an NFC tag and returns whether a tag is present.
+ * 
+ * @return True if a tag is present, otherwise False.
+ */
 bool is_tag_present()
 {
     signal(SIGINT, stop_polling);
