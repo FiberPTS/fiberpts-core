@@ -1,3 +1,5 @@
+// Last working compilation:
+// sudo gcc -I/opt/libnfc-1.8.0/include -I/opt/libnfc-1.8.0 -o /opt/FiberPTS/src/nfc_reader/poll /opt/FiberPTS/src/nfc_reader/poll.c -L/opt/libnfc-1.8.0/utils -lnfc
 #include <stdlib.h>
 #include <err.h>
 #include <inttypes.h>
@@ -13,7 +15,6 @@
 
 static nfc_device *pnd = NULL;
 static nfc_context *context;
-
 
 // TODO: Need to compile this such that it can be called from python
 
