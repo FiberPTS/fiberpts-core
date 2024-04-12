@@ -113,6 +113,15 @@ bool is_tag_present()
 {
     signal(SIGINT, stop_polling);
 
+    const nfc_modulation nmMifare = {
+        .nmt = NMT_ISO14443A,
+        .nbr = NBR_106,
+    };
+
+    nfc_target nt; // NFC target structure
+    nt.nti.nai.szUidLen = 0; // Initialize UID length to 0
+    int res = 0;   // Result of NFC operations
+
     nfc_init(&context);
     if (context == NULL) {
         ERR("Unable to init libnfc (malloc)");
@@ -133,7 +142,7 @@ bool is_tag_present()
         exit(EXIT_FAILURE);
     }
 
-    bool is_detected = 0 != nfc_initiator_target_is_present(pnd, NULL);
+    bool is_detected = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt) >= 0;
 
     nfc_close(pnd);
     nfc_exit(context);
