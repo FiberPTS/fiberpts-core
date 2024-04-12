@@ -15,6 +15,7 @@
 static nfc_device *pnd = NULL;
 static nfc_context *context;
 
+// TODO: The signal interrupter doesn't work when being called from python
 /**
  * @brief the stop signal (SIGINT), aborting the current NFC command if a device is active,
  * or exiting the program otherwise.
