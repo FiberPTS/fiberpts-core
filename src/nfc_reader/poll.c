@@ -1,5 +1,3 @@
-// Last working compilation:
-// sudo gcc -I/opt/libnfc-1.8.0/include -I/opt/libnfc-1.8.0 -o /opt/FiberPTS/src/nfc_reader/poll /opt/FiberPTS/src/nfc_reader/poll.c -L/opt/libnfc-1.8.0/utils -lnfc
 #include <stdlib.h>
 #include <err.h>
 #include <inttypes.h>
@@ -17,32 +15,37 @@
 static nfc_device *pnd = NULL;
 static nfc_context *context;
 
-// TODO: Need to compile this such that it can be called from python
-// TODO: Fix the Makefile so that it not only compiles the linked files correctly,
-// but also correctly cleans up the compiled files 
-// (i.e. removes the .o files except for the libnfc ones)
-
-// Function to handle the stop signal (SIGINT)
+/**
+ * @brief the stop signal (SIGINT), aborting the current NFC command if a device is active,
+ * or exiting the program otherwise.
+ *
+ * @param sig The signal number (unused).
+ */
 static void stop_polling(int sig)
 {
     (void)sig; // Avoid unused variable warning
-    if (pnd != NULL)
+    if (pnd != NULL) {
         nfc_abort_command(pnd); // Abort current NFC command
-    else
-    {
+    } else {
         nfc_exit(context);  // Exit NFC context
         exit(EXIT_FAILURE); // Exit program with failure status
     }
 }
 
+/**
+ * @brief Converts a UID of an NFC tag from bytes to a hexadecimal string.
+ *
+ * @param uid Pointer to the byte array containing the UID.
+ * @param uid_len The length of the UID byte array.
+ * @param uid_str Pointer to the character array where the hexadecimal string will be stored.
+ * @return True if conversion is successful, otherwise False.
+ */
 bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
-    // Ensure input pointers are not NULL
     if (uid == NULL || uid_str == NULL) {
         return false;
     }
 
     memset(uid_str, 0, 2 * uid_len + 1);
-
     for (size_t i = 0; i < uid_len; i++) {
         snprintf(uid_str + 2 * i, 3, "%02X", uid[i]);
     }
@@ -50,10 +53,15 @@ bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str) {
     return true;
 }
 
+/**
+ * @brief Polls for NFC tags and writes the UID of the first detected tag into the provided buffer as a hexadecimal string.
+ *
+ * @param uid_str Pointer to the buffer where the UID string will be stored.
+ * @param buffer_size The size of the provided buffer.
+ */
 void poll(char *uid_str, size_t buffer_size) {
     signal(SIGINT, stop_polling);
 
-    // Define modulation settings for polling
     const nfc_modulation nmMifare = {
         .nmt = NMT_ISO14443A,
         .nbr = NBR_106,
@@ -63,65 +71,51 @@ void poll(char *uid_str, size_t buffer_size) {
     nt.nti.nai.szUidLen = 0; // Initialize UID length to 0
     int res = 0;   // Result of NFC operations
 
-    // Initialize libnfc context
     nfc_init(&context);
-    if (context == NULL)
-    {
+    if (context == NULL) {
         ERR("Unable to init libnfc (malloc)");
         exit(EXIT_FAILURE);
     }
 
-    // Open NFC device
     pnd = nfc_open(context, NULL);
-    if (pnd == NULL)
-    {
-        ERR("%s", "Unable to open NFC device.");
+    if (pnd == NULL) {
+        ERR("Unable to open NFC device.");
         nfc_exit(context);
         exit(EXIT_FAILURE);
     }
 
-    // Initialize NFC device as initiator
-    if (nfc_initiator_init(pnd) < 0)
-    {
+    if (nfc_initiator_init(pnd) < 0) {
         nfc_perror(pnd, "nfc_initiator_init");
         nfc_close(pnd);
         nfc_exit(context);
         exit(EXIT_FAILURE);
     }
 
-    // Wait for previous card removal
-    printf("Waiting for card removing...");
-    // Invalid argument(s) is expected when no card was ever found during polling
-    // This is due to the NULL argument indicating to look at the most recent target (which doesn't exist) 
-    while (0 == nfc_initiator_target_is_present(pnd, NULL))
-    {
-    }
-    nfc_perror(pnd, "nfc_initiator_target_is_present");
-    printf("done.\n");
-
-    // Start polling for NFC targets
-    while ((res = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt)) < 0)
-    {
+    while ((res = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt)) < 0) {
         sleep(0.25);
     }
 
-    if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str))
-    {
-        printf("Error converting UID to string\n");
-        nfc_close(pnd);
-        nfc_exit(context);
-        exit(EXIT_FAILURE);
-    }
-
-    // Cleanup
     nfc_close(pnd);
     nfc_exit(context);
 
+    if (nt.nti.nai.szUidLen > buffer_size) {
+        printf("UID buffer too small\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (!uint_to_hexstr(nt.nti.nai.abtUid, nt.nti.nai.szUidLen, uid_str)) {
+        printf("Error converting UID to string\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void main(void)
-{
+/**
+ * @brief Main function that initializes a buffer for the UID string, calls poll to fill it,
+ * and prints the UID string.
+ */
+int main(void) {
     char uid_str[32];
     poll(uid_str, sizeof(uid_str));
     printf("UID: %s\n", uid_str);
+    return 0;
 }
