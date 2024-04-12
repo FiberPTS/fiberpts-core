@@ -17,13 +17,14 @@ from src.utils.screen_utils import (DisplayAttributes,
                                     get_image_center,
                                     read_pipe,
                                     write_image_to_fb)
-from src.utils.utils import TapStatus
+from src.utils.utils import TapStatus, NFCType
 
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
+
 
 class Screen:
     """This class handles drawing text, images, and popups to a screen. It includes functionality for rotating the display for correct orientation, managing the screen's framebuffer for rendering, reading touch sensor data through a named pipe, and updating the display based on the incoming data.
@@ -152,6 +153,25 @@ class Screen:
                               self.popup_attributes.event_attributes.popup_warning_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
+        nfc_data = read_pipe(NFC_READER_TO_SCREEN_PIPE)
+        if nfc_data:
+            logger.info('NFC data received by screen')
+            nfc_type = nfc_data['type']
+            popup_item = None
+            if nfc_type == NFCType.EMPLOYEE:
+                device_state = read_device_state(DEVICE_STATE_PATH)
+                device_state['employee_id'] = nfc_data['value']
+                write_device_state(device_state, DEVICE_STATE_PATH)
+                popup_item = (self.popup_attributes.message_attributes.employee_event_message,
+                              self.popup_attributes.event_attributes.employee_event_bg_color)
+            elif nfc_type == NFCType.ORDER:
+                device_state = read_device_state(DEVICE_STATE_PATH)
+                device_state['order_id'] = nfc_data['value']
+                write_device_state(device_state, DEVICE_STATE_PATH)
+                popup_item = (self.popup_attributes.message_attributes.order_event_message,
+                              self.popup_attributes.event_attributes.order_event_bg_color)
+            if popup_item:
+                self.popup_queue.put(popup_item)
 
     def manage_display(self) -> None:
         """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup."""
@@ -166,7 +186,7 @@ class Screen:
     def start_display_thread(self) -> None:
         """Creates and starts the thread that manages the display."""
         display_thread = threading.Thread(target=self.manage_display)
-        display_thread.daemon = True # Exit display thread when main process exits
+        display_thread.daemon = True  # Exit display thread when main process exits
         display_thread.start()
 
     def run(self) -> None:
