@@ -8,9 +8,7 @@ from queue import Queue
 from PIL import Image, ImageDraw, ImageFont
 
 from config.screen_config import *
-from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE,
-                             DEVICE_STATE_PATH,
-                             PROJECT_DIR)
+from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, NFC_READER_TO_SCREEN_PIPE, DEVICE_STATE_PATH, PROJECT_DIR)
 from src.utils.screen_utils import (DisplayAttributes,
                                     DashboardAttributes,
                                     PopupAttributes,

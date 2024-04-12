@@ -8,7 +8,7 @@ load_dotenv(f"{PROJECT_DIR}/scripts/paths.sh")
 
 # File paths to named pipes
 TOUCH_SENSOR_TO_SCREEN_PIPE: str = os.getenv('TOUCH_SENSOR_TO_SCREEN_PIPE')
-NFC_TO_SCREEN_PIPE: str = os.getenv('NFC_TO_SCREEN_PIPE')
+NFC_READER_TO_SCREEN_PIPE: str = os.getenv('NFC_READER_TO_SCREEN_PIPE')
 
 # File path to display framebuffer
 DISPLAY_FRAME_BUFFER_PATH: str = os.getenv('DISPLAY_FRAME_BUFFER_PATH')

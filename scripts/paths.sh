@@ -11,7 +11,7 @@ DISPLAY_FRAME_BUFFER_PATH=/dev/fb2
 # Named Pipe Paths
 PIPE_FOLDER_PATH=${PROJECT_PATH}/.app/pipes
 TOUCH_SENSOR_TO_SCREEN_PIPE=${PIPE_FOLDER_PATH}/touch_sensor_to_screen_pipe
-NFC_TO_SCREEN_PIPE=${PIPE_FOLDER_PATH}/nfc_to_screen_pipe
+NFC_READER_TO_SCREEN_PIPE=${PIPE_FOLDER_PATH}/nfc_reader_to_screen_pipe
 
 # Flag File Paths
 PRE_REBOOT_FLAG=${PROJECT_PATH}/.app/flags/pre_reboot_setup_done.flag

@@ -11,7 +11,7 @@ set -e
 # Globals:
 #   PIPE_FOLDER_PATH
 #   TOUCH_SENSOR_TO_SCREEN_PIPE
-#   NFC_TO_SCREEN_PIPE
+#   NFC_READER_TO_SCREEN_PIPE
 # Arguments:
 #   None
 # Outputs:
@@ -25,8 +25,8 @@ function assert_variables() {
   if [ -z "${TOUCH_SENSOR_TO_SCREEN_PIPE}" ]; then
     missing+=("TOUCH_SENSOR_TO_SCREEN_PIPE")
   fi
-  if [ -z "${NFC_TO_SCREEN_PIPE}" ]; then
-    missing+=("NFC_TO_SCREEN_PIPE")
+  if [ -z "${NFC_READER_TO_SCREEN_PIPE}" ]; then
+    missing+=("NFC_READER_TO_SCREEN_PIPE")
   fi
   if [ ${#missing[@]} -gt 0 ]; then
     echo "${WARNING} Required environment variables ${missing[*]} are not set."
@@ -39,7 +39,7 @@ function assert_variables() {
 # screen.
 # Globals:
 #   TOUCH_SENSOR_TO_SCREEN_PIPE
-#   NFC_TO_SCREEN_PIPE
+#   NFC_READER_TO_SCREEN_PIPE
 # Arguments:
 #   None
 # Outputs:
@@ -55,11 +55,11 @@ function create_fifo_pipes() {
     echo "${OK} FIFO pipe '${TOUCH_SENSOR_TO_SCREEN_PIPE}' created."
   fi
 
-  if [ -p "${NFC_TO_SCREEN_PIPE}" ]; then
-    echo "${WARNING} FIFO pipe '${NFC_TO_SCREEN_PIPE}' already exists."
+  if [ -p "${NFC_READER_TO_SCREEN_PIPE}" ]; then
+    echo "${WARNING} FIFO pipe '${NFC_READER_TO_SCREEN_PIPE}' already exists."
   else
-    mkfifo "${NFC_TO_SCREEN_PIPE}"
-    echo "${OK} FIFO pipe '${NFC_TO_SCREEN_PIPE}' created."
+    mkfifo "${NFC_READER_TO_SCREEN_PIPE}"
+    echo "${OK} FIFO pipe '${NFC_READER_TO_SCREEN_PIPE}' created."
   fi
 }
 
