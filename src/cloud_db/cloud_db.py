@@ -117,19 +117,18 @@ class CloudDBClient:
         """
         logger.info(f'Looking up uid: {uid} in Supabase')
         result = None
-        order_type = None
+        nfc_type = None
         try:
             data = self.client.table("Order_Tag").select("*").eq("Tag_ID", uid).execute()
             if len(data.data) > 0:
                 order = self.client.table("Order_Tag_Group").select("Order_ID").eq("Group ID",data[0]["Order_Tag_Group_ID"]).execute()
                 result = order[0]
-                order_type = NFCType.ORDER
+                nfc_type = NFCType.ORDER
             else:
                 ID = self.client.table("Employee_Tag").select("*").eq("Tag_ID", uid).execute()
                 employee = self.client.table("Employee").select("Name").eq("Unit ID", ID[0]["Employee_Unit_ID"])
                 result = employee[0]
-                order_type = NFCType.EMPLOYEE
+                nfc_type = NFCType.EMPLOYEE
         except httpx.NetworkError as e:
             logger.error(f"Network Error: {e}")
-            return result, order_type
-        return result, order_type
+        return result, nfc_type
