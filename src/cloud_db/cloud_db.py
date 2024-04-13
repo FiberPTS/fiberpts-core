@@ -9,6 +9,7 @@ from postgrest import APIResponse
 import httpx
 
 from src.utils.touch_sensor_utils import Tap
+from src.utils.utils import NFCType
 from src.utils.utils import TIMESTAMP_FORMAT
 from src.utils.paths import PROJECT_DIR
 
@@ -104,3 +105,31 @@ class CloudDBClient:
             id_num = '{:03d}'.format(int(response.data[0]['device_id'][-3:]) + 1)
             device_id = 'fpts-' + id_num
         return device_id
+    
+    def lookup_uid(self, uid: str):
+        """Searches for an nfc record matching the unique id provided to it in Supabase.
+
+        Args:
+            uid: A string containing the unique id to be searched for
+
+        Returns:
+            An int value representing the success (0) or failure (-1) of the database operation.
+        """
+        logger.info(f'Looking up uid: {uid} in Supabase')
+        result = None
+        order_type = None
+        try:
+            data = self.client.table("Order_Tag").select("*").eq("Tag_ID", uid).execute()
+            if len(data.data) > 0:
+                order = self.client.table("Order_Tag_Group").select("Order_ID").eq("Group ID",data[0]["Order_Tag_Group_ID"]).execute()
+                result = order[0]
+                order_type = NFCType.ORDER
+            else:
+                ID = self.client.table("Employee_Tag").select("*").eq("Tag_ID", uid).execute()
+                employee = self.client.table("Employee").select("Name").eq("Unit ID", ID[0]["Employee_Unit_ID"])
+                result = employee[0]
+                order_type = NFCType.EMPLOYEE
+        except httpx.NetworkError as e:
+            logger.error(f"Network Error: {e}")
+            return result, order_type
+        return result, order_type
