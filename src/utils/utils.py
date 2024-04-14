@@ -4,8 +4,8 @@ import subprocess
 import logging
 import os
 import time
-from typing import Self, Optional, Dict, Any
-import json
+from typing import Self, Optional
+import logging.config
 
 from src.utils.paths import PROJECT_DIR
 
@@ -57,7 +57,7 @@ class SelfReleasingLock:
             time.sleep(1)
 
         logger.warning(f"Lock file {self.lock_file_path} is older than {self.max_age} seconds. \
-            Assuming it was left behind by a previous process."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      )
+            Assuming it was left behind by a previous process."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   )
 
         self.__exit__(None, None, None)
         self.lock_file = open(self.lock_file_path, 'w')
@@ -129,10 +129,12 @@ class TapStatus(Enum):
         """
         return self.value
 
+
 class NFCType(Enum):
     """Represents the type of an NFC Tag."""
     ORDER = 0
     EMPLOYEE = 1
+    NONE = 2
 
     def __repr__(self) -> str:
         """Returns the string representation of the TapStatus object.
@@ -154,18 +156,6 @@ class NFCType(Enum):
         Returns:
             A string representing the JSON representation of the TapStatus object.
         """
-        return self.value
-
-class NFCType(Enum):
-    """Represents the type of an NFC Tag."""
-    ORDER = 0
-    EMPLOYEE = 1
-    NONE = 2
-
-    def __repr__(self):
-        return f'{self.value}'
-
-    def to_json(self):
         return self.value
 
 
