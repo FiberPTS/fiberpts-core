@@ -216,7 +216,7 @@ class Screen:
             popup_item = None
             device_state = read_device_state(DEVICE_STATE_PATH)
             if nfc_type == NFCType.NONE:
-                popup_item = (self.popup_attributes.message_attributes.error_message,
+                popup_item = (self.popup_attributes.message_attributes.popup_error_message,
                               self.popup_attributes.event_attributes.popup_error_bg_color)
             elif nfc_type == NFCType.EMPLOYEE:
                 device_state['unit_count'] = 0
