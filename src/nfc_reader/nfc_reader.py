@@ -44,9 +44,9 @@ class NFCReader:
               Timestamp: {timestamp}, \
               NFC ID: {uid}"
         )
-        result = self.cloud_db.lookup_tag(uid)
+        result = self.cloud_db.lookup_uid(uid)
         logger.info(f"Lookup Result Value: {result.data}, \
-                    Type: {result.type}")
+                    Type: {result.type}"                                        )
         self.pipe_nfc_data(result)
 
     def pipe_nfc_data(self, tag) -> None:
@@ -111,4 +111,3 @@ if __name__ == "__main__":
     logger.info('Starting nfc_reader.py')
     nfc_reader = NFCReader()
     nfc_reader.run()
-
