@@ -86,7 +86,7 @@ class NFCReader:
         Returns:
             CDLL: Configured library object ready to use for calling the 'poll' function.
         """
-        lib = CDLL("./libpoll.so")
+        lib = CDLL(f"{PROJECT_DIR}/src/nfc_reader/libpoll.so")
         lib.poll.argtypes = [c_char_p, c_size_t]
         lib.poll.restype = None
         lib.is_tag_present.argtypes = None
