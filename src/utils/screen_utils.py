@@ -248,25 +248,24 @@ def write_image_to_fb(image: Image, path_to_fb: str,
         IOError: If there is an error writing to the framebuffer.
     """
     try:
-        with SelfReleasingLock(path_to_fb_lock):
-            raw_data = image_to_raw_rgb565(image)
-            raw_bytes = raw_data.tobytes()
+        raw_data = image_to_raw_rgb565(image)
+        raw_bytes = raw_data.tobytes()
 
-            width, height = image.size
-            screensize = width * height * 2
+        width, height = image.size
+        screensize = width * height * 2
 
-            if len(raw_bytes) != screensize:
-                raise ValueError(
-                    'Size mismatch: Data size does not match buffer size')
+        if len(raw_bytes) != screensize:
+            raise ValueError(
+                'Size mismatch: Data size does not match buffer size')
 
-            fbfd = os.open(path_to_fb, os.O_RDWR)
-            fbp = mmap.mmap(fbfd,
-                            screensize,
-                            flags=mmap.MAP_SHARED,
-                            prot=mmap.PROT_WRITE)
-            fbp[:] = raw_bytes
-            fbp.flush()
-            os.close(fbfd)
+        fbfd = os.open(path_to_fb, os.O_RDWR)
+        fbp = mmap.mmap(fbfd,
+                        screensize,
+                        flags=mmap.MAP_SHARED,
+                        prot=mmap.PROT_WRITE)
+        fbp[:] = raw_bytes
+        fbp.flush()
+        os.close(fbfd)
     except FileNotFoundError:
         logger.error(f"Could not find {path_to_fb} while writing to framebuffer")
         raise FileNotFoundError  # TODO: Determine error message format

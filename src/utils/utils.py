@@ -14,7 +14,7 @@ TIMESTAMP_FORMAT = '%Y-%m-%d %X'
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
-
+# TODO: Fix this locking mechanism, because it doesn't properly unlock the file due to lock_file being initialized to None. 
 class SelfReleasingLock:
     """Represents a lock that automatically releases itself when the context manager exits or when it is old.
 
