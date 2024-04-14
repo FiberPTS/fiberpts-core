@@ -105,7 +105,7 @@ class NFCReader:
             uid_buf = create_string_buffer(uid_len)  # Create a buffer for the UID
             self.lib.poll(uid_buf, uid_len)  # Call the C function to fill the buffer with the UID string
             uid_str = uid_buf.value.decode('utf-8')
-            self.handle_tap(uid_str)
+            self.handle_nfc_tap(uid_str)
             while self.lib.is_tag_present():
                 pass
             logger.info("Tag has been removed.")
