@@ -119,10 +119,7 @@ class TouchSensor:
         with gpiod.request_lines(
                 f"/dev/gpiochip{TOUCH_SENSOR_CHIP}",
                 consumer="get-line-value",
-                config={
-                    self.line_offset:
-                        gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)
-                },
+                config={TOUCH_SENSOR_LINE_OFFSET: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
             released = True
             while True:
