@@ -144,7 +144,7 @@ class CloudDBClient:
         if employee_id:
             order_tap_record['employee_id'] = employee_id
         machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
-                                                                                    order_tap.device_id).execute()
+                                                                                 order_tap.device_id).execute()
         machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
         if machine_id:
             order_tap_record['machine_id'] = machine_id
@@ -169,6 +169,7 @@ class CloudDBClient:
         result = NFCTag(device_id=self.device_id, timestamp=time.time(), type=NFCType.NONE, data={}, tag_id=uid)
         try:
             order_tag_records = self.client.table("order_tags").select("order_tag_group_id").eq("tag_id", uid).execute()
+            logger.info('Order Tags: ', order_tag_records)
             if len(order_tag_records.data) > 0:
                 order_tag_group_id = order_tag_records.data[0]["order_tag_group_id"]
                 order_records = self.client.table("order_tag_groups").select("order_id").eq(
@@ -184,7 +185,8 @@ class CloudDBClient:
                     logger.info("Could not find the order group associated with this NFC tag.")
             else:
                 employee_tag_records = self.client.table("employee_tags").select("employee_id").eq("tag_id",
-                                                                                                         uid).execute()
+                                                                                                   uid).execute()
+                logger.info('Employee Tags: ', employee_tag_records)
                 if len(employee_tag_records.data) > 0:
                     employee_id = employee_tag_records[0]["employee_id"]
                     employee = self.client.table("employees").select("name, employee_id").eq(
