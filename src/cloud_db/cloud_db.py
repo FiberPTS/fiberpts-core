@@ -157,24 +157,27 @@ class CloudDBClient:
         # TODO: Implement handling for non-existent table.
         # TODO: Implement handling for non-existent device record.
         logger.info('Inserting order tap record to Supabase')
-        machine_id_record = self.client.table("devices").select("machine_id").eq("device_id", order_tap.device_id).execute()
-        machine_id = machine_id_record.data[0]['machine_id']
         device_state = read_device_state(DEVICE_STATE_PATH)
-        unifi_id = device_state['unifi_id']
-        order_tap_record = {
-            'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(order_tap.timestamp)),
-            'device_id': order_tap.device_id,
-            'order_id': order_tap.data['order_id'],
-            'employee_unifi_id': unifi_id,
-            'machine_id': machine_id
-        }
-        try:
-            response = self.client.table('order_tap_data').insert(order_tap_record).execute()
-            logger.info(response)  # TODO: Correctly print response (need to test)
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
-            return -1
-        return 0
+        unifi_id = device_state['employee_id']
+        if unifi_id != None:
+            machine_id_record = self.client.table("devices").select("machine_id").eq("device_id", order_tap.device_id).execute()
+            machine_id = machine_id_record.data[0]['machine_id']
+            order_tap_record = {
+                'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(order_tap.timestamp)),
+                'device_id': order_tap.device_id,
+                'order_id': order_tap.data['order_id'],
+                'employee_unifi_id': unifi_id,
+                'machine_id': machine_id
+            }
+            try:
+                response = self.client.table('order_tap_data').insert(order_tap_record).execute()
+                logger.info(response)  # TODO: Correctly print response (need to test)
+            except httpx.NetworkError as e:
+                logger.error(f"Network Error: {e}")
+                return -1
+            return 0
+        logger.info("Employee_id is not present in device state.")
+        return -1
 
     
     def lookup_uid(self, uid: str):
