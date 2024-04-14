@@ -178,7 +178,6 @@ def write_image_to_fb(image: Image, path_to_fb: str,
         IOError: If there is an error writing to the framebuffer.
     """
     try:
-        # TODO: Check if this lock is necessary
         with SelfReleasingLock(path_to_fb_lock):
             raw_data = image_to_raw_rgb565(image)
             raw_bytes = raw_data.tobytes()
