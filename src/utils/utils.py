@@ -160,6 +160,7 @@ class NFCType(Enum):
     """Represents the type of an NFC Tag."""
     ORDER = 0
     EMPLOYEE = 1
+    NONE = 2
 
     def __repr__(self):
         return f'{self.value}'
