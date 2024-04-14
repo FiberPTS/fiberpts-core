@@ -23,6 +23,7 @@ SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
+
 class Screen:
     """This class handles drawing text, images, and popups to a screen. 
     
@@ -33,8 +34,6 @@ class Screen:
         display_attributes (DisplayAttributes): Attributes related to display properties like framebuffer path, height, width, and frame rate.
         dashboard_attributes (DashboardAttributes): Attributes related to dashboard appearance such as font family, size, color, and background color.
         popup_attributes (PopupAttributes): Attributes for configuring popups, including fonts, colors, and duration.
-        touch_sensor_pipe (str): Path to the named pipe for reading touch sensor data.
-        device_state_path (str): Path to the file where the device state is stored.
         popup_queue (Queue): A queue for all popup data.
         image: Current image being displayed on the screen.
     """
@@ -52,9 +51,6 @@ class Screen:
         self.display_attributes = DisplayAttributes()
         self.dashboard_attributes = DashboardAttributes()
         self.popup_attributes = PopupAttributes()
-        # File paths
-        self.touch_sensor_pipe = TOUCH_SENSOR_TO_SCREEN_PIPE
-        self.device_state_path = DEVICE_STATE_PATH
         # Initialize screen
         self.popup_queue = Queue()
         self.image = None
@@ -134,21 +130,23 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_color,
                       centered=False)
         device_state = read_device_state(DEVICE_STATE_PATH)
-        unit_count = device_state.get('unit_count', default=0)
+        unit_count = device_state.get('unit_count', 0)
         self.add_text(f"Unit Count: {unit_count}",
                       image_center,
                       self.dashboard_attributes.dashboard_font_family,
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=True)
-        if device_state['employee_id']:
-            self.add_text(self.device_state['employee_id'], (0, self.display_attributes.display_height - 20),
+        employee_name = device_state.get('employee_name', None)
+        if employee_name:
+            self.add_text(employee_name, (0, self.display_attributes.display_height - 20),
                           self.dashboard_attributes.dashboard_font_family,
                           self.dashboard_attributes.dashboard_font_size,
                           self.dashboard_attributes.dashboard_font_color,
                           centered=False)
-        if device_state['order_id']:
-            self.add_text(self.device_state['order_id'], (self.display_attributes.display_width - 100, 0),
+        order_id = device_state.get('order_id', None)
+        if order_id:
+            self.add_text(order_id, (self.display_attributes.display_width - 100, 0),
                           self.dashboard_attributes.dashboard_font_family,
                           self.dashboard_attributes.dashboard_font_size,
                           self.dashboard_attributes.dashboard_font_color,
