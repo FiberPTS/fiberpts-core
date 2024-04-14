@@ -183,12 +183,12 @@ class CloudDBClient:
                 else:
                     logger.info("Could not find the order group associated with this NFC tag.")
             else:
-                employee_tag_records = self.client.table("employee_tags").select("employee_unifi_id").eq("tag_id",
+                employee_tag_records = self.client.table("employee_tags").select("employee_id").eq("tag_id",
                                                                                                          uid).execute()
                 if len(employee_tag_records.data) > 0:
-                    employee_unit_id = employee_tag_records[0]["Employee_Unit_ID"]
-                    employee = self.client.table("employees").select("name, unifi_id").eq("unifi_id",
-                                                                                          employee_unit_id).execute()
+                    employee_id = employee_tag_records[0]["employee_id"]
+                    employee = self.client.table("employees").select("name, employee_id").eq(
+                        "employee_id", employee_id).execute()
                     if len(employee.data) > 0:
                         employee_data = employee.data[0]
                         result = NFCTag(device_id=self.device_id,
