@@ -18,7 +18,7 @@ from src.utils.screen_utils import (DisplayAttributes,
                                     get_image_center,
                                     read_pipe,
                                     write_image_to_fb)
-from src.utils.utils import (read_device_state, TapStatus, NFCType)
+from src.utils.utils import (TapStatus, NFCType)
 
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
