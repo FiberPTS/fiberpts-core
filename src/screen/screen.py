@@ -113,13 +113,13 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=True)
-        if self.device_state['employee_id']:
+        if device_state['employee_id']:
             self.add_text(self.device_state['employee_id'], (0, self.display_attributes.display_height - 20),
                           self.dashboard_attributes.dashboard_font_family,
                           self.dashboard_attributes.dashboard_font_size,
                           self.dashboard_attributes.dashboard_font_color,
                           centered=False)
-        if self.device_state['order_id']:
+        if device_state['order_id']:
             self.add_text(self.device_state['order_id'], (self.display_attributes.display_width - 100, 0),
                           self.dashboard_attributes.dashboard_font_family,
                           self.dashboard_attributes.dashboard_font_size,
@@ -191,11 +191,10 @@ class Screen:
     def manage_display(self) -> None:
         """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup."""
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
-        self.draw_dashboard()
         while True:
+            self.draw_dashboard()
             text, bg_color = self.popup_queue.get()
             self.draw_popup(text, bg_color)
-            self.draw_dashboard()
             time.sleep(frame_duration)
 
     def start_display_thread(self) -> None:
