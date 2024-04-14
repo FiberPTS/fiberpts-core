@@ -56,6 +56,8 @@ class Screen:
         self.popup_attributes = PopupAttributes()
         # Initialize screen
         self.popup_queue = Queue()
+        self.touch_sensor_pipe_queue = Queue()
+        self.nfc_reader_pipe_queue = Queue()
         self.image = None
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
 
@@ -186,8 +188,8 @@ class Screen:
         Returns:
             None
         """
-        tap_data = read_pipe(TOUCH_SENSOR_TO_SCREEN_PIPE)
-        if tap_data:
+        if not self.touch_sensor_pipe_queue.empty():
+            tap_data = self.touch_sensor_pipe_queue.get()
             logger.info('Tap received by screen')
             # TODO: We may decide to store this data from a stopwatch time.
             # timestamp = tap_data["timestamp"]
@@ -207,8 +209,8 @@ class Screen:
                               self.popup_attributes.event_attributes.popup_warning_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
-        nfc_data = read_pipe(NFC_READER_TO_SCREEN_PIPE)
-        if nfc_data:
+        if not self.nfc_reader_pipe_queue.empty():
+            nfc_data = self.nfc_reader_pipe_queue.get()
             logger.info('NFC data received by screen')
             tag_data, nfc_type = nfc_data['data'], nfc_data['type']
             popup_item = None
@@ -248,8 +250,8 @@ class Screen:
             self.draw_popup(text, bg_color)
             time.sleep(frame_duration)
 
-    def start_display_thread(self) -> None:
-        """Creates and starts the thread that manages the display.
+    def manage_touch_sensor_pipe(self) -> None:
+        """Manages reading data from the touch sensor pipe and queues it for the main thread to process.
         
         Args:
             None
@@ -257,9 +259,47 @@ class Screen:
         Returns:
             None
         """
+        while True:
+            tap_data = read_pipe(TOUCH_SENSOR_TO_SCREEN_PIPE)
+            if tap_data:
+                self.touch_sensor_pipe_queue.put(tap_data)
+
+    def manage_nfc_reader_pipe(self) -> None:
+        """Manages reading data from the NFC reader pipe and queues it for the main thread to process.
+        
+        Args:
+            None
+        
+        Returns:
+            None
+        """
+        while True:
+            nfc_data = read_pipe(NFC_READER_TO_SCREEN_PIPE)
+            if nfc_data:
+                self.nfc_reader_pipe_queue.put(nfc_data)
+
+    def start_threads(self) -> None:
+        """Creates and starts the display thread and pipe-reading threads.
+        
+        Args:
+            None
+        
+        Returns:
+            None
+        """
+        # Initialize display thread
         display_thread = threading.Thread(target=self.manage_display)
         display_thread.daemon = True  # Exit display thread when main process exits
         display_thread.start()
+
+        # Initialize pipe-reading threads
+        touch_sensor_pipe_thread = threading.Thread(target=self.manage_touch_sensor_pipe)
+        touch_sensor_pipe_thread.daemon = True
+        touch_sensor_pipe_thread.start()
+
+        nfc_reader_pipe_thread = threading.Thread(target=self.manage_nfc_reader_pipe)
+        nfc_reader_pipe_thread.daemon = True
+        nfc_reader_pipe_thread.start()
 
     def run(self) -> None:
         """Starts the main loop of the screen and handles incoming pipe data for the display thread.
@@ -271,7 +311,7 @@ class Screen:
             None
         """
         logger.info('Running main loop')
-        self.start_display_thread()
+        self.start_threads()
         while True:
             self.handle_pipe_data()
 
