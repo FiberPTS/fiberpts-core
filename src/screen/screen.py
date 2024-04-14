@@ -212,7 +212,7 @@ class Screen:
         if not self.nfc_reader_pipe_queue.empty():
             nfc_data = self.nfc_reader_pipe_queue.get()
             logger.info('NFC data received by screen')
-            tag_data, nfc_type = nfc_data['data'], nfc_data['type']
+            tag_data, nfc_type = nfc_data['data'], NFCType[nfc_data['type']]
             popup_item = None
             device_state = read_device_state(DEVICE_STATE_PATH)
             if nfc_type == NFCType.NONE:
