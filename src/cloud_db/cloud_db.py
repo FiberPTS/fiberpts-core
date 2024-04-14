@@ -44,7 +44,7 @@ class CloudDBClient:
         self.client = supabase.create_client(url, key)
         self.device_id = get_device_id()
 
-    def insert_tap_data(self, tap: Tap) -> int:
+    def insert_tap_data(self, tap: Tap) -> bool:
         """Inserts a new tap data record into the `tap_data` table.
 
         Args:
@@ -59,17 +59,22 @@ class CloudDBClient:
         # TODO: Implement handling for non-existent table.
         # TODO: Implement handling for non-existent device record.
         logger.info('Inserting tap record to Supabase')
+        device_state = read_device_state(DEVICE_STATE_PATH)
         tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'device_id': tap.device_id
         }
+        for key in ['order_id', 'employee_id', 'machine_id']:
+            value = device_state.get(key, None)
+            if value:
+                tap_record[key] = value
         try:
-            response = self.client.table('tap_data').insert(tap_record).execute()
+            response = self.client.table('action_tap_data').insert(tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
+            return True
         except httpx.NetworkError as e:
             logger.error(f"Network Error: {e}")
-            return -1
-        return 0
+        return False
 
     def insert_employee_tap(self, employee_tap: NFCTag) -> bool:
         """Inserts a new employee tap record into the `employee_tap_data` table.
