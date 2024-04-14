@@ -51,7 +51,7 @@ class NFCReader:
             tag = NFCTag(device_id=self.device_id,
                 type=tag_type,
                 value=result,
-                tag_id = uid)
+                tag_id=uid)
             self.pipe_nfc_data(tag)
         else:
             logger.error("Lookup did not find a matching id in the cloud database.")
