@@ -185,20 +185,15 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
     """
     # TODO: Consider using user space os.open command instead of built-in open
     try:
-        pipe_fd = os.open(path_to_pipe, os.O_RDONLY | os.O_NONBLOCK)
-        with os.fdopen(pipe_fd, 'r') as pipein:
+        with open(path_to_pipe, 'r') as pipein:
             raw_data = pipein.readline()
             if raw_data:
                 return json.loads(raw_data)
-    except BlockingIOError:
-        logger.error(f"Pipe {path_to_pipe} is empty")
-    except json.JSONDecodeError:
-        logger.error('Unable to parse data from pipe: Invalid JSON format')
-        raise json.JSONDecodeError
+        return {}
     except FileNotFoundError:
         logger.error(f"Could not find {path_to_pipe} while reading from the pipe")
         raise FileNotFoundError  # TODO: Determine error message format
-    return {}
+
 
 def get_image_center(image: Image) -> tuple[int, int]:
     """Get the center coordinates of an image.
