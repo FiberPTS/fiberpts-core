@@ -12,6 +12,9 @@ from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, NFC_READER_TO_SCREEN_P
 from src.utils.screen_utils import (DisplayAttributes,
                                     DashboardAttributes,
                                     PopupAttributes,
+                                    read_device_state,
+                                    write_device_state,
+                                    is_at_least_next_day,
                                     get_image_center,
                                     read_pipe,
                                     write_image_to_fb)
@@ -191,6 +194,12 @@ class Screen:
             popup_item = None
             status = TapStatus[tap_data['status']]
             if status == TapStatus.GOOD:
+                device_state = read_device_state(DEVICE_STATE_PATH)
+                saved_timestamp = device_state.get('saved_timestamp') if device_state else None
+                if not saved_timestamp or is_at_least_next_day(saved_timestamp, time.time()):
+                    device_state['unit_count'] = 0
+                device_state['unit_count'] += 1
+                write_device_state(device_state, DEVICE_STATE_PATH)
                 popup_item = (self.popup_attributes.message_attributes.tap_event_message,
                               self.popup_attributes.event_attributes.tap_event_bg_color)
             elif status == TapStatus.BAD and self.popup_queue.qsize() < POPUP_LIMIT:
