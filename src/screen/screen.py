@@ -213,15 +213,19 @@ class Screen:
             tag_data, nfc_type = nfc_data['data'], nfc_data['type']
             popup_item = None
             device_state = read_device_state(DEVICE_STATE_PATH)
-            if nfc_type == NFCType.EMPLOYEE:
+            if nfc_type == NFCType.NONE:
+                popup_item = (self.popup_attributes.message_attributes.error_message,
+                              self.popup_attributes.event_attributes.popup_error_bg_color)
+            elif nfc_type == NFCType.EMPLOYEE:
                 device_state['unit_count'] = 0
-                device_state['employee_id'], device_state['employee_name'] = tag_data.get('employee_id'), tag_data['name']
+                device_state['employee_id'], device_state['employee_name'] = (tag_data.get('employee_id', None),
+                                                                              tag_data.get('name', None))
                 write_device_state(device_state, DEVICE_STATE_PATH)
                 popup_item = (self.popup_attributes.message_attributes.employee_event_message,
                               self.popup_attributes.event_attributes.employee_event_bg_color)
             elif nfc_type == NFCType.ORDER:
                 device_state['unit_count'] = 0
-                device_state['order_id'] = nfc_data['data']['order_id']
+                device_state['order_id'] = tag_data.get('order_id', None)
                 write_device_state(device_state, DEVICE_STATE_PATH)
                 popup_item = (self.popup_attributes.message_attributes.order_event_message,
                               self.popup_attributes.event_attributes.order_event_bg_color)
