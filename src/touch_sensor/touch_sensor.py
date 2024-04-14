@@ -7,9 +7,9 @@ import gpiod
 
 from src.cloud_db.cloud_db import CloudDBClient
 from config.touch_sensor_config import *
-from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, PROJECT_DIR)
+from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, DEVICE_STATE_PATH, PROJECT_DIR)
 from src.utils.touch_sensor_utils import *
-from src.utils.utils import get_device_id, TapStatus
+from src.utils.utils import (read_device_state, write_device_state, is_at_least_next_day, get_device_id, TapStatus)
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
@@ -49,7 +49,7 @@ class TouchSensor:
         """Handles a tap event.
 
         The method records the tap event, validates it based on the debounce time,
-        sends valid tap data to both the scren FIFO and the cloud database,
+        sends valid tap data to both the screen FIFO and the cloud database,
         and updates the last tap event.
 
         Returns:
@@ -61,20 +61,22 @@ class TouchSensor:
         if (timestamp - self.last_tap.timestamp) >= self.debounce_time:
             tap_status = TapStatus.GOOD
 
-        tap = Tap(device_id=self.device_id,
-                  timestamp=timestamp,
-                  status=tap_status)
-        logger.info(
-            f"Device Id: {tap.device_id}, \
+        tap = Tap(device_id=self.device_id, timestamp=timestamp, status=tap_status)
+        logger.info(f"Device Id: {tap.device_id}, \
               Timestamp: {tap.timestamp}, \
-              Is Valid: {tap.status == TapStatus.GOOD}"
-        )
+              Is Valid: {tap.status == TapStatus.GOOD}")
 
         self.pipe_tap_data(tap)
 
         is_valid_tap = tap.status == TapStatus.GOOD
         if is_valid_tap:
             # TODO: Implement child process creation for record handling.
+            device_state = read_device_state(DEVICE_STATE_PATH)
+            saved_timestamp = device_state.get('saved_timestamp') if device_state else None
+            if not saved_timestamp or is_at_least_next_day(saved_timestamp, time.time()):
+                device_state['unit_count'] = 0
+            device_state['unit_count'] += 1
+            write_device_state(device_state, DEVICE_STATE_PATH)
             self.cloud_db.insert_tap_data(tap)
 
         self.last_tap = tap
@@ -115,10 +117,7 @@ class TouchSensor:
         with gpiod.request_lines(
                 self.chip_path,
                 consumer="get-line-value",
-                config={
-                    self.line_offset:
-                        gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)
-                },
+                config={self.line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
         ) as request:
             released = True
             while True:
