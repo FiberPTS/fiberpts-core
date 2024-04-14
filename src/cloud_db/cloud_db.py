@@ -9,7 +9,8 @@ from postgrest import APIResponse
 import httpx
 
 from src.utils.touch_sensor_utils import Tap
-from src.utils.utils import NFCType
+from src.utils.utils import NFCType, get_device_id
+from src.utils.nfc_reader_utils import NFCTag
 from src.utils.utils import TIMESTAMP_FORMAT
 from src.utils.paths import PROJECT_DIR
 
@@ -29,6 +30,8 @@ class CloudDBClient:
         url = os.getenv('DATABASE_URL')
         key = os.getenv('DATABASE_API_KEY')
         self.client = supabase.create_client(url, key)
+        self.device_id = get_device_id()
+
 
     def insert_tap_data(self, tap: Tap) -> int:
         """Inserts a new tap data record into the `tap_data` table.
@@ -106,6 +109,63 @@ class CloudDBClient:
             device_id = 'fpts-' + id_num
         return device_id
     
+    def insert_employee_tap(self, employee_tap: NFCTag) -> int:
+        """Inserts a new employee tap record into the `employee_tap_data` table.
+
+        Args:
+            employee_tag: An instance of NFCTag containing the employee tap to be inserted
+
+        Returns:
+            An int value representing the success (0) or failure (-1) of the database operation.
+        """
+        # TODO: Implement handling for connection issues.
+        # TODO: Implement handling for authentication issues.
+        # TODO: Implement data validation.
+        # TODO: Implement handling for non-existent table.
+        # TODO: Implement handling for non-existent device record.
+        logger.info('Inserting employee tap record to Supabase')
+        employee_tap_record = {
+            'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(employee_tap.timestamp)),
+            'device_id': employee_tap.device_id,
+            'employee_unifi_id': employee_tap.data['unifi_id']
+        }
+
+        try:
+            response = self.client.table('employee_tap_data').insert(employee_tap_record).execute()
+            logger.info(response)  # TODO: Correctly print response (need to test)
+        except httpx.NetworkError as e:
+            logger.error(f"Network Error: {e}")
+            return -1
+        return 0
+    
+    def insert_order_tap(self, order_tap: NFCTag) -> int:
+        """Inserts a new order tap record into the `order_tap_data` table.
+
+        Args:
+            order_tag: An instance of NFCTag containing the order tap to be inserted
+
+        Returns:
+            An int value representing the success (0) or failure (-1) of the database operation.
+        """
+        # TODO: Implement handling for connection issues.
+        # TODO: Implement handling for authentication issues.
+        # TODO: Implement data validation.
+        # TODO: Implement handling for non-existent table.
+        # TODO: Implement handling for non-existent device record.
+        logger.info('Inserting order tap record to Supabase')
+        order_tap_record = {
+            'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(order_tap.timestamp)),
+            'device_id': order_tap.device_id
+        }
+        try:
+            response = self.client.table('order_tap_data').insert(order_tap_record).execute()
+            logger.info(response)  # TODO: Correctly print response (need to test)
+        except httpx.NetworkError as e:
+            logger.error(f"Network Error: {e}")
+            return -1
+        return 0
+
+    
     def lookup_uid(self, uid: str):
         """Searches for an nfc record matching the unique id provided to it in Supabase.
 
@@ -113,22 +173,44 @@ class CloudDBClient:
             uid: A string containing the unique id to be searched for
 
         Returns:
-            An int value representing the success (0) or failure (-1) of the database operation.
+            A NFCTag object represnting either an employee or an order. Returns an NFCTag object represnting None if the operation fails. 
         """
         logger.info(f'Looking up uid: {uid} in Supabase')
-        result = None
-        nfc_type = None
+        result = NFCTag(device_id = self.device_id,
+                        timestamp = time.time(),
+                        type = NFCType.NONE,
+                        data = {},
+                        tag_id = uid
+                        )
         try:
-            data = self.client.table("Order_Tag").select("*").eq("Tag_ID", uid).execute()
-            if len(data.data) > 0:
-                order = self.client.table("Order_Tag_Group").select("Order_ID").eq("Group ID",data[0]["Order_Tag_Group_ID"]).execute()
-                result = order[0]
-                nfc_type = NFCType.ORDER
+            order_tag_records = self.client.table("order_tags").select("order_tag_group_id").eq("tag_id", uid).execute()
+            if len(order_tag_records.data) > 0:
+                order_tag_group_id = order_tag_records.data[0]["order_tag_group_id"]
+                order_records = self.client.table("order_tag_groups").select("order_id").eq("group_id",order_tag_group_id).execute()
+                if len(order_records.data) > 0:
+                    order_data = order_records.data[0]
+                    result = NFCTag(device_id = self.device_id,
+                                    timestamp = time.time(),
+                                    type = NFCType.ORDER,
+                                    data = order_data,
+                                    tag_id = uid
+                                    )
+                else:
+                    logger.info("Could not find the order group associated with this tag.")
             else:
-                ID = self.client.table("Employee_Tag").select("*").eq("Tag_ID", uid).execute()
-                employee = self.client.table("Employee").select("Name").eq("Unit ID", ID[0]["Employee_Unit_ID"])
-                result = employee[0]
-                nfc_type = NFCType.EMPLOYEE
+                employee_tag_records = self.client.table("employee_tags").select("employee_unifi_id").eq("tag_id", uid).execute()
+                if len(employee_tag_records.data) > 0:
+                    employee_unit_id = employee_tag_records[0]["Employee_Unit_ID"]
+                    employee = self.client.table("employees").select("name, unifi_id").eq("unifi_id", employee_unit_id).execute()
+                    employee_data = employee.data[0]
+                    result = NFCTag(device_id = self.device_id,
+                                    timestamp = time.time(),
+                                    type = NFCType.EMPLOYEE,
+                                    data = employee_data,
+                                    tag_id = uid
+                                    )
+                else:
+                    logger.info("Could not find any employee or order associated with this NFC Tag.")
         except httpx.NetworkError as e:
             logger.error(f"Network Error: {e}")
-        return result, nfc_type
+        return result

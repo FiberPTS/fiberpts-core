@@ -8,7 +8,7 @@ from ctypes import CDLL, c_bool, c_char_p, c_size_t, create_string_buffer
 from src.cloud_db.cloud_db import CloudDBClient
 from src.utils.nfc_reader_utils import NFCTag
 from src.utils.paths import (NFC_READER_TO_SCREEN_PIPE, PROJECT_DIR)
-from src.utils.utils import get_device_id
+from src.utils.utils import NFCType, get_device_id
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
@@ -44,15 +44,11 @@ class NFCReader:
               Timestamp: {timestamp}, \
               NFC ID: {uid}"
         )
-        result, tag_type = self.cloud_db.lookup_tag(uid)
-        if result:
-            logger.info(f"Lookup Result Value: {result}, \
-                        Type: {tag_type}")
-            tag = NFCTag(device_id=self.device_id,
-                type=tag_type,
-                value=result,
-                tag_id = uid)
-            self.pipe_nfc_data(tag)
+        result = self.cloud_db.lookup_tag(uid)
+        if result.type != NFCType.NONE:
+            logger.info(f"Lookup Result Value: {result.data}, \
+                        Type: {result.type}")
+            self.pipe_nfc_data(result)
         else:
             logger.error("Lookup did not find a matching id in the cloud database.")
 
@@ -79,7 +75,7 @@ class NFCReader:
             logger.error('Cannot write to pipe - broken pipe')
         except Exception as e:
             logger.error(f"Error writing to pipe: {e}")
-            
+
     def init_poll(self):
         """
         Initializes and returns a CDLL object for interacting with the 'libpoll.so' shared library.
