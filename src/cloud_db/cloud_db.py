@@ -169,7 +169,7 @@ class CloudDBClient:
         result = NFCTag(device_id=self.device_id, timestamp=time.time(), type=NFCType.NONE, data={}, tag_id=uid)
         try:
             order_tag_records = self.client.table("order_tags").select("order_tag_group_id").eq("tag_id", uid).execute()
-            logger.info('Order Tags: ', order_tag_records)
+            logger.info('Order Tags: ', self.client.table("order_tags").select("order_tag_group_id").data)
             if len(order_tag_records.data) > 0:
                 order_tag_group_id = order_tag_records.data[0]["order_tag_group_id"]
                 order_records = self.client.table("order_tag_groups").select("order_id").eq(
@@ -186,7 +186,7 @@ class CloudDBClient:
             else:
                 employee_tag_records = self.client.table("employee_tags").select("employee_id").eq("tag_id",
                                                                                                    uid).execute()
-                logger.info('Employee Tags: ', employee_tag_records)
+                logger.info('Employee Tags: ', self.client.table("employee_tags").select("employee_id").data)
                 if len(employee_tag_records.data) > 0:
                     employee_id = employee_tag_records[0]["employee_id"]
                     employee = self.client.table("employees").select("name, employee_id").eq(
