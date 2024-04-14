@@ -94,18 +94,20 @@ class CloudDBClient:
         if employee_tap.type != NFCType.EMPLOYEE:
             logger.error("Invalid NFC Tag type. Expected EMPLOYEE.")
             return False
-        if not employee_tap.data.get('employee_id', None):
+        employee_id = employee_tap.data.get('employee_id', None)
+        if not employee_id:
             logger.error("Employee ID is missing.")
             return False
-        machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
-                                                                                 employee_tap.device_id).execute()
-        machine_id = machine_id_record.data[0]['machine_id']
         employee_tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(employee_tap.timestamp)),
             'device_id': employee_tap.device_id,
-            'employee_id': employee_tap.data['employee_id'],
-            'machine_id': machine_id
+            'employee_id': employee_id
         }
+        machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
+                                                                                 employee_tap.device_id).execute()
+        machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
+        if machine_id:
+            employee_tap_record['machine_id'] = machine_id
         try:
             response = self.client.table('employee_tap_data').insert(employee_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
@@ -133,26 +135,25 @@ class CloudDBClient:
             return False
         logger.info('Inserting order tap record to Supabase')
         device_state = read_device_state(DEVICE_STATE_PATH)
+        order_tap_record = {
+            'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(order_tap.timestamp)),
+            'device_id': order_tap.device_id,
+            'order_id': order_tap.data['order_id']
+        }
         employee_id = device_state.get('employee_id', None)
         if employee_id:
-            machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
-                                                                                     order_tap.device_id).execute()
-            machine_id = machine_id_record.data[0]['machine_id']
-            order_tap_record = {
-                'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(order_tap.timestamp)),
-                'device_id': order_tap.device_id,
-                'order_id': order_tap.data['order_id'],
-                'employee_id': employee_id,
-                'machine_id': machine_id
-            }
-            try:
-                response = self.client.table('order_tap_data').insert(order_tap_record).execute()
-                logger.info(response)  # TODO: Correctly print response (need to test)
-                return True
-            except httpx.NetworkError as e:
-                logger.error(f"Network Error: {e}")
-        else:
-            logger.info("Employee ID is not present in device state.")
+            order_tap_record['employee_id'] = employee_id
+        machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
+                                                                                    order_tap.device_id).execute()
+        machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
+        if machine_id:
+            order_tap_record['machine_id'] = machine_id
+        try:
+            response = self.client.table('order_tap_data').insert(order_tap_record).execute()
+            logger.info(response)  # TODO: Correctly print response (need to test)
+            return True
+        except httpx.NetworkError as e:
+            logger.error(f"Network Error: {e}")
         return False
 
     def lookup_uid(self, uid: str) -> NFCTag:
