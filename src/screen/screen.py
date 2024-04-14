@@ -14,6 +14,7 @@ from src.utils.screen_utils import (DisplayAttributes,
                                     PopupAttributes,
                                     read_device_state,
                                     write_device_state,
+                                    is_at_least_next_day,
                                     get_image_center,
                                     read_pipe,
                                     write_image_to_fb)
@@ -34,9 +35,7 @@ class Screen:
         dashboard_attributes (DashboardAttributes): Attributes related to dashboard appearance such as font family, size, color, and background color.
         popup_attributes (PopupAttributes): Attributes for configuring popups, including fonts, colors, and duration.
         touch_sensor_pipe (str): Path to the named pipe for reading touch sensor data.
-        device_state_path (str): Path to the file where the device state is stored.
         popup_queue (Queue): A queue for all popup data.
-        device_state (dict): State of the device as read from the device state file.
         image: Current image being displayed on the screen.
     """
 
@@ -48,10 +47,8 @@ class Screen:
         self.popup_attributes = PopupAttributes()
         # File paths
         self.touch_sensor_pipe = TOUCH_SENSOR_TO_SCREEN_PIPE
-        self.device_state_path = DEVICE_STATE_PATH
         # Initialize screen
         self.popup_queue = Queue()
-        self.device_state = read_device_state(DEVICE_STATE_PATH)
         self.image = None
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
 
@@ -108,7 +105,9 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=False)
-        self.add_text(f"Unit Count: {self.device_state['unit_count']}",
+        device_state = read_device_state(DEVICE_STATE_PATH)
+        unit_count = device_state.get('unit_count')
+        self.add_text(f"Unit Count: {unit_count}",
                       image_center,
                       self.dashboard_attributes.dashboard_font_family,
                       self.dashboard_attributes.dashboard_font_size,
@@ -156,11 +155,15 @@ class Screen:
             popup_item = None
             status = TapStatus[tap_data['status']]
             if status == TapStatus.GOOD:
-                self.device_state['unit_count'] += 1
-                write_device_state(self.device_state, self.device_state_path)
+                device_state = read_device_state(DEVICE_STATE_PATH)
+                saved_timestamp = device_state.get('saved_timestamp') if device_state else None
+                if not saved_timestamp or is_at_least_next_day(saved_timestamp, time.time()):
+                    device_state['unit_count'] = 0
+                device_state['unit_count'] += 1
+                write_device_state(device_state, DEVICE_STATE_PATH)
                 popup_item = (self.popup_attributes.message_attributes.tap_event_message,
                               self.popup_attributes.event_attributes.tap_event_bg_color)
-            elif status == TapStatus.BAD:
+            elif status == TapStatus.BAD and self.popup_queue.qsize() < POPUP_LIMIT:
                 popup_item = (self.popup_attributes.message_attributes.popup_warning_message,
                               self.popup_attributes.event_attributes.popup_warning_bg_color)
             if popup_item:
