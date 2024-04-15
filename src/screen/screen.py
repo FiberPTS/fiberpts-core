@@ -197,9 +197,6 @@ class Screen:
             status = TapStatus[tap_data['status']]
             if status == TapStatus.GOOD:
                 device_state = read_device_state(DEVICE_STATE_PATH)
-                saved_timestamp = device_state.get('saved_timestamp') if device_state else None
-                if not saved_timestamp or is_at_least_next_day(saved_timestamp, time.time()):
-                    device_state['unit_count'] = 0
                 device_state['unit_count'] += 1
                 write_device_state(device_state, DEVICE_STATE_PATH)
                 popup_item = (self.popup_attributes.message_attributes.tap_event_message,
@@ -215,24 +212,27 @@ class Screen:
             tag_data, nfc_type = nfc_data['data'], NFCType[nfc_data['type']]
             popup_item = None
             device_state = read_device_state(DEVICE_STATE_PATH)
-            if nfc_type == NFCType.NONE:
+            if nfc_type == NFCType.NONE and self.popup_queue.qsize() < POPUP_LIMIT:
                 popup_item = (self.popup_attributes.message_attributes.popup_error_message,
                               self.popup_attributes.event_attributes.popup_error_bg_color)
             elif nfc_type == NFCType.EMPLOYEE:
-                device_state['unit_count'] = 0
-                device_state['employee_id'], device_state['employee_name'] = (tag_data.get('employee_id', None),
-                                                                              tag_data.get('name', None))
-                write_device_state(device_state, DEVICE_STATE_PATH)
+                employee_id, employee_name = tag_data.get('employee_id', None), tag_data.get('name', None)
+                # Reset unit count if employee changes
+                if employee_id and employee_id != device_state.get('employee_id', None):
+                    device_state['unit_count'] = 0
+                device_state['employee_id'], device_state['employee_name'] = (employee_id, employee_name)
                 popup_item = (self.popup_attributes.message_attributes.employee_set_message,
                               self.popup_attributes.event_attributes.employee_event_bg_color)
             elif nfc_type == NFCType.ORDER:
-                device_state['unit_count'] = 0
-                device_state['order_id'] = tag_data.get('order_id', None)
-                write_device_state(device_state, DEVICE_STATE_PATH)
+                order_id = tag_data.get('order_id', None)
+                if order_id and order_id != device_state.get('order_id', None):
+                    device_state['unit_count'] = 0
+                    device_state['order_id'] = order_id
                 popup_item = (self.popup_attributes.message_attributes.order_set_message,
                               self.popup_attributes.event_attributes.order_event_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
+            write_device_state(device_state, DEVICE_STATE_PATH)
 
     def manage_display(self) -> None:
         """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup.
@@ -312,8 +312,20 @@ class Screen:
         """
         logger.info('Running main loop')
         self.start_threads()
+        check_reset_timer = time.time() - 30
         while True:
             self.handle_pipe_data()
+            current_time = time.time()
+            if current_time - check_reset_timer > 30:
+                device_state = read_device_state(DEVICE_STATE_PATH, verbose=False)
+                saved_timestamp = device_state.get('saved_timestamp') if device_state else None
+                if not saved_timestamp or is_at_least_next_day(saved_timestamp, current_time):
+                    device_state['unit_count'] = 0
+                    device_state['employee_id'], device_state['order_id'], device_state['employee_name'] = (None, None,
+                                                                                                            None)
+                write_device_state(device_state, DEVICE_STATE_PATH, verbose=False)
+                check_reset_timer = current_time
+
 
 
 if __name__ == "__main__":
