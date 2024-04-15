@@ -4,6 +4,7 @@ import logging
 import logging.config
 import time
 import signal
+import sys
 
 from ctypes import CDLL, c_bool, c_char_p, c_size_t, create_string_buffer
 from src.cloud_db.cloud_db import CloudDBClient
@@ -37,6 +38,7 @@ class NFCReader:
 
     def signal_handler(self, signum, frame) -> None:
         self.lib.cleanup()
+        sys.exit(0)
 
     def handle_nfc_tap(self, uid) -> None:
         """Handles a tap event.
