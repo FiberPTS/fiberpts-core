@@ -201,12 +201,21 @@ class Screen:
             # timestamp = tap_data["timestamp"]
             popup_item = None
             status = TapStatus[tap_data['status']]
-            if status == TapStatus.GOOD:
-                device_state = read_device_state(DEVICE_STATE_PATH)
-                device_state['unit_count'] += 1
-                write_device_state(device_state, DEVICE_STATE_PATH)
-                popup_item = (self.popup_attributes.message_attributes.tap_event_message,
-                              self.popup_attributes.event_attributes.tap_event_bg_color)
+            device_state = read_device_state(DEVICE_STATE_PATH)
+            order_id, employee_id = device_state.get('order_id', None), device_state.get('employee_id', None)
+            if not employee_id:
+                if self.popup_queue.qsize() < POPUP_LIMIT:
+                    popup_item = (self.popup_attributes.message_attributes.no_employee_message,
+                                    self.popup_attributes.event_attributes.no_employee_bg_color)
+            elif not order_id:
+                if self.popup_queue.qsize() < POPUP_LIMIT:
+                    popup_item = (self.popup_attributes.message_attributes.no_order_message,
+                                    self.popup_attributes.event_attributes.no_order_bg_color)
+            elif status == TapStatus.GOOD:
+                    device_state['unit_count'] += 1
+                    write_device_state(device_state, DEVICE_STATE_PATH)
+                    popup_item = (self.popup_attributes.message_attributes.tap_event_message,
+                                    self.popup_attributes.event_attributes.tap_event_bg_color)
             elif status == TapStatus.BAD and self.popup_queue.qsize() < POPUP_LIMIT:
                 popup_item = (self.popup_attributes.message_attributes.popup_warning_message,
                               self.popup_attributes.event_attributes.popup_warning_bg_color)

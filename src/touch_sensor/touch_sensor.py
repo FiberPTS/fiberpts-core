@@ -55,19 +55,23 @@ class TouchSensor:
 
         if (timestamp - self.last_tap.timestamp) >= DEBOUNCE_TIME:
             tap_status = TapStatus.GOOD
-
+        
         tap = Tap(device_id=self.device_id,
                   timestamp=timestamp,
                   status=tap_status)
+        
+        device_state = read_device_state(DEVICE_STATE_PATH)
+        order_id, employee_id = device_state.get('order_id', None), device_state.get('employee_id', None)
+        is_valid_tap = tap.status == TapStatus.GOOD and order_id and employee_id
+        
         logger.info(
             f"Device Id: {tap.device_id}, \
               Timestamp: {tap.timestamp}, \
-              Is Valid: {tap.status == TapStatus.GOOD}"
+              Is Valid: {is_valid_tap}"
         )
 
         self.pipe_tap_data(tap)
-
-        is_valid_tap = tap.status == TapStatus.GOOD
+        
         if is_valid_tap:
             # TODO: Implement child process creation for record handling.
             self.cloud_db.insert_tap_data(tap)
