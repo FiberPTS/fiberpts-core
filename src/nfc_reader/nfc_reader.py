@@ -50,7 +50,7 @@ class NFCReader:
         if result.type == NFCType.ORDER:
             self.cloud_db.insert_order_tap(result)
         logger.info(f"Lookup Result Value: {result.data}, \
-                    Type: {result.type}"                                        )
+                    Type: {result.type}")
         self.pipe_nfc_data(result)
 
     def pipe_nfc_data(self, tag) -> None:

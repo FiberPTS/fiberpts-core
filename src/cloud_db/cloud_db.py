@@ -76,6 +76,7 @@ class CloudDBClient:
             logger.error(f"Network Error: {e}")
         return False
 
+    # TODO: This should also trigger a insert_order_tap since when the employee switches, the order should also be associated with the new employee.
     def insert_employee_tap(self, employee_tap: NFCTag) -> bool:
         """Inserts a new employee tap record into the `employee_tap_data` table.
 
@@ -112,6 +113,8 @@ class CloudDBClient:
             logger.info(employee_tap_record)
             response = self.client.table('employee_tap_data').insert(employee_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
+            #device_state = read_device_state(DEVICE_STATE_PATH)
+            #self.insert_order_tap()
             return True
         except httpx.NetworkError as e:
             logger.error(f"Network Error: {e}")
