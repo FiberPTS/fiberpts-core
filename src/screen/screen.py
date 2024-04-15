@@ -223,13 +223,13 @@ class Screen:
                 device_state['employee_id'], device_state['employee_name'] = (tag_data.get('employee_id', None),
                                                                               tag_data.get('name', None))
                 write_device_state(device_state, DEVICE_STATE_PATH)
-                popup_item = (self.popup_attributes.message_attributes.employee_event_message,
+                popup_item = (self.popup_attributes.message_attributes.employee_set_message,
                               self.popup_attributes.event_attributes.employee_event_bg_color)
             elif nfc_type == NFCType.ORDER:
                 device_state['unit_count'] = 0
                 device_state['order_id'] = tag_data.get('order_id', None)
                 write_device_state(device_state, DEVICE_STATE_PATH)
-                popup_item = (self.popup_attributes.message_attributes.order_event_message,
+                popup_item = (self.popup_attributes.message_attributes.order_set_message,
                               self.popup_attributes.event_attributes.order_event_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
