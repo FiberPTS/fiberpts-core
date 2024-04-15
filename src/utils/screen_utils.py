@@ -148,9 +148,7 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
     except json.JSONDecodeError:
         logger.error('Unable to parse device state: Invalid JSON format')
         raise json.JSONDecodeError
-    except portalocker.exceptions.LockTimeout as e:
-        print(f"Failed to acquire lock within timeout period: {e}")
-    except portalocker.exceptions.LockException as e:
+    except portalocker.exceptions.BaseLockException as e:
         print(f"Failed to lock the file: {e}")
     finally:
         try:
@@ -184,9 +182,7 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
     except IOError as e:
         logger.error(f"An error occurred while writing to device state: {e}")
         raise IOError  # TODO: Determine error message format
-    except portalocker.exceptions.LockTimeout as e:
-        print(f"Failed to acquire lock within timeout period: {e}")
-    except portalocker.exceptions.LockException as e:
+    except portalocker.exceptions.BaseLockException as e:
         print(f"Failed to lock the file: {e}")
     finally:
         try:
