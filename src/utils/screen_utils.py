@@ -121,7 +121,7 @@ def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
     return to_day_start > from_day_start
 
 
-def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
+def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[str, Any]:
     """Read the device state from a JSON file.
 
     Args:
@@ -134,7 +134,8 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
         FileNotFoundError: If the specified JSON file path does not exist.
         JSONDecodeError: If there is an error decoding the JSON data from the file.
     """
-    logger.info('Reading device state')
+    if verbose:
+        logger.info('Reading device state')
     try:
         with open(path_to_device_state, 'r') as file:
             return json.load(file)
@@ -146,8 +147,7 @@ def read_device_state(path_to_device_state: str) -> Dict[str, Any]:
         raise json.JSONDecodeError
 
 
-def write_device_state(device_state: Dict[str, Any],
-                       path_to_device_state: str) -> None:
+def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, verbose: bool = True) -> None:
     """Write the updated device state to a JSON file.
 
     Args:
@@ -158,17 +158,18 @@ def write_device_state(device_state: Dict[str, Any],
         FileNotFoundError: If the specified JSON file path does not exist.
         IOError: If there is an error writing to the file.
     """
-    logger.info('Writing device state')
+    if verbose:
+        logger.info('Writing device state')
     device_state['saved_timestamp'] = time.time()
     try:
         with open(path_to_device_state, 'w') as file:
             json.dump(device_state, file, indent=4)
     except FileNotFoundError:
         logger.error('Device state file not found')
-        raise FileNotFoundError # TODO: Determine error message format
+        raise FileNotFoundError  # TODO: Determine error message format
     except IOError as e:
         logger.error(f"An error occurred while writing to device state: {e}")
-        raise IOError # TODO: Determine error message format
+        raise IOError  # TODO: Determine error message format
 
 
 def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
