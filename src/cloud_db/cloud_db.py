@@ -143,11 +143,13 @@ class CloudDBClient:
         employee_id = device_state.get('employee_id', None)
         if employee_id:
             order_tap_record['employee_id'] = employee_id
-        machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
-                                                                                 order_tap.device_id).execute()
-        machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
+        machine_id_query = self.client.table("devices").select("machine_id").eq("device_id",
+                                                                                order_tap.device_id).execute()
+        machine_id_records = machine_id_query.data
+        machine_id = None if len(machine_id_records) == 0 else machine_id_records[0]['machine_id']
         if machine_id:
             order_tap_record['machine_id'] = machine_id
+
         try:
             response = self.client.table('order_tap_data').insert(order_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
@@ -168,37 +170,39 @@ class CloudDBClient:
         logger.info(f'Looking up NFC Tag: {uid} in Supabase')
         result = NFCTag(device_id=self.device_id, timestamp=time.time(), type=NFCType.NONE, data={}, tag_id=uid)
         try:
-            order_tag_records = self.client.table("order_tags").select("order_tag_group_id").eq("tag_id", uid).execute()
-            example = self.client.table('order_tags').select('order_tag_group_id').execute()
-            logger.info(f"Order Tags: {example.data}")
-            if len(order_tag_records.data) > 0:
-                order_tag_group_id = order_tag_records.data[0]["order_tag_group_id"]
-                order_records = self.client.table("order_tag_groups").select("order_id").eq(
+            order_tag_query = self.client.table("order_tags").select("order_tag_group_id").eq("tag_id", uid).execute()
+            order_tag_records = order_tag_query.data
+            logger.info(f"Order Tags: {order_tag_records}")
+            if len(order_tag_records) > 0:
+                order_tag_group_id = order_tag_records[0]["order_tag_group_id"]
+                order_query = self.client.table("order_tag_groups").select("order_id").eq(
                     "group_id", order_tag_group_id).execute()
-                if len(order_records.data) > 0:
-                    order_data = order_records.data[0]
+                order_records = order_query.data
+                if len(order_records) > 0:
+                    order_record = order_records[0]
                     result = NFCTag(device_id=self.device_id,
                                     timestamp=time.time(),
                                     type=NFCType.ORDER,
-                                    data=order_data,
+                                    data=order_record,
                                     tag_id=uid)
                 else:
                     logger.info("Could not find the order group associated with this NFC tag.")
             else:
-                employee_tag_records = self.client.table("employee_tags").select("employee_id").eq("tag_id",
-                                                                                                   uid).execute()
-                example = self.client.table('employee_tags').select('employee_id').execute()
-                logger.info(f"Employee Tags: {example.data}")
-                if len(employee_tag_records.data) > 0:
+                employee_tag_query = self.client.table("employee_tags").select("employee_id").eq("tag_id",
+                                                                                                 uid).execute()
+                employee_tag_records = employee_tag_query.data
+                logger.info(f"Employee Tags: {employee_tag_records}")
+                if len(employee_tag_records) > 0:
                     employee_id = employee_tag_records[0]["employee_id"]
-                    employee = self.client.table("employees").select("name, employee_id").eq(
+                    employee_query = self.client.table("employees").select("name, employee_id").eq(
                         "employee_id", employee_id).execute()
-                    if len(employee.data) > 0:
-                        employee_data = employee.data[0]
+                    employee_records = employee_query.data
+                    if len(employee_records) > 0:
+                        employee_record = employee_records[0]
                         result = NFCTag(device_id=self.device_id,
                                         timestamp=time.time(),
                                         type=NFCType.EMPLOYEE,
-                                        data=employee_data,
+                                        data=employee_record,
                                         tag_id=uid)
                     else:
                         logger.info("Could not find the employee associated with this NFC tag.")
