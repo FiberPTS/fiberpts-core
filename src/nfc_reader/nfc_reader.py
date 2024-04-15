@@ -3,6 +3,7 @@ import os
 import logging
 import logging.config
 import time
+import signal
 
 from ctypes import CDLL, c_bool, c_char_p, c_size_t, create_string_buffer
 from src.cloud_db.cloud_db import CloudDBClient
@@ -12,7 +13,6 @@ from src.utils.utils import NFCType, get_device_id
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
-
 
 class NFCReader:
     """Represents an NFC Reader.
@@ -29,7 +29,14 @@ class NFCReader:
         self.cloud_db = CloudDBClient()
         self.lib = self.init_poll()
         self.device_id = get_device_id()
+        self.setup_signal_handler()
+        
+    def setup_signal_handler(self) -> None:
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
 
+    def signal_handler(self, signum, frame) -> None:
+        self.lib.cleanup()
 
     def handle_nfc_tap(self, uid) -> None:
         """Handles a tap event.
@@ -91,6 +98,8 @@ class NFCReader:
         lib.poll.restype = None
         lib.is_tag_present.argtypes = None
         lib.is_tag_present.restype = c_bool
+        lib.cleanup.argtypes = None
+        lib.cleanup.restype = None
         return lib
 
     def run(self) -> None:
