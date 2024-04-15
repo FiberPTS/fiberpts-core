@@ -6,7 +6,7 @@ import time
 import signal
 import sys
 
-from ctypes import CDLL, c_bool, c_char_p, c_size_t, create_string_buffer
+from ctypes import CDLL, c_int, c_bool, c_char_p, c_size_t, create_string_buffer
 from src.cloud_db.cloud_db import CloudDBClient
 from src.utils.nfc_reader_utils import NFCTag
 from src.utils.paths import (NFC_READER_TO_SCREEN_PIPE, PROJECT_DIR)
@@ -31,14 +31,16 @@ class NFCReader:
         self.lib = self.init_nfc_lib()
         self.device_id = get_device_id()
         self.setup_signal_handler()
+        self.sig_flag = c_int.in_dll(self.lib, 'sig_flag')
         
     def setup_signal_handler(self) -> None:
-        signal.signal(signal.SIGINT, self.signal_handler)
-        signal.signal(signal.SIGTERM, self.signal_handler)
+        signal.signal(signal.SIGINT, self.sig_handler)
+        signal.signal(signal.SIGTERM, self.sig_handler)
 
-    def signal_handler(self, signum, frame) -> None:
+    def sig_handler(self, signum, frame) -> None:
         self.lib.cleanup()
         sys.exit(0)
+
 
     def handle_nfc_tap(self, uid) -> None:
         """Handles a tap event.
@@ -115,6 +117,9 @@ class NFCReader:
         while True:
             uid_buf = create_string_buffer(uid_len)  # Create a buffer for the UID
             self.lib.poll(uid_buf, uid_len)  # Call the C function to fill the buffer with the UID string
+            if self.sig_flag.value:
+                self.lib.cleanup()
+                sys.exit(0)
             uid_str = uid_buf.value.decode('utf-8')
             self.handle_nfc_tap(uid_str)
             while self.lib.is_tag_present():

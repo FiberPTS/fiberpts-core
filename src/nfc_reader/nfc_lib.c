@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <err.h>
+#include <signal.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stddef.h>
@@ -13,6 +14,14 @@
 
 static nfc_device *pnd = NULL;
 static nfc_context *context;
+
+volatile sig_atomic_t sig_flag = 0;
+
+void sig_handler(int sig)
+{
+    (void)sig;
+    sig_flag = 1;
+}
 
 // TODO: The signal interrupter doesn't work when being called from python
 /**
@@ -66,6 +75,8 @@ bool uint_to_hexstr(const uint8_t *uid, size_t uid_len, char *uid_str)
  */
 void poll(char *uid_str, size_t buffer_size)
 {
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
 
     const nfc_modulation nmMifare = {
         .nmt = NMT_ISO14443A,
@@ -99,9 +110,9 @@ void poll(char *uid_str, size_t buffer_size)
         exit(EXIT_FAILURE);
     }
 
-    while ((res = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt)) < 0)
+    while (!sig_flag && (res = nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt)) < 0)
     {
-        sleep(0.25);
+        usleep(250000);
     }
 
     nfc_close(pnd);
