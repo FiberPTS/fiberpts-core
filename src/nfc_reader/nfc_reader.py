@@ -45,15 +45,15 @@ class NFCReader:
               NFC ID: {uid}"
         )
         result = self.cloud_db.lookup_uid(uid)
+        logger.info(f"Lookup Result Value: {result.data}, \
+                    Type: {result.type}")
+        self.pipe_nfc_data(result)
         if result.type == NFCType.EMPLOYEE:
             self.cloud_db.insert_employee_tap(result)
         if result.type == NFCType.ORDER:
             self.cloud_db.insert_order_tap(result)
-        logger.info(f"Lookup Result Value: {result.data}, \
-                    Type: {result.type}")
-        self.pipe_nfc_data(result)
 
-    def pipe_nfc_data(self, tag) -> None:
+    def pipe_nfc_data(self, tag: NFCTag) -> None:
         """Sends NFC tag lookup results to named pipe for IPC with screen module.
 
         Args:
