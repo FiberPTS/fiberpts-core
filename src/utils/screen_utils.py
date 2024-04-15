@@ -137,11 +137,12 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
     """
     if verbose:
         logger.info('Reading device state')
-    file = None
     try:
         with open(path_to_device_state, 'r') as file:
             portalocker.lock(file, portalocker.LOCK_SH)
-            return json.load(file)
+            data = json.load(file)
+            portalocker.unlock(file)
+            return data
     except FileNotFoundError:
         logger.error('Device state file not found')
         raise FileNotFoundError
@@ -150,11 +151,6 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
         raise json.JSONDecodeError
     except portalocker.exceptions.BaseLockException as e:
         print(f"Failed to lock the file: {e}")
-    finally:
-        try:
-            portalocker.unlock(file)
-        except ValueError:
-            logger.error('File is not locked')
 
 # TODO: Make sure that this function handles concurrent access
 def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, verbose: bool = True) -> None:
@@ -171,11 +167,11 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
     if verbose:
         logger.info('Writing device state')
     device_state['saved_timestamp'] = time.time()
-    file = None
     try:
         with open(path_to_device_state, 'w') as file:
             portalocker.lock(file, portalocker.LOCK_EX)
             json.dump(device_state, file, indent=4)
+            portalocker.unlock(file)
     except FileNotFoundError:
         logger.error('Device state file not found')
         raise FileNotFoundError  # TODO: Determine error message format
@@ -184,11 +180,6 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
         raise IOError  # TODO: Determine error message format
     except portalocker.exceptions.BaseLockException as e:
         print(f"Failed to lock the file: {e}")
-    finally:
-        try:
-            portalocker.unlock(file)
-        except ValueError:
-            logger.error('File is not locked')
 
 def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
     """Read and parse JSON data from a named pipe.
