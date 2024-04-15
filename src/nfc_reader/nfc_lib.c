@@ -17,12 +17,6 @@ static nfc_context *context;
 
 volatile sig_atomic_t sig_flag = 0;
 
-void sig_handler(int sig)
-{
-    (void)sig;
-    sig_flag = 1;
-}
-
 // TODO: The signal interrupter doesn't work when being called from python
 /**
  * @brief the stop signal (SIGINT), aborting the current NFC command if a device is active,
@@ -41,6 +35,13 @@ void cleanup()
         nfc_exit(context);  // Exit NFC context
         exit(EXIT_FAILURE); // Exit program with failure status
     }
+}
+
+void sig_handler(int sig)
+{
+    (void)sig;
+    sig_flag = 1;
+    cleanup();
 }
 
 /**
@@ -117,6 +118,12 @@ void poll(char *uid_str, size_t buffer_size)
 
     nfc_close(pnd);
     nfc_exit(context);
+
+    if (sig_flag)
+    {
+        printf("Operation interrupted by user.\n");
+        exit(EXIT_FAILURE);
+    }
 
     if (nt.nti.nai.szUidLen > buffer_size)
     {
