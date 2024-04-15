@@ -140,7 +140,7 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
     file = None
     try:
         with open(path_to_device_state, 'r') as file:
-            portalocker.lock(file, portalocker.LOCK_SH, timeout=5)
+            portalocker.lock(file, portalocker.LOCK_SH)
             return json.load(file)
     except FileNotFoundError:
         logger.error('Device state file not found')
@@ -174,7 +174,7 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
     file = None
     try:
         with open(path_to_device_state, 'w') as file:
-            portalocker.lock(file, portalocker.LockFlags.EXCLUSIVE, timeout=5)
+            portalocker.lock(file, portalocker.LOCK_EX)
             json.dump(device_state, file, indent=4)
     except FileNotFoundError:
         logger.error('Device state file not found')
