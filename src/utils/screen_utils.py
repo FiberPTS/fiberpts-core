@@ -64,7 +64,9 @@ class EventAttributes(NamedTuple):
     popup_warning_bg_color: str = POPUP_WARNING_BG_COLOR
     tap_event_bg_color: str = TAP_EVENT_BG_COLOR
     order_set_bg_color: str = ORDER_SET_BG_COLOR
+    order_same_bg_color: str = ORDER_SAME_BG_COLOR
     employee_set_bg_color: str = EMPLOYEE_SET_BG_COLOR
+    employee_same_bg_color: str = EMPLOYEE_SAME_BG_COLOR
 
 
 class MessageAttributes(NamedTuple):
@@ -87,7 +89,9 @@ class MessageAttributes(NamedTuple):
     popup_warning_message: str = POPUP_WARNING_MESSAGE
     tap_event_message: str = TAP_EVENT_MESSAGE
     order_set_message: str = ORDER_SET_MESSAGE
+    order_same_message: str = ORDER_SAME_MESSAGE
     employee_set_message: str = EMPLOYEE_SET_MESSAGE
+    employee_same_message: str = EMPLOYEE_SAME_MESSAGE
 
 
 class PopupAttributes(NamedTuple):

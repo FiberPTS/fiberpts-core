@@ -23,11 +23,15 @@ TAP_EVENT_BG_COLOR = 'green'
 
 # NFC tap pop-up configurations
 ORDER_SET_BG_COLOR = 'blue'
+ORDER_SAME_BG_COLOR = 'blue'
 EMPLOYEE_SET_BG_COLOR = 'darkorange'
+EMPLOYEE_SAME_BG_COLOR = 'darkorange'
 
 # Message configurations
 POPUP_ERROR_MESSAGE = 'Invalid NFC Tap'
 POPUP_WARNING_MESSAGE = 'Invalid Tap'
 TAP_EVENT_MESSAGE = 'Unit Complete'
 ORDER_SET_MESSAGE = 'New Order'
+ORDER_SAME_MESSAGE = 'Same Order'
 EMPLOYEE_SET_MESSAGE = 'New Employee'
+EMPLOYEE_SAME_MESSAGE = 'Same Employee'

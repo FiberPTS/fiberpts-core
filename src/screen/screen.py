@@ -225,19 +225,27 @@ class Screen:
             elif nfc_type == NFCType.EMPLOYEE:
                 employee_id, employee_name = tag_data.get('employee_id', None), tag_data.get('name', None)
                 # Reset unit count if employee changes
-                if employee_id and employee_id != device_state.get('employee_id', None):
-                    device_state['unit_count'] = 0
-                    popup_item = (self.popup_attributes.message_attributes.employee_set_message,
-                                  self.popup_attributes.event_attributes.employee_set_bg_color)
-                device_state['employee_id'], device_state['employee_name'] = (employee_id, employee_name)
+                if employee_id:
+                    if employee_id == device_state.get('employee_id', None):
+                        popup_item = (self.popup_attributes.message_attributes.employee_same_message,
+                                      self.popup_attributes.event_attributes.employee_same_bg_color)
+                    else:
+                        device_state['unit_count'] = 0
+                        popup_item = (self.popup_attributes.message_attributes.employee_set_message,
+                                      self.popup_attributes.event_attributes.employee_set_bg_color)
+                    device_state['employee_id'], device_state['employee_name'] = (employee_id, employee_name)
             elif nfc_type == NFCType.ORDER:
                 order_id = tag_data.get('order_id', None)
                 # Reset unit count if order changes
-                if order_id and order_id != device_state.get('order_id', None):
-                    device_state['unit_count'] = 0
-                    device_state['order_id'] = order_id
-                    popup_item = (self.popup_attributes.message_attributes.order_set_message,
-                                  self.popup_attributes.event_attributes.order_set_bg_color)
+                if order_id:
+                    if order_id == device_state.get('order_id', None):
+                        popup_item = (self.popup_attributes.message_attributes.order_same_message,
+                                      self.popup_attributes.event_attributes.order_same_bg_color)
+                    else:
+                        device_state['unit_count'] = 0
+                        device_state['order_id'] = order_id
+                        popup_item = (self.popup_attributes.message_attributes.order_set_message,
+                                      self.popup_attributes.event_attributes.order_set_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
             write_device_state(device_state, DEVICE_STATE_PATH)
