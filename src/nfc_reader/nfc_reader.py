@@ -27,7 +27,7 @@ class NFCReader:
 
         """
         self.cloud_db = CloudDBClient()
-        self.lib = self.init_poll()
+        self.lib = self.init_nfc_lib()
         self.device_id = get_device_id()
         self.setup_signal_handler()
         
@@ -84,7 +84,7 @@ class NFCReader:
         except Exception as e:
             logger.error(f"Error writing to pipe: {e}")
 
-    def init_poll(self):
+    def init_nfc_lib(self):
         """
         Initializes and returns a CDLL object for interacting with the 'libpoll.so' shared library.
 
@@ -93,7 +93,7 @@ class NFCReader:
         Returns:
             CDLL: Configured library object ready to use for calling the 'poll' function.
         """
-        lib = CDLL(f"{PROJECT_DIR}/src/nfc_reader/libpoll.so")
+        lib = CDLL(f"{PROJECT_DIR}/src/nfc_reader/nfc_lib.so")
         lib.poll.argtypes = [c_char_p, c_size_t]
         lib.poll.restype = None
         lib.is_tag_present.argtypes = None
