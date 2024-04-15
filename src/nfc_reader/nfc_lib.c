@@ -21,7 +21,7 @@ static nfc_context *context;
  *
  * @param sig The signal number (unused).
  */
-static void cleanup()
+void cleanup()
 {
     if (pnd != NULL)
     {
