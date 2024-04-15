@@ -228,6 +228,7 @@ class Screen:
                         popup_item = (self.popup_attributes.message_attributes.employee_same_message,
                                       self.popup_attributes.event_attributes.employee_same_bg_color)
                     else:
+                        device_state['order_id'] = None
                         device_state['unit_count'] = 0
                         popup_item = (self.popup_attributes.message_attributes.employee_set_message,
                                       self.popup_attributes.event_attributes.employee_set_bg_color)
