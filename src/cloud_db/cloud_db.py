@@ -109,6 +109,7 @@ class CloudDBClient:
         if machine_id:
             employee_tap_record['machine_id'] = machine_id
         try:
+            logger.info(employee_tap_record)
             response = self.client.table('employee_tap_data').insert(employee_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
