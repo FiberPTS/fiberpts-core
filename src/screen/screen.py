@@ -60,6 +60,7 @@ class Screen:
         self.nfc_reader_pipe_queue = Queue()
         self.image = None
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
+        self.device_state_lock = threading.Lock()
 
     def create_image(self, bg_color: str) -> None:
         """Create an image with the specified background color (assumes the screen needs 90 degree rotation).
@@ -128,13 +129,19 @@ class Screen:
         """
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
         image_center = get_image_center(self.image)
-        date_str = time.strftime(SAVED_TIMESTAMP_FORMAT, time.localtime(time.time()))
+        current_time = time.time()
+        date_str = time.strftime(SAVED_TIMESTAMP_FORMAT, time.localtime(current_time))
         self.add_text(date_str, (0, 0),
                       self.dashboard_attributes.dashboard_font_family,
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=False)
         device_state = read_device_state(DEVICE_STATE_PATH)
+        saved_timestamp = device_state.get('saved_timestamp', None)
+        if not saved_timestamp or is_at_least_next_day(saved_timestamp, current_time):
+            device_state['unit_count'] = 0
+            device_state['employee_id'], device_state['order_id'], device_state['employee_name'] = (None, None, None)
+        write_device_state(device_state, DEVICE_STATE_PATH)
         unit_count = device_state.get('unit_count', 0)
         self.add_text(f"Unit Count: {unit_count}",
                       image_center,
@@ -220,16 +227,17 @@ class Screen:
                 # Reset unit count if employee changes
                 if employee_id and employee_id != device_state.get('employee_id', None):
                     device_state['unit_count'] = 0
+                    popup_item = (self.popup_attributes.message_attributes.employee_set_message,
+                                  self.popup_attributes.event_attributes.employee_set_bg_color)
                 device_state['employee_id'], device_state['employee_name'] = (employee_id, employee_name)
-                popup_item = (self.popup_attributes.message_attributes.employee_set_message,
-                              self.popup_attributes.event_attributes.employee_set_bg_color)
             elif nfc_type == NFCType.ORDER:
                 order_id = tag_data.get('order_id', None)
+                # Reset unit count if order changes
                 if order_id and order_id != device_state.get('order_id', None):
                     device_state['unit_count'] = 0
                     device_state['order_id'] = order_id
-                popup_item = (self.popup_attributes.message_attributes.order_set_message,
-                              self.popup_attributes.event_attributes.order_set_bg_color)
+                    popup_item = (self.popup_attributes.message_attributes.order_set_message,
+                                  self.popup_attributes.event_attributes.order_set_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
             write_device_state(device_state, DEVICE_STATE_PATH)
@@ -312,19 +320,8 @@ class Screen:
         """
         logger.info('Running main loop')
         self.start_threads()
-        check_reset_timer = time.time() - 30
         while True:
             self.handle_pipe_data()
-            current_time = time.time()
-            if current_time - check_reset_timer > 30:
-                device_state = read_device_state(DEVICE_STATE_PATH, verbose=False)
-                saved_timestamp = device_state.get('saved_timestamp') if device_state else None
-                if not saved_timestamp or is_at_least_next_day(saved_timestamp, current_time):
-                    device_state['unit_count'] = 0
-                    device_state['employee_id'], device_state['order_id'], device_state['employee_name'] = (None, None,
-                                                                                                            None)
-                write_device_state(device_state, DEVICE_STATE_PATH, verbose=False)
-                check_reset_timer = current_time
 
 
 

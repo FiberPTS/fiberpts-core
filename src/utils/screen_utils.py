@@ -8,6 +8,7 @@ import logging.config
 
 from PIL import Image
 import numpy as np
+import portalocker
 
 from config.screen_config import *
 from src.utils.paths import (DISPLAY_FRAME_BUFFER_PATH,
@@ -120,7 +121,7 @@ def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
     # Check if to_timestamp is at least the next day from from_timestamp
     return to_day_start > from_day_start
 
-
+# TODO: Make sure that this function handles concurrent access
 def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[str, Any]:
     """Read the device state from a JSON file.
 
@@ -136,8 +137,10 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
     """
     if verbose:
         logger.info('Reading device state')
+    file = None
     try:
         with open(path_to_device_state, 'r') as file:
+            portalocker.lock(file, portalocker.LOCK_SH, timeout=5)
             return json.load(file)
     except FileNotFoundError:
         logger.error('Device state file not found')
@@ -145,8 +148,17 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
     except json.JSONDecodeError:
         logger.error('Unable to parse device state: Invalid JSON format')
         raise json.JSONDecodeError
+    except portalocker.exceptions.LockTimeout as e:
+        print(f"Failed to acquire lock within timeout period: {e}")
+    except portalocker.exceptions.LockException as e:
+        print(f"Failed to lock the file: {e}")
+    finally:
+        try:
+            portalocker.unlock(file)
+        except ValueError:
+            logger.error('File is not locked')
 
-
+# TODO: Make sure that this function handles concurrent access
 def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, verbose: bool = True) -> None:
     """Write the updated device state to a JSON file.
 
@@ -161,8 +173,10 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
     if verbose:
         logger.info('Writing device state')
     device_state['saved_timestamp'] = time.time()
+    file = None
     try:
         with open(path_to_device_state, 'w') as file:
+            portalocker.lock(file, portalocker.LockFlags.EXCLUSIVE, timeout=5)
             json.dump(device_state, file, indent=4)
     except FileNotFoundError:
         logger.error('Device state file not found')
@@ -170,7 +184,15 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
     except IOError as e:
         logger.error(f"An error occurred while writing to device state: {e}")
         raise IOError  # TODO: Determine error message format
-
+    except portalocker.exceptions.LockTimeout as e:
+        print(f"Failed to acquire lock within timeout period: {e}")
+    except portalocker.exceptions.LockException as e:
+        print(f"Failed to lock the file: {e}")
+    finally:
+        try:
+            portalocker.unlock(file)
+        except ValueError:
+            logger.error('File is not locked')
 
 def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
     """Read and parse JSON data from a named pipe.
@@ -235,8 +257,7 @@ def image_to_raw_rgb565(image: Image) -> np.ndarray:
     return raw_rgb565
 
 
-def write_image_to_fb(image: Image, path_to_fb: str,
-                      path_to_fb_lock: str) -> None:
+def write_image_to_fb(image: Image, path_to_fb: str, path_to_fb_lock: str) -> None:
     """Write a PIL image to a framebuffer device in RGB565 format.
 
     Args:
@@ -256,14 +277,10 @@ def write_image_to_fb(image: Image, path_to_fb: str,
         screensize = width * height * 2
 
         if len(raw_bytes) != screensize:
-            raise ValueError(
-                'Size mismatch: Data size does not match buffer size')
+            raise ValueError('Size mismatch: Data size does not match buffer size')
 
         fbfd = os.open(path_to_fb, os.O_RDWR)
-        fbp = mmap.mmap(fbfd,
-                        screensize,
-                        flags=mmap.MAP_SHARED,
-                        prot=mmap.PROT_WRITE)
+        fbp = mmap.mmap(fbfd, screensize, flags=mmap.MAP_SHARED, prot=mmap.PROT_WRITE)
         fbp[:] = raw_bytes
         fbp.flush()
         os.close(fbfd)
