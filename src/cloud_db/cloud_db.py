@@ -10,7 +10,7 @@ import httpx
 
 from src.utils.touch_sensor_utils import Tap
 from src.utils.utils import NFCType, get_device_id
-from src.utils.screen_utils import read_device_state
+from src.utils.utils import read_device_state
 from src.utils.paths import DEVICE_STATE_PATH
 from src.utils.nfc_reader_utils import NFCTag
 from src.utils.utils import TIMESTAMP_FORMAT

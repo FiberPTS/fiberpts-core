@@ -12,13 +12,14 @@ from src.utils.paths import (TOUCH_SENSOR_TO_SCREEN_PIPE, NFC_READER_TO_SCREEN_P
 from src.utils.screen_utils import (DisplayAttributes,
                                     DashboardAttributes,
                                     PopupAttributes,
-                                    read_device_state,
-                                    write_device_state,
                                     is_at_least_next_day,
                                     get_image_center,
                                     read_pipe,
                                     write_image_to_fb)
-from src.utils.utils import (TapStatus, NFCType)
+from src.utils.utils import (read_device_state,
+                             write_device_state,
+                             TapStatus, 
+                             NFCType)
 
 
 SAVED_TIMESTAMP_FORMAT = '%Y-%m-%d'
