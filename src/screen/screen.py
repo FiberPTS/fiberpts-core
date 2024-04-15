@@ -149,20 +149,18 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=True)
-        employee_name = device_state.get('employee_name', None)
-        if employee_name:
-            self.add_text(employee_name, (0, self.display_attributes.display_width - 30),
-                          self.dashboard_attributes.dashboard_font_family,
-                          self.dashboard_attributes.dashboard_font_size,
-                          self.dashboard_attributes.dashboard_font_color,
-                          centered=False)
-        order_id = device_state.get('order_id', None)
-        if order_id:
-            self.add_text(order_id, (0, self.display_attributes.display_width - 60),
-                          self.dashboard_attributes.dashboard_font_family,
-                          self.dashboard_attributes.dashboard_font_size,
-                          self.dashboard_attributes.dashboard_font_color,
-                          centered=False)
+        employee_name = device_state.get('employee_name', None) if device_state.get('employee_name', None) else 'No Employee'
+        self.add_text(employee_name, (0, self.display_attributes.display_width - 30),
+                        self.dashboard_attributes.dashboard_font_family,
+                        self.dashboard_attributes.dashboard_font_size,
+                        self.dashboard_attributes.dashboard_font_color,
+                        centered=False)
+        order_id = device_state.get('order_id', None) if device_state.get('order_id', None) else 'No Order'
+        self.add_text(order_id, (0, self.display_attributes.display_width - 60),
+                        self.dashboard_attributes.dashboard_font_family,
+                        self.dashboard_attributes.dashboard_font_size,
+                        self.dashboard_attributes.dashboard_font_color,
+                        centered=False)
         self.draw_image()
 
     def draw_popup(self, text: str, bg_color: str) -> None:
