@@ -89,6 +89,10 @@ function update_services() {
     declare newserv="${CWD}/${servname}.tmp"
     
     envsubst < "${template}" > "${newserv}"
+    echo "NEWSERV"
+    cat "${newserv}"
+    echo "OLDSERV"
+    cat "${oldserv}"
     if ! diff "${newserv}" "${oldserv}"; then
       if cp "${newserv}" "${oldserv}"; then
         echo "'${servname}' updated"
@@ -182,7 +186,8 @@ function rollback_changes() {
   echo "${WARNING} ${YELLOW}Rolling back changes...${RESET}"
 
   git reset --hard HEAD~1
-  return "$(update_services)"
+  update_services
+  return $?
 }
 
 #######################################
