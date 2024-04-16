@@ -7,6 +7,7 @@
 # also rollback changes in case of update failure.
 
 CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 readonly CWD
 
 set +a
@@ -88,6 +89,9 @@ function update_services() {
     declare servname=$(basename "${template}")
     declare oldserv="${SYSTEM_DIR}/${servname}"
     declare newserv="${CWD}/${servname}.tmp"
+    echo ${servname}
+    echo ${oldserv}
+    echo ${newserv}
     
     envsubst < "${template}" > "${newserv}"
     if ! diff "${newserv}" "${oldserv}"; then
