@@ -8,10 +8,10 @@
 
 readonly CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-set +a
+set -a
 source "${CWD}"/../globals.sh || return 1
 source "${CWD}"/../paths.sh || return 1
-set -a
+set +a
 
 #######################################
 # Ensures the script is run with root privileges, exiting with an error
