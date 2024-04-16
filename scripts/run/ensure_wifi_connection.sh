@@ -80,14 +80,18 @@ function manage_services() {
 # Returns:
 #   None
 #######################################
-while true; do
-    load_env_variables || { echo "Failed to load environment variables."; exit 1; }
+function main() {
+    while true; do
+        load_env_variables || { echo "Failed to load environment variables."; exit 1; }
 
-    # Define an array of service filenames
-    local services=("nfc_reader" "touch_sensor" "screen")
+        # Define an array of service filenames
+        local services=("nfc_reader" "touch_sensor" "screen")
 
-    # Pass the array to manage_services
-    manage_services "${services[@]}"
-    
-    sleep "${CHECK_INTERVAL}"  # Sleep for a configurable number of seconds
-done
+        # Pass the array to manage_services
+        manage_services "${services[@]}"
+        
+        sleep "${CHECK_INTERVAL}"  # Sleep for a configurable number of seconds
+    done
+}
+
+main
