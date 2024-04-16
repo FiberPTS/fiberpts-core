@@ -71,7 +71,7 @@ function load_env_variables() {
   source "${project_path}/scripts/paths.sh"
   source "${project_path}/.env"
   set +a
-  source "${project_path}/config/config.sh" || return 1
+  source "${project_path}/scripts/globals.sh" || return 1
 }
 
 #######################################

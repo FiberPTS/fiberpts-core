@@ -1,7 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_DIR
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 #######################################
 # Sources the relevant environment variables.
@@ -16,7 +15,7 @@ readonly SCRIPT_DIR
 #######################################
 function load_env_variables() {
   source "${SCRIPT_DIR}/../../scripts/paths.sh" || return 1
-  source "${SCRIPT_DIR}/../../config/config.sh" || return 1
+  source "${SCRIPT_DIR}/../../scripts/globals.sh" || return 1
 }
 
 #######################################

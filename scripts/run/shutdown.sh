@@ -37,7 +37,7 @@ function assert_root() {
 #######################################
 function load_env_variables() {
   source "${SCRIPT_DIR}/../../scripts/paths.sh" || return 1
-  source "${SCRIPT_DIR}/../../config/config.sh" || return 1
+  source "${SCRIPT_DIR}/../../scripts/globals.sh" || return 1
 }
 
 #######################################
