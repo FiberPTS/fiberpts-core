@@ -6,9 +6,7 @@
 # and checks the system status to confirm successful updates. If necessary, it can
 # also rollback changes in case of update failure.
 
-CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-readonly CWD
+readonly CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 set +a
 source "${CWD}"/../globals.sh || return 1
@@ -89,9 +87,6 @@ function update_services() {
     declare servname=$(basename "${template}")
     declare oldserv="${SYSTEMD_DIR}/${servname}"
     declare newserv="${CWD}/${servname}.tmp"
-    echo ${servname}
-    echo ${oldserv}
-    echo ${newserv}
     
     envsubst < "${template}" > "${newserv}"
     if ! diff "${newserv}" "${oldserv}"; then
