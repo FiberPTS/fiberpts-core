@@ -1,0 +1,13 @@
+[Unit]
+Description=Monitor and restart nfc_reader.py
+
+[Service]
+Type=simple
+ExecStart="${PROJECT_PATH}"/venv/bin/python3 "${PROJECT_PATH}/src/nfc_reader/nfc_reader.py"
+WorkingDirectory=${PROJECT_PATH}
+PIDFile=/var/run/nfc_reader.pid
+TimeoutSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
