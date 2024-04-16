@@ -87,7 +87,7 @@ function update_services() {
 
   for template in "${CWD}"/../../templates/*.service; do
     declare servname=$(basename "${template}")
-    declare oldserv="${SYSTEM_DIR}/${servname}"
+    declare oldserv="${SYSTEMD_DIR}/${servname}"
     declare newserv="${CWD}/${servname}.tmp"
     echo ${servname}
     echo ${oldserv}
