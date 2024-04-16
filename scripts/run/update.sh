@@ -85,9 +85,9 @@ function update_services() {
   echo "Updating service files..."
 
   for template in "${CWD}"/../../templates/*.service; do
-    declare -r servname=$(basename "${template}")
-    declare -r oldserv="${SYSTEM_DIR}/${servname}"
-    declare -r newserv="${CWD}/${servname}.tmp"
+    declare servname=$(basename "${template}")
+    declare oldserv="${SYSTEM_DIR}/${servname}"
+    declare newserv="${CWD}/${servname}.tmp"
     
     envsubst < "${template}" > "${newserv}"
     if ! diff "${newserv}" "${oldserv}"; then
@@ -119,7 +119,7 @@ function restart_services() {
   fi
 
   for template in "${CWD}"/../../templates/*.service; do
-    declare -r servname=$(basename "${template}")
+    declare servname=$(basename "${template}")
     if ! systemctl restart "${servname}"; then
       echo "${FAIL} ${RED}Unable to restart '${servname}'.${RESET}"
       return 2
@@ -144,7 +144,7 @@ function check_system_status() {
   echo "Checking system status..."
 
   for template in "${CWD}"/../../templates/*.service; do
-    declare -r servname=$(basename "${template}")
+    declare servname=$(basename "${template}")
     
     status=$(systemctl is-active "${servname}")
     if [ "${status}" != "active" ]; then

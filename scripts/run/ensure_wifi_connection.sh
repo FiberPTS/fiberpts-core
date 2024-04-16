@@ -30,9 +30,13 @@ function load_env_variables() {
 #   0 if the internet is reachable, 1 otherwise.
 #######################################
 function check_internet() {
-    # Use 8.8.8.8 as the IP for Google's DNS, a common choice for a connectivity test
-    ping -c 1 -W 5 8.8.8.8 >/dev/null 2>&1
-    return $?
+    if wget -q --spider "https://google.com"; then
+        echo "Internet connection is up."
+        return 0
+    else
+        echo "Internet connection is down."
+        return 1
+    fi
 }
 
 #######################################
