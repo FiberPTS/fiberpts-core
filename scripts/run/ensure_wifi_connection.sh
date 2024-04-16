@@ -51,11 +51,21 @@ function check_internet() {
 #   None
 #######################################
 function manage_services() {
-    local services=("$@")  # Accept multiple arguments as an array of service names
+    local services=("$@")
 
-    local internet_status
-    check_internet
-    internet_status=$?
+    local attempts=5
+    local internet_status=1
+    while (( internet_status != 0 )); do
+        if (( attempts == 0 )); then
+            break
+        fi
+        ((attempts--))
+
+        check_internet
+        internet_status=$?
+
+        sleep 1
+    done
 
     for service_name in "${services[@]}"; do
         if (( internet_status == 0 )); then
