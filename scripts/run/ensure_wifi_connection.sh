@@ -82,6 +82,7 @@ function manage_services() {
 #######################################
 function main() {
     load_env_variables || { echo "Failed to load environment variables."; exit 1; }
+    cd "${PROJECT_PATH}" # This is for the logger since it assumes CWD is the project path
     while true; do
         # Define an array of service filenames
         local services=("nfc_reader" "touch_sensor" "screen")
