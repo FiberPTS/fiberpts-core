@@ -81,9 +81,8 @@ function manage_services() {
 #   None
 #######################################
 function main() {
+    load_env_variables || { echo "Failed to load environment variables."; exit 1; }
     while true; do
-        load_env_variables || { echo "Failed to load environment variables."; exit 1; }
-
         # Define an array of service filenames
         local services=("nfc_reader" "touch_sensor" "screen")
 
