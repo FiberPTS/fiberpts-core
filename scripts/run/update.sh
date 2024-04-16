@@ -89,11 +89,7 @@ function update_services() {
     declare newserv="${CWD}/${servname}.tmp"
     
     envsubst < "${template}" > "${newserv}"
-    echo "NEWSERV"
-    cat "${newserv}"
-    echo "OLDSERV"
-    cat "${oldserv}"
-    if ! diff "${newserv}" "${oldserv}"; then
+    if ! diff -q "${newserv}" "${oldserv}" > /dev/null; then
       if cp "${newserv}" "${oldserv}"; then
         echo "'${servname}' updated"
       fi
