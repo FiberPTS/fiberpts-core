@@ -1,0 +1,13 @@
+[Unit]
+Description=Monitor and restart ensure_wifi_connection.sh
+After=init_display.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash "${PROJECT_PATH}/scripts/run/ensure_wifi_connection.sh"
+PIDFile=/var/run/ensure_wifi_connection.pid
+TimeoutSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
