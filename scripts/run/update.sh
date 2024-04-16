@@ -97,7 +97,8 @@ function update_services() {
     rm "${newserv}"
   done
 
-  return "$(restart_services)"
+  restart_services
+  return $?
 }
 
 #######################################
