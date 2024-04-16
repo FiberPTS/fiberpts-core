@@ -64,6 +64,7 @@ function manage_services() {
         else
             echo "Internet is down - stopping service ${service_name}."
             systemctl is-active --quiet "${service_name}" && systemctl stop "${service_name}"
+            "${PROJECT_PATH}/venv/bin/python3" "${PROJECT_PATH}/src/screen/no_wifi.py" 
         fi
     done
 }

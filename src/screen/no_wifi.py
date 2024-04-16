@@ -12,7 +12,7 @@ def draw_no_wifi(screen: Screen) -> None:
         """
         screen.create_image(screen.dashboard_attributes.dashboard_bg_color)
         image_center = get_image_center(screen.image)
-        screen.add_text(f"No WiFi Connection",
+        screen.add_text(f"No Wi-Fi Connection",
                       image_center,
                       screen.dashboard_attributes.dashboard_font_family,
                       screen.dashboard_attributes.dashboard_font_size,
