@@ -61,7 +61,6 @@ class Screen:
         self.nfc_reader_pipe_queue = Queue()
         self.image = None
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
-        self.device_state_lock = threading.Lock()
 
     def create_image(self, bg_color: str) -> None:
         """Create an image with the specified background color (assumes the screen needs 90 degree rotation).
