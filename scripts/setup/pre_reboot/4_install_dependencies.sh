@@ -60,11 +60,37 @@ function install_python_packages() {
 # Arguments:
 #   None
 # Outputs:
-#   Status message about Unix package installation.
+#   None
 #######################################
 function install_unix_packages() {
   # Required for parsing JSON when extracting first device ID from Supabase
+  echo "Installing Unix packages..."
   apt-get install jq -y > /dev/null
+}
+
+#######################################
+# Installs c packages required by the project.
+# Globals:
+#   PROJECT_DIR - Directory of the project folder
+#   PROJECT_PATH - Path of the project folder
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
+function install_c_packages() {
+  echo "Installing C packages..."
+  # Install libnfc
+  git clone "https://github.com/nfc-tools/libnfc.git" "${PROJECT_DIR}/libnfc" > /dev/null
+  cd "${PROJECT_DIR}/libnfc"
+  autoreconf -vis > /dev/null
+  ./configure --with-drivers=pn532_uart --prefix=/usr --sysconfdir=/etc > /dev/null
+  make install > /dev/null
+  cp contrib/udev/93-pn53x.rules /lib/udev/rules.d/
+  mkdir -p /etc/nfc
+  echo -e "device.name = \"PN532_UART\"\ndevice.connstring = \"pn532_uart:/dev/ttyAML6\"" > "/etc/nfc/libnfc.conf"
+  # Compile nfc_lib.c
+  make -C "${PROJECT_PATH}/src/nfc_reader" > /dev/null
 }
 
 #######################################
@@ -80,6 +106,7 @@ function main() {
   assert_variables
   install_unix_packages
   install_python_packages
+  install_c_packages
 }
 
 main
