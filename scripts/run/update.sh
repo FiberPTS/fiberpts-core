@@ -249,6 +249,9 @@ function main() {
   pull_latest_changes "${branch}" || return 1
   echo -e "${OK}${GREEN}Pulled all changes from '${branch}'.${RESET}\n"
 
+  # Re-compile nfc_lib.c
+  make -C "${PROJECT_PATH}/src/nfc_reader" > /dev/null
+
   update_services || return  # two kinds of errors can be reported through $?
   echo -e "${OK} ${GREEN}Updated all service files${RESET}\n"
 
