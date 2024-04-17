@@ -1,3 +1,5 @@
+import sys
+
 from src.screen.screen import Screen
 from src.utils.screen_utils import get_image_center
 
@@ -23,3 +25,4 @@ def draw_no_wifi(screen: Screen) -> None:
 if __name__ == '__main__':
     screen = Screen()
     draw_no_wifi(screen)
+    sys.exit(0)
