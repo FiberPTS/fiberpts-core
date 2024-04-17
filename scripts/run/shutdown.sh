@@ -95,6 +95,7 @@ function cleanup() {
 function main() {
     assert_root
     load_env_variables
+    cd "${PROJECT_PATH}"
     while true; do
         sleep 60
         if check_time "${SHUTDOWN_TIME}"; then
