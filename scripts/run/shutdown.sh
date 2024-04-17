@@ -100,8 +100,8 @@ function main() {
         if check_time "${SHUTDOWN_TIME}"; then
             echo "Shutdown Initiated"
             if cleanup; then
-                "${PROJECT_PATH}/venv/bin/python3" "${PROJECT_PATH}/src/screen/shutting_down.py"
-                shutdown now -h
+                "${PROJECT_PATH}/venv/bin/python3" "${PROJECT_PATH}/src/screen/shutting_down.py" \
+                && shutdown now -h
             fi
         fi
     done
