@@ -182,6 +182,8 @@ function rollback_changes() {
   echo "${WARNING} ${YELLOW}Rolling back changes...${RESET}"
 
   git reset --hard HEAD~1
+  # Re-compile nfc_lib.c
+  make -C "${PROJECT_PATH}/src/nfc_reader" > /dev/null
   update_services
   return $?
 }
