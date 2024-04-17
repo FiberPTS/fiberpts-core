@@ -85,7 +85,7 @@ function install_c_packages() {
     git clone "https://github.com/nfc-tools/libnfc.git" "${PROJECT_DIR}/libnfc" > /dev/null
   fi
   cd "${PROJECT_DIR}/libnfc"
-  autoreconf -is > /dev/null
+  autoreconf -is > /dev/null 2>&1
   ./configure --with-drivers=pn532_uart --prefix=/usr --sysconfdir=/etc > /dev/null
   make install > /dev/null
   cp contrib/udev/93-pn53x.rules /lib/udev/rules.d/
