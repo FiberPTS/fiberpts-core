@@ -81,7 +81,9 @@ function install_unix_packages() {
 function install_c_packages() {
   echo "Installing C packages..."
   # Install libnfc
-  git clone "https://github.com/nfc-tools/libnfc.git" "${PROJECT_DIR}/libnfc" > /dev/null
+  if [ ! -d "${PROJECT_DIR}/libnfc" ]; then
+    git clone "https://github.com/nfc-tools/libnfc.git" "${PROJECT_DIR}/libnfc" > /dev/null
+  fi
   cd "${PROJECT_DIR}/libnfc"
   autoreconf -vis > /dev/null
   ./configure --with-drivers=pn532_uart --prefix=/usr --sysconfdir=/etc > /dev/null
