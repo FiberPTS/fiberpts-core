@@ -64,11 +64,16 @@ class CloudDBClient:
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
             'device_id': tap.device_id
         }
-        for key in ['order_id', 'employee_id', 'machine_id']:
+        for key in ['order_id', 'employee_id']:
             value = device_state.get(key, None)
             if value:
                 tap_record[key] = value
         try:
+            machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
+                                                                                    tap.device_id).execute()
+            machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
+            if machine_id:
+                tap_record['machine_id'] = machine_id
             response = self.client.table('action_tap_data').insert(tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
@@ -104,12 +109,12 @@ class CloudDBClient:
             'device_id': employee_tap.device_id,
             'employee_id': employee_id
         }
-        machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
-                                                                                 employee_tap.device_id).execute()
-        machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
-        if machine_id:
-            employee_tap_record['machine_id'] = machine_id
         try:
+            machine_id_record = self.client.table("devices").select("machine_id").eq("device_id",
+                                                                                    employee_tap.device_id).execute()
+            machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
+            if machine_id:
+                employee_tap_record['machine_id'] = machine_id
             logger.info(employee_tap_record)
             response = self.client.table('employee_tap_data').insert(employee_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
@@ -147,14 +152,13 @@ class CloudDBClient:
         employee_id = device_state.get('employee_id', None)
         if employee_id:
             order_tap_record['employee_id'] = employee_id
-        machine_id_query = self.client.table("devices").select("machine_id").eq("device_id",
-                                                                                order_tap.device_id).execute()
-        machine_id_records = machine_id_query.data
-        machine_id = None if len(machine_id_records) == 0 else machine_id_records[0]['machine_id']
-        if machine_id:
-            order_tap_record['machine_id'] = machine_id
-
         try:
+            machine_id_query = self.client.table("devices").select("machine_id").eq("device_id",
+                                                                                    order_tap.device_id).execute()
+            machine_id_records = machine_id_query.data
+            machine_id = None if len(machine_id_records) == 0 else machine_id_records[0]['machine_id']
+            if machine_id:
+                order_tap_record['machine_id'] = machine_id
             response = self.client.table('order_tap_data').insert(order_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
