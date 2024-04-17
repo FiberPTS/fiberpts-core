@@ -83,7 +83,8 @@ function cleanup() {
 #######################################
 # The main loop of the program.
 # Globals:
-#   SHUTDOWN_TIME
+#   SHUTDOWN_TIME - shutdown time in the form "hh:mm:ss".
+#   PROJECT_PATH - Path to the project directory.
 # Arguments:
 #   None
 # Outputs:
@@ -99,6 +100,7 @@ function main() {
         if check_time "${SHUTDOWN_TIME}"; then
             echo "Shutdown Initiated"
             if cleanup; then
+                "${PROJECT_PATH}/venv/bin/python3" "${PROJECT_PATH}/src/screen/shutting_down.py"
                 shutdown now -h
             fi
         fi
