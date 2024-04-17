@@ -71,6 +71,7 @@ function manage_services() {
         if (( internet_status == 0 )); then
             echo "Internet is up - ensuring service ${service_name} is running."
             systemctl is-active --quiet "${service_name}" || systemctl start "${service_name}"
+            "${PROJECT_PATH}/venv/bin/python3" "${PROJECT_PATH}/src/screen/found_wifi.py"
         else
             echo "Internet is down - stopping service ${service_name}."
             systemctl is-active --quiet "${service_name}" && systemctl stop "${service_name}"
