@@ -65,7 +65,7 @@ function install_python_packages() {
 function install_unix_packages() {
   # Required for parsing JSON when extracting first device ID from Supabase
   echo "Installing Unix packages..."
-  apt-get install jq -y > /dev/null
+  apt-get install jq autoconf -y > /dev/null
 }
 
 #######################################
