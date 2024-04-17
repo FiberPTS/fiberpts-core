@@ -270,6 +270,7 @@ class Screen:
         frame_duration = 1.0 / self.display_attributes.display_frame_rate
         while True:
             self.draw_dashboard()
+            time.sleep(frame_duration)
             text, bg_color = self.popup_queue.get()
             self.draw_popup(text, bg_color)
             time.sleep(frame_duration)
