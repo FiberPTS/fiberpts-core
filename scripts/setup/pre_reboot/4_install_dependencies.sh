@@ -83,16 +83,16 @@ function install_c_packages() {
   # Install libnfc
   if [ ! -d "${PROJECT_DIR}/libnfc" ]; then
     git clone "https://github.com/nfc-tools/libnfc.git" "${PROJECT_DIR}/libnfc" > /dev/null
+    cd "${PROJECT_DIR}/libnfc"
+    autoreconf -is > /dev/null 2>&1
+    ./configure --with-drivers=pn532_uart --prefix=/usr --sysconfdir=/etc > /dev/null
+    make install > /dev/null
+    cp contrib/udev/93-pn53x.rules /lib/udev/rules.d/
+    mkdir -p /etc/nfc
+    echo -e "device.name = \"PN532_UART\"\ndevice.connstring = \"pn532_uart:/dev/ttyAML6\"" > "/etc/nfc/libnfc.conf"
+    # Compile nfc_lib.c
+    make -C "${PROJECT_PATH}/src/nfc_reader" > /dev/null
   fi
-  cd "${PROJECT_DIR}/libnfc"
-  autoreconf -is > /dev/null 2>&1
-  ./configure --with-drivers=pn532_uart --prefix=/usr --sysconfdir=/etc > /dev/null
-  make install > /dev/null
-  cp contrib/udev/93-pn53x.rules /lib/udev/rules.d/
-  mkdir -p /etc/nfc
-  echo -e "device.name = \"PN532_UART\"\ndevice.connstring = \"pn532_uart:/dev/ttyAML6\"" > "/etc/nfc/libnfc.conf"
-  # Compile nfc_lib.c
-  make -C "${PROJECT_PATH}/src/nfc_reader" > /dev/null
 }
 
 #######################################
