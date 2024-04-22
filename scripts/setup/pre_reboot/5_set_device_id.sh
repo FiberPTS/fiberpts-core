@@ -70,6 +70,7 @@ function insert_device_id() {
       -H "Authorization: Bearer ${DATABASE_API_KEY}" \
       -H "Content-Type: application/json" \
       -H "Prefer: return=minimal" \
+      -H "Prefer: resolution=merge-duplicates" \
       -d "{ \"device_id\": \"${device_id}\", \"allocated\": true }"
   )
   echo "${response}"
