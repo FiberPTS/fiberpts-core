@@ -186,6 +186,14 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
         raise FileNotFoundError
     except json.JSONDecodeError:
         logger.error('Unable to parse device state: Invalid JSON format')
+        try:
+            with open(path_to_device_state, 'r') as file:
+                with portalocker.Lock(file, portalocker.LOCK_SH):
+                    file.seek(0)  # Reset file pointer to the beginning
+                    raw_data = file.read()  # Read raw contents
+                    logger.error(f"Data read: {raw_data}")
+        except Exception as e:
+            logger.error(f"Failed to read the raw data after JSON decode error: {e}")
         raise json.JSONDecodeError
     except portalocker.exceptions.BaseLockException as e:
         print(f"Failed to lock the file: {e}")
@@ -207,7 +215,7 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
     device_state['saved_timestamp'] = time.time()
     try:
         with open(path_to_device_state, 'w') as file:
-            with portalocker.lock(file, portalocker.LOCK_EX):
+            with portalocker.Lock(file, portalocker.LOCK_EX):
                 json.dump(device_state, file, indent=4)
     except FileNotFoundError:
         logger.error('Device state file not found')
