@@ -255,32 +255,4 @@ class CloudDBClient:
         response = self.client.table('devices').insert(device_record).execute()
         logger.info(response)  # TODO: Correctly print response (need to test)
         return response
-
-    def get_new_device_id(self) -> str:
-        """Generates a new, unique device ID for a new device.
-
-        The function retrieves the highest current device ID from the 'devices'
-        table, increments it by one, and formats it to maintain consistent ID
-        structure. If no device IDs are present in the table, it starts
-        numbering from 'fpts-001'.
-
-        Args:
-            None
     
-        Returns:
-            A string representing the newly generated device ID.
-        """
-        response = self.client.table('devices') \
-            .select('device_id') \
-            .order('device_id', desc=True) \
-            .limit(1) \
-            .execute()
-        # TODO: Find a better way to handle this since assuming the first record is unallocated is risky
-        device_id = ''
-        if not response:
-            device_id = 'fpts-001'
-        else:
-            # Extract numeric part of device ID, increment it, and format it
-            id_num = '{:03d}'.format(int(response.data[0]['device_id'][-3:]) + 1)
-            device_id = 'fpts-' + id_num
-        return device_id
