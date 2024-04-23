@@ -174,11 +174,13 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
         FileNotFoundError: If the specified JSON file path does not exist.
         JSONDecodeError: If there is an error decoding the JSON data from the file.
     """
+    if verbose:
+        logger.info('Reading device state')
     try:
         with portalocker.Lock(path_to_device_state, mode='r', timeout=None, check_interval=0.5, 
                                 fail_when_locked=False, flags=portalocker.constants.LOCK_EX) as file:
             if verbose:
-                logger.info('Reading device state')
+                logger.info('Reading lock acquired')
             data = json.load(file)
             return data
     except FileNotFoundError:
@@ -209,12 +211,14 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
         FileNotFoundError: If the specified JSON file path does not exist.
         IOError: If there is an error writing to the file.
     """
+    if verbose:
+        logger.info('Writing device state')
     device_state['saved_timestamp'] = time.time()
     try:
         with portalocker.Lock(path_to_device_state, mode='w', timeout=None, check_interval=0.5, 
                                 fail_when_locked=False, flags=portalocker.constants.LOCK_EX) as file:
             if verbose:
-                logger.info('Writing device state')
+                logger.info('Writing lock acquired')
             json.dump(device_state, file, indent=4)
     except FileNotFoundError:
         logger.error('Device state file not found')
