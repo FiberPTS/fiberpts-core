@@ -77,8 +77,12 @@ class CloudDBClient:
             response = self.client.table('action_tap_data').insert(tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         return False
 
     # TODO: This should also trigger a insert_order_tap since when the employee switches, the order should also be associated with the new employee.
@@ -121,8 +125,12 @@ class CloudDBClient:
             #device_state = read_device_state(DEVICE_STATE_PATH)
             #self.insert_order_tap()
             return True
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         return False
 
     def insert_order_tap(self, order_tap: NFCTag) -> bool:
@@ -162,8 +170,12 @@ class CloudDBClient:
             response = self.client.table('order_tap_data').insert(order_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         return False
 
     def lookup_uid(self, uid: str) -> NFCTag:
@@ -214,8 +226,12 @@ class CloudDBClient:
                                         tag_id=uid)
                     else:
                         logger.info("Could not find the employee associated with this NFC tag.")
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         if result.type == NFCType.NONE:
             logger.info("Could not find any employee or order associated with this NFC tag.")
         return result
