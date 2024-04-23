@@ -87,6 +87,9 @@ class Screen:
             self.image = self.image.rotate(90, expand=True)
             write_image_to_fb(self.image, self.display_attributes.display_fb_path,
                               self.display_attributes.display_fb_lock_path)
+            time.sleep(self.display_attributes.display_frame_rate)
+            write_image_to_fb(self.image, self.display_attributes.display_fb_path,
+                              self.display_attributes.display_fb_lock_path)
 
     def add_text(self,
                  text: str,
