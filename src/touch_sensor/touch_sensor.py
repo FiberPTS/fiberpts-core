@@ -62,13 +62,9 @@ class TouchSensor:
         
         device_state = read_device_state(DEVICE_STATE_PATH)
         order_id, employee_id = device_state.get('order_id', None), device_state.get('employee_id', None)
-        is_valid_tap = tap.status == TapStatus.GOOD and order_id and employee_id
-        
-        logger.info(
-            f"Device Id: {tap.device_id}, \
-              Timestamp: {tap.timestamp}, \
-              Is Valid: {is_valid_tap}"
-        )
+        is_valid_tap = tap.status == TapStatus.GOOD and order_id is not None and employee_id is not None
+
+        logger.info(f"Device Id: {tap.device_id}, Timestamp: {tap.timestamp}, Is Valid: {is_valid_tap}")
 
         self.pipe_tap_data(tap)
         

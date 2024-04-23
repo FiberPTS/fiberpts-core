@@ -77,8 +77,12 @@ class CloudDBClient:
             response = self.client.table('action_tap_data').insert(tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         return False
 
     # TODO: This should also trigger a insert_order_tap since when the employee switches, the order should also be associated with the new employee.
@@ -121,8 +125,12 @@ class CloudDBClient:
             #device_state = read_device_state(DEVICE_STATE_PATH)
             #self.insert_order_tap()
             return True
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         return False
 
     def insert_order_tap(self, order_tap: NFCTag) -> bool:
@@ -162,8 +170,12 @@ class CloudDBClient:
             response = self.client.table('order_tap_data').insert(order_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         return False
 
     def lookup_uid(self, uid: str) -> NFCTag:
@@ -214,8 +226,12 @@ class CloudDBClient:
                                         tag_id=uid)
                     else:
                         logger.info("Could not find the employee associated with this NFC tag.")
-        except httpx.NetworkError as e:
-            logger.error(f"Network Error: {e}")
+        except (httpx.NetworkError, httpx.Timeout) as e:
+            logger.error(f"Network or Timeout Error: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
         if result.type == NFCType.NONE:
             logger.info("Could not find any employee or order associated with this NFC tag.")
         return result
@@ -239,32 +255,4 @@ class CloudDBClient:
         response = self.client.table('devices').insert(device_record).execute()
         logger.info(response)  # TODO: Correctly print response (need to test)
         return response
-
-    def get_new_device_id(self) -> str:
-        """Generates a new, unique device ID for a new device.
-
-        The function retrieves the highest current device ID from the 'devices'
-        table, increments it by one, and formats it to maintain consistent ID
-        structure. If no device IDs are present in the table, it starts
-        numbering from 'fpts-001'.
-
-        Args:
-            None
     
-        Returns:
-            A string representing the newly generated device ID.
-        """
-        response = self.client.table('devices') \
-            .select('device_id') \
-            .order('device_id', desc=True) \
-            .limit(1) \
-            .execute()
-        # TODO: Find a better way to handle this since assuming the first record is unallocated is risky
-        device_id = ''
-        if not response:
-            device_id = 'fpts-001'
-        else:
-            # Extract numeric part of device ID, increment it, and format it
-            id_num = '{:03d}'.format(int(response.data[0]['device_id'][-3:]) + 1)
-            device_id = 'fpts-' + id_num
-        return device_id

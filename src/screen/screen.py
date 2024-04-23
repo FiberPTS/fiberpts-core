@@ -59,6 +59,7 @@ class Screen:
         self.popup_queue = Queue()
         self.touch_sensor_pipe_queue = Queue()
         self.nfc_reader_pipe_queue = Queue()
+        self.io_lock = threading.Lock()
         self.image = None
         self.create_image(self.dashboard_attributes.dashboard_bg_color)
 
@@ -139,12 +140,14 @@ class Screen:
                       self.dashboard_attributes.dashboard_font_size,
                       self.dashboard_attributes.dashboard_font_color,
                       centered=False)
-        device_state = read_device_state(DEVICE_STATE_PATH)
+        with self.io_lock:
+            device_state = read_device_state(DEVICE_STATE_PATH)
         saved_timestamp = device_state.get('saved_timestamp', None)
         if not saved_timestamp or is_at_least_next_day(saved_timestamp, current_time):
             device_state['unit_count'] = 0
             device_state['employee_id'], device_state['order_id'], device_state['employee_name'] = (None, None, None)
-        write_device_state(device_state, DEVICE_STATE_PATH)
+        with self.io_lock:
+            write_device_state(device_state, DEVICE_STATE_PATH)
         unit_count = device_state.get('unit_count', 0)
         self.add_text(f"Unit Count: {unit_count}",
                       image_center,
@@ -203,7 +206,8 @@ class Screen:
             # timestamp = tap_data["timestamp"]
             popup_item = None
             status = TapStatus[tap_data['status']]
-            device_state = read_device_state(DEVICE_STATE_PATH)
+            with self.io_lock:
+                device_state = read_device_state(DEVICE_STATE_PATH)
             order_id, employee_id = device_state.get('order_id', None), device_state.get('employee_id', None)
             if not employee_id:
                 if self.popup_queue.qsize() < POPUP_LIMIT:
@@ -215,7 +219,8 @@ class Screen:
                                     self.popup_attributes.event_attributes.no_order_bg_color)
             elif status == TapStatus.GOOD:
                     device_state['unit_count'] += 1
-                    write_device_state(device_state, DEVICE_STATE_PATH)
+                    with self.io_lock:
+                        write_device_state(device_state, DEVICE_STATE_PATH)
                     popup_item = (self.popup_attributes.message_attributes.tap_event_message,
                                     self.popup_attributes.event_attributes.tap_event_bg_color)
             elif status == TapStatus.BAD and self.popup_queue.qsize() < POPUP_LIMIT:
@@ -225,10 +230,11 @@ class Screen:
                 self.popup_queue.put(popup_item)
         if not self.nfc_reader_pipe_queue.empty():
             nfc_data = self.nfc_reader_pipe_queue.get()
-            logger.info('NFC data received by screen')
+            logger.info(f"NFC data received by screen: {nfc_data}")
             tag_data, nfc_type = nfc_data['data'], NFCType[nfc_data['type']]
             popup_item = None
-            device_state = read_device_state(DEVICE_STATE_PATH)
+            with self.io_lock:
+                device_state = read_device_state(DEVICE_STATE_PATH)
             if nfc_type == NFCType.NONE and self.popup_queue.qsize() < POPUP_LIMIT:
                 popup_item = (self.popup_attributes.message_attributes.popup_error_message,
                               self.popup_attributes.event_attributes.popup_error_bg_color)
@@ -259,7 +265,8 @@ class Screen:
                                       self.popup_attributes.event_attributes.order_set_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
-            write_device_state(device_state, DEVICE_STATE_PATH)
+            with self.io_lock:
+                write_device_state(device_state, DEVICE_STATE_PATH)
 
     def manage_display(self) -> None:
         """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup.

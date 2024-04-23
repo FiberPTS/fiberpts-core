@@ -177,16 +177,24 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
     if verbose:
         logger.info('Reading device state')
     try:
-        with open(path_to_device_state, 'r') as file:
-            portalocker.lock(file, portalocker.LOCK_SH)
+        with portalocker.Lock(path_to_device_state, mode='r', timeout=None, check_interval=0.5, 
+                                fail_when_locked=False, flags=portalocker.constants.LOCK_EX) as file:
+            if verbose:
+                logger.info('Reading lock acquired')
             data = json.load(file)
-            portalocker.unlock(file)
             return data
     except FileNotFoundError:
         logger.error('Device state file not found')
         raise FileNotFoundError
     except json.JSONDecodeError:
         logger.error('Unable to parse device state: Invalid JSON format')
+        try:
+            with open(path_to_device_state, 'r') as file:
+                file.seek(0)  # Reset file pointer to the beginning
+                raw_data = file.read()  # Read raw contents
+                logger.error(f"Data read: {raw_data}")
+        except Exception as e:
+            logger.error(f"Failed to read the raw data after JSON decode error: {e}")
         raise json.JSONDecodeError
     except portalocker.exceptions.BaseLockException as e:
         print(f"Failed to lock the file: {e}")
@@ -207,10 +215,11 @@ def write_device_state(device_state: Dict[str, Any], path_to_device_state: str, 
         logger.info('Writing device state')
     device_state['saved_timestamp'] = time.time()
     try:
-        with open(path_to_device_state, 'w') as file:
-            portalocker.lock(file, portalocker.LOCK_EX)
+        with portalocker.Lock(path_to_device_state, mode='w', timeout=None, check_interval=0.5, 
+                                fail_when_locked=False, flags=portalocker.constants.LOCK_EX) as file:
+            if verbose:
+                logger.info('Writing lock acquired')
             json.dump(device_state, file, indent=4)
-            portalocker.unlock(file)
     except FileNotFoundError:
         logger.error('Device state file not found')
         raise FileNotFoundError  # TODO: Determine error message format
