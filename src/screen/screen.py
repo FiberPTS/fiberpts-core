@@ -3,7 +3,7 @@ import os
 import logging
 import logging.config
 import threading
-from queue import Queue
+from queue import Queue, Empty
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -199,8 +199,8 @@ class Screen:
         Returns:
             None
         """
-        if not self.touch_sensor_pipe_queue.empty():
-            tap_data = self.touch_sensor_pipe_queue.get()
+        try:
+            tap_data = self.touch_sensor_pipe_queue.get(timeout=self.popup_attributes.popup_duration/2)
             logger.info('Tap received by screen')
             # TODO: We may decide to store this data from a stopwatch time.
             # timestamp = tap_data["timestamp"]
@@ -228,8 +228,10 @@ class Screen:
                               self.popup_attributes.event_attributes.popup_warning_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
-        if not self.nfc_reader_pipe_queue.empty():
-            nfc_data = self.nfc_reader_pipe_queue.get()
+        except Empty:
+            pass
+        try:
+            nfc_data = self.nfc_reader_pipe_queue.get(timeout=self.popup_attributes.popup_duration/2)
             logger.info(f"NFC data received by screen: {nfc_data}")
             tag_data, nfc_type = nfc_data['data'], NFCType[nfc_data['type']]
             popup_item = None
@@ -267,6 +269,8 @@ class Screen:
                 self.popup_queue.put(popup_item)
             with self.io_lock:
                 write_device_state(device_state, DEVICE_STATE_PATH)
+        except Empty:
+            pass
 
     def manage_display(self) -> None:
         """Manages writing popups to the screen using the popup queue and draws the dashboard to the display at the set frame rate after each popup.
@@ -281,9 +285,11 @@ class Screen:
         while True:
             self.draw_dashboard()
             time.sleep(frame_duration)
-            text, bg_color = self.popup_queue.get()
+            text, bg_color = self.popup_queue.get(timeout=None)
             self.draw_popup(text, bg_color)
             time.sleep(frame_duration)
+            
+                
 
     def manage_touch_sensor_pipe(self) -> None:
         """Manages reading data from the touch sensor pipe and queues it for the main thread to process.
@@ -295,9 +301,10 @@ class Screen:
             None
         """
         while True:
-            tap_data = read_pipe(TOUCH_SENSOR_TO_SCREEN_PIPE)
-            if tap_data:
-                self.touch_sensor_pipe_queue.put(tap_data)
+            pipe_reader = read_pipe(TOUCH_SENSOR_TO_SCREEN_PIPE)
+            for tap_data in pipe_reader:
+                if tap_data:
+                    self.touch_sensor_pipe_queue.put(tap_data)
 
     def manage_nfc_reader_pipe(self) -> None:
         """Manages reading data from the NFC reader pipe and queues it for the main thread to process.
@@ -309,9 +316,10 @@ class Screen:
             None
         """
         while True:
-            nfc_data = read_pipe(NFC_READER_TO_SCREEN_PIPE)
-            if nfc_data:
-                self.nfc_reader_pipe_queue.put(nfc_data)
+            pipe_reader = read_pipe(NFC_READER_TO_SCREEN_PIPE)
+            for nfc_data in pipe_reader:
+                if nfc_data:
+                    self.nfc_reader_pipe_queue.put(nfc_data)
 
     def start_threads(self) -> None:
         """Creates and starts the display thread and pipe-reading threads.

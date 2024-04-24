@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Dict, Any, NamedTuple
+from typing import Dict, Any, NamedTuple, Generator
 import mmap
 import logging
 import logging.config
@@ -129,7 +129,7 @@ def is_at_least_next_day(from_timestamp: float, to_timestamp: float) -> bool:
     # Check if to_timestamp is at least the next day from from_timestamp
     return to_day_start > from_day_start
 
-def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
+def read_pipe(path_to_pipe: str) -> Generator[Dict[str, Any], None, None]:
     """Read and parse JSON data from a named pipe.
 
     Args:
@@ -142,15 +142,32 @@ def read_pipe(path_to_pipe: str) -> Dict[str, Any]:
         FileNotFoundError: If the named pipe does not exist.
     """
     # TODO: Consider using user space os.open command instead of built-in open
-    try:
-        with open(path_to_pipe, 'r') as pipein:
-            raw_data = pipein.readline()
-            if raw_data:
-                return json.loads(raw_data)
-        return {}
-    except FileNotFoundError:
-        logger.error(f"Could not find {path_to_pipe} while reading from the pipe")
-        raise FileNotFoundError  # TODO: Determine error message format
+    while True:
+        try:
+            # Open the pipe in a blocking mode
+            pipe_fd = os.open(path_to_pipe, os.O_RDONLY)
+            with os.fdopen(pipe_fd, 'r') as pipein:
+                while True:
+                    raw_data = pipein.readline()
+                    if raw_data:
+                        yield json.loads(raw_data)
+                    else:
+                        # If raw_data is empty, this means the pipe has been closed by the writer
+                        logger.info("Pipe closed by the writer. Re-opening the pipe.")
+                        break  # Exit the inner loop to close the file descriptor and reopen the pipe
+        except FileNotFoundError:
+            logger.error(f"Could not find {path_to_pipe} while attempting to open the pipe.")
+            raise
+        except OSError as e:
+            logger.error(f"An error occurred while handling the pipe {path_to_pipe}: {str(e)}")
+            raise
+        except Exception as e:
+            # Handle other possible exceptions and decide whether to continue or stop
+            logger.error(f"An unexpected error occurred: {str(e)}")
+            raise
+
+        # Optionally add a slight delay before trying to reopen the pipe to prevent tight loop under error conditions
+        time.sleep(1)
 
 
 def get_image_center(image: Image) -> tuple[int, int]:
