@@ -9,7 +9,7 @@ from postgrest import APIResponse
 import httpx
 
 from src.utils.touch_sensor_utils import Tap
-from src.utils.utils import NFCType, get_device_id
+from src.utils.utils import NFCType, TapStatus, get_device_id
 from src.utils.utils import read_device_state
 from src.utils.paths import DEVICE_STATE_PATH
 from src.utils.nfc_reader_utils import NFCTag
@@ -59,6 +59,9 @@ class CloudDBClient:
         # TODO: Implement handling for non-existent table.
         # TODO: Implement handling for non-existent device record.
         logger.info('Inserting tap record to Supabase')
+        if tap.status != TapStatus.GOOD:
+            logger.error("Invalid Tap Status. Expected GOOD.")
+            return False
         device_state = read_device_state(DEVICE_STATE_PATH)
         tap_record = {
             'timestamp': time.strftime(TIMESTAMP_FORMAT, time.localtime(tap.timestamp)),
