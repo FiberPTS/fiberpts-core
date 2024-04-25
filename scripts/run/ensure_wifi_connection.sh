@@ -64,7 +64,7 @@ function manage_services() {
         check_internet
         internet_status=$?
 
-        sleep 1
+        sleep 0.2
     done
 
     for service_name in "${services[@]}"; do

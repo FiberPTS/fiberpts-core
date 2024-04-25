@@ -30,7 +30,7 @@ readonly FAIL="${RED}[FAIL]   ${RESET}"
 readonly CRITICAL="${BOLD}${RED}[CRITICAL]${RESET}"
 
 # ensure_wifi_connection.sh
-CHECK_INTERVAL=15
+CHECK_INTERVAL=3
 
 # shutdown.sh
 SHUTDOWN_TIME="19:00:00"
