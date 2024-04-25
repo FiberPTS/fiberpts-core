@@ -74,7 +74,6 @@ class CloudDBClient:
             machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
             if machine_id:
                 tap_record['machine_id'] = machine_id
-            logger.info(tap_record)
             response = self.client.table('action_tap_data').insert(tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             return True
@@ -120,7 +119,6 @@ class CloudDBClient:
             machine_id = None if len(machine_id_record.data) == 0 else machine_id_record.data[0]['machine_id']
             if machine_id:
                 employee_tap_record['machine_id'] = machine_id
-            logger.info(employee_tap_record)
             response = self.client.table('employee_tap_data').insert(employee_tap_record).execute()
             logger.info(response)  # TODO: Correctly print response (need to test)
             #device_state = read_device_state(DEVICE_STATE_PATH)
