@@ -13,8 +13,11 @@ from src.utils.paths import PROJECT_DIR
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %X'
 
+caller_name = os.path.basename(__import__('__main__').__file__).split('.')[0]
+file_name = os.path.basename(__file__).split('.')[0]
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
-logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
+logger = logging.getLogger(f"{caller_name}.{file_name}")
+
 
 # TODO: Fix this locking mechanism, because it doesn't properly unlock the file due to lock_file being initialized to None. 
 class SelfReleasingLock:

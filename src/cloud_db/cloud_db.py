@@ -17,9 +17,10 @@ from src.utils.utils import TIMESTAMP_FORMAT
 from src.utils.paths import PROJECT_DIR
 
 load_dotenv(f"{PROJECT_DIR}/.env")
+caller_name = os.path.basename(__import__('__main__').__file__).split('.')[0]
+file_name = os.path.basename(__file__).split('.')[0]
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
-logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
-
+logger = logging.getLogger(f"{caller_name}.{file_name}")
 
 class CloudDBClient:
     """Client for interacting with a cloud database using the Supabase API.
