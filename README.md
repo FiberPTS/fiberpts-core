@@ -4,6 +4,8 @@
 
 **FiberPTS** aims to provide visibility on manufacturing operations by tracking production throughput, providing key data insights to improve labor and production efficiencies. The system utilizes Supabase, a scalable and secure backend, to manage data across various IoT devices in real-time.
 
+Check out the demo video [here](https://www.youtube.com/watch?v=TWLcf_nFILc&ab_channel=JuanDiegoBecerra).
+
 ## Purpose, Scope, and Objectives
 
 The **Factory Production Tracking System (FiberPTS)** leverages IoT devices equipped at various operational points within a manufacturing plant to collect real-time data through operator interactions. This data is then centralized for visualization, offering significant benefits:
