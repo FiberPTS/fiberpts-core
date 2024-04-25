@@ -95,7 +95,7 @@ def read_device_state(path_to_device_state: str, verbose: bool = True) -> Dict[s
         JSONDecodeError: If there is an error decoding the JSON data from the file.
     """
     if verbose:
-        logger.info('Reading device state')
+        logger.info(f'Reading device state {caller_name}')
     try:
         with portalocker.Lock(path_to_device_state, mode='r', timeout=None, check_interval=0.5, 
                                 fail_when_locked=False, flags=portalocker.constants.LOCK_EX) as file:
