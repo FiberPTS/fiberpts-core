@@ -237,9 +237,10 @@ class Screen:
             popup_item = None
             with self.io_lock:
                 device_state = read_device_state(DEVICE_STATE_PATH)
-            if nfc_type == NFCType.NONE and self.popup_queue.qsize() < POPUP_LIMIT:
-                popup_item = (self.popup_attributes.message_attributes.popup_error_message,
-                              self.popup_attributes.event_attributes.popup_error_bg_color)
+            if nfc_type == NFCType.NONE:
+                if self.popup_queue.qsize() < POPUP_LIMIT:
+                    popup_item = (self.popup_attributes.message_attributes.popup_error_message,
+                                  self.popup_attributes.event_attributes.popup_error_bg_color)
             elif nfc_type == NFCType.EMPLOYEE:
                 employee_id, employee_name = tag_data.get('employee_id', None), tag_data.get('name', None)
                 # Reset unit count if employee changes
@@ -253,18 +254,27 @@ class Screen:
                         popup_item = (self.popup_attributes.message_attributes.employee_set_message,
                                       self.popup_attributes.event_attributes.employee_set_bg_color)
                     device_state['employee_id'], device_state['employee_name'] = (employee_id, employee_name)
+                elif self.popup_queue.qsize() < POPUP_LIMIT:
+                    popup_item = (self.popup_attributes.message_attributes.popup_error_message,
+                                    self.popup_attributes.event_attributes.popup_error_bg_color)
             elif nfc_type == NFCType.ORDER:
-                order_id = tag_data.get('order_id', None)
-                # Reset unit count if order changes
-                if order_id:
+                employee_id, order_id = device_state.get('employee_id', None), tag_data.get('order_id', None)
+                if employee_id is None:
+                    if self.popup_queue.qsize() < POPUP_LIMIT:
+                        popup_item = (self.popup_attributes.message_attributes.no_employee_message,
+                                      self.popup_attributes.event_attributes.no_employee_bg_color)
+                elif order_id:
                     if order_id == device_state.get('order_id', None):
                         popup_item = (self.popup_attributes.message_attributes.order_same_message,
                                       self.popup_attributes.event_attributes.order_same_bg_color)
-                    else:
+                    else: # Reset unit count if order changes
                         device_state['unit_count'] = 0
                         device_state['order_id'] = order_id
                         popup_item = (self.popup_attributes.message_attributes.order_set_message,
                                       self.popup_attributes.event_attributes.order_set_bg_color)
+                elif self.popup_queue.qsize() < POPUP_LIMIT:
+                    popup_item = (self.popup_attributes.message_attributes.popup_error_message,
+                                  self.popup_attributes.event_attributes.popup_error_bg_color)
             if popup_item:
                 self.popup_queue.put(popup_item)
             with self.io_lock:

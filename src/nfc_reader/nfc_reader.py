@@ -9,8 +9,8 @@ import sys
 from ctypes import CDLL, c_int, c_bool, c_char_p, c_size_t, create_string_buffer
 from src.cloud_db.cloud_db import CloudDBClient
 from src.utils.nfc_reader_utils import NFCTag
-from src.utils.paths import (NFC_READER_TO_SCREEN_PIPE, PROJECT_DIR)
-from src.utils.utils import NFCType, get_device_id
+from src.utils.paths import (NFC_READER_TO_SCREEN_PIPE, PROJECT_DIR, DEVICE_STATE_PATH)
+from src.utils.utils import NFCType, get_device_id, read_device_state
 
 logging.config.fileConfig(f"{PROJECT_DIR}/config/logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(os.path.basename(__file__).split('.')[0])
@@ -50,9 +50,10 @@ class NFCReader:
         logger.info(f"Lookup Result Value: {result.data}, \
                     Type: {result.type}")
         self.pipe_nfc_data(result)
+        device_state = read_device_state(DEVICE_STATE_PATH)
         if result.type == NFCType.EMPLOYEE:
             self.cloud_db.insert_employee_tap(result)
-        if result.type == NFCType.ORDER:
+        if result.type == NFCType.ORDER and device_state.get('employee_id', None) is not None:
             self.cloud_db.insert_order_tap(result)
 
     def pipe_nfc_data(self, tag: NFCTag) -> None:
