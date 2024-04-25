@@ -13,7 +13,6 @@ import portalocker
 from config.screen_config import *
 from src.utils.paths import (DISPLAY_FRAME_BUFFER_PATH,
                              DISPLAY_FRAME_BUFFER_LOCK_PATH, PROJECT_DIR)
-from src.utils.utils import SelfReleasingLock
 
 caller_name = os.path.basename(__import__('__main__').__file__).split('.')[0]
 file_name = os.path.basename(__file__).split('.')[0]
