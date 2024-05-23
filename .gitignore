@@ -13,10 +13,18 @@
 *.dylib
 *.dll
 
+# C Static libraries
+*.a
+*.lib
+
 # C Executables
 *.exe
 *.out
 *.app
+
+# Intermediate build files
+*.d
+*.dep
 
 # Shell scripting
 *.log
@@ -87,3 +95,8 @@ Thumbs.db
 *.swo
 *.img
 *.xz
+TODO
+
+# C/C++ build directories
+bin/
+obj/

@@ -1,2 +1,41 @@
-- [] Always check return values and give informative return values. 
-     (https://google.github.io/styleguide/shellguide.html#checking-return-values)
+- [ ] Fix Database Schema
+  - Machine ID in `devices` table can be NULL and the foreign key can be repeated
+  - Review the database schema and update accordingly
+
+- [ ] Improve Database Readability
+  - Rename tables
+  - Rename columns
+
+- [ ] Review Implementation
+  - Draw current diagram
+  - Review current diagram
+  - Modify current diagram
+  - Revist configurations. Consider JSON or INI to set configurations
+
+- [ ] Refactor Implementation
+  - Data handling in C, data manipulation in Python
+
+```
+MyHybridProject/
+├── src/                    # Directory for source files
+│   ├── c/                  # C source files for hardware interaction
+│   └── python/             # Python source files for data handling
+├── include/                # Header files for C source code
+├── lib/                    # External or third-party libraries
+├── bin/                    # Compiled binaries
+├── obj/                    # Object files from C compilation
+├── scripts/                # Bash scripts for system setup and maintenance
+├── config/                 # Configuration files for various components
+├── db/                     # Database-related files
+├── tests/                  # Test code for the project
+│   ├── c/                  # C module tests
+│   └── python/             # Python module tests
+├── docs/                   # Documentation for the project
+├── Makefile                # Makefile for automating C compilation and other tasks
+└── .gitignore              # Specifies intentionally untracked files to ignore
+```
+
+- [ ] Scaling
+  - Figure out remote communication with devices
+  - Explore hosting multiple clients in Supabase
+  - Database for testing must be separate from production
